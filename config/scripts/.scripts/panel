@@ -10,12 +10,11 @@ POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
 
 # Dimensions
-PANEL_HEIGHT=30
+PANEL_HEIGHT=24
 
 # Fonts
-PANEL_FONT="Source Sans Pro Regular:size=13"
-ICON_FONT="FontAwesome:size=16"
-ICON_FONT2="fontcustom:size=17"
+PANEL_FONT="Source Sans Pro:size=10"
+ICON_FONT="FontAwesome:size=13"
 
 # Colors
 COLOR_FOREGROUND='#FFebdbb2'
@@ -295,6 +294,6 @@ panel_bar() {
 }
 
 # dump panel into panel_bar and then into lemonbar
-panel_bar < "$PANEL_FIFO" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -f "$ICON_FONT2" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
+panel_bar < "$PANEL_FIFO" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
 
 wait
