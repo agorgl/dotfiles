@@ -1,13 +1,25 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+
+#################################################################
+#-
+#=- Configuration
+#-
+#################################################################
 
 # File locations
 PANEL_FIFO=/tmp/panel-fifo
 MSGFILE=$HOME/.weechat/highlights.txt
 
 # Hardware
-WIFI_INTERFACE="wlp2s0"
+WIFI_INTERFACE="wlan0"
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
+
+#################################################################
+#-
+#=- Customization
+#-
+#################################################################
 
 # Dimensions
 PANEL_HEIGHT=24
@@ -16,35 +28,76 @@ PANEL_HEIGHT=24
 PANEL_FONT="Source Sans Pro:size=10"
 ICON_FONT="FontAwesome:size=13"
 
+#
 # Colors
-COLOR_FOREGROUND='#FFebdbb2'
-COLOR_BACKGROUND='#FF282828'
-COLOR_ACTIVE_MONITOR_FG='#FF252527'
-COLOR_ACTIVE_MONITOR_BG='#FF98971a'
-COLOR_INACTIVE_MONITOR_FG='#FFa89984'
-COLOR_INACTIVE_MONITOR_BG='#FF282828'
-COLOR_FOCUSED_OCCUPIED_FG='#FFebdbb2'
-COLOR_FOCUSED_OCCUPIED_BG='#FF458588'
-COLOR_FOCUSED_FREE_FG='#FFebdbb2'
-COLOR_FOCUSED_FREE_BG='#FF323A44'
-COLOR_FOCUSED_URGENT_FG='#FF252527'
-COLOR_FOCUSED_URGENT_BG='#FFF9A299'
-COLOR_OCCUPIED_FG='#FFd5c4a1'
-COLOR_OCCUPIED_BG='#FF282828'
-COLOR_FREE_FG='#FF928374'
-COLOR_FREE_BG='#FF282828'
-COLOR_URGENT_FG='#FFF9A299'
-COLOR_URGENT_BG='#FF252527'
-COLOR_LAYOUT_FG='#FFeddbb2'
-COLOR_LAYOUT_BG='#FF252527'
-COLOR_TITLE_FG='#FFeddbb2'
-COLOR_TITLE_BG='#FF282828'
-COLOR_STATUS_FG='#FFebdbb2'
-COLOR_STATUS_BG='#FF282828'
-COLOR_SIGNAL_NONE='#FFEBDBB2'
-COLOR_SIGNAL_LOW='#FF7C6F64'
-COLOR_SIGNAL_MEDIUM='#FF928374'
-COLOR_SIGNAL_HIGH='#FFEBDBB2'
+#
+
+# Bar colors
+COLOR_FOREGROUND='#dedede'
+COLOR_BACKGROUND='#2b2b2b'
+COLOR_ACTIVE_MONITOR_FG='#ff252527'
+COLOR_ACTIVE_MONITOR_BG='#ff98971a'
+COLOR_INACTIVE_MONITOR_FG='#ffa89984'
+COLOR_INACTIVE_MONITOR_BG='#2b2b2b'
+COLOR_FOCUSED_OCCUPIED_FG='#dedede'
+COLOR_FOCUSED_OCCUPIED_BG='#ff458588'
+COLOR_FOCUSED_FREE_FG='#dedede'
+COLOR_FOCUSED_FREE_BG='#ff323a44'
+COLOR_FOCUSED_URGENT_FG='#ff252527'
+COLOR_FOCUSED_URGENT_BG='#fff9a299'
+COLOR_OCCUPIED_FG='#ffd5c4a1'
+COLOR_OCCUPIED_BG='#2b2b2b'
+COLOR_FREE_FG='#ff928374'
+COLOR_FREE_BG='#2b2b2b'
+COLOR_URGENT_FG='#fff9a299'
+COLOR_URGENT_BG='#ff252527'
+COLOR_LAYOUT_FG='#ffeddbb2'
+COLOR_LAYOUT_BG='#ff252527'
+COLOR_TITLE_FG='#ffeddbb2'
+COLOR_TITLE_BG='#2b2b2b'
+COLOR_STATUS_FG='#dedede'
+COLOR_STATUS_BG='#2b2b2b'
+
+# Wifi signal colors
+COLOR_SIGNAL_NONE='#ffebdbb2'
+COLOR_SIGNAL_LOW='#ff7c6f64'
+COLOR_SIGNAL_MEDIUM='#ff928374'
+COLOR_SIGNAL_HIGH='#ffebdbb2'
+
+#
+# Icons
+#
+
+# Battery & Power related icons
+ICON_BATT_FULL='\uf240'
+ICON_BATT_HIGH='\uf241'
+ICON_BATT_MED='\uf242'
+ICON_BATT_LOW='\uf243'
+ICON_BATT_EMPTY='\uf244'
+ICON_POWER_PLUG='\uf1e6'
+
+# Music player icons
+ICON_PREV='\uf048'
+ICON_PLAY='\uf04b'
+ICON_NEXT='\uf051'
+
+# Volume icons
+ICON_VOL_UP='\uf028'
+ICON_VOL_DOWN='\uf027'
+ICON_VOL_OFF='\uf026'
+
+# Chat icons
+ICON_CHAT_CLEAR='\uf075'
+ICON_CHAT_BUSY='\uf0e5'
+
+# Signal icons
+ICON_WIFI='\uf1eb'
+
+#################################################################
+#-
+#=- Setup
+#-
+#################################################################
 
 # Check if panel is already running
 if [[ $(pgrep -cx panel) -gt 1 ]]; then
@@ -53,7 +106,12 @@ if [[ $(pgrep -cx panel) -gt 1 ]]; then
 fi
 
 # Exit gracefully if terminated
-trap 'trap - TERM; kill 0' INT TERM QUIT EXIT
+deinit(){
+    # Reset bspwm top_padding
+    bspc config top_padding 0
+    trap - TERM; kill 0
+}
+trap deinit INT TERM QUIT EXIT
 
 # Remove old panel fifo, create new one
 [ -e "$PANEL_FIFO" ] && rm "$PANEL_FIFO"
@@ -68,121 +126,124 @@ bspc control --subscribe > "$PANEL_FIFO" &
 # Window title
 xtitle -sf 'TITLE%s' > "$PANEL_FIFO" &
 
+#################################################################
+#-
+#=- Info collectors
+#-
+#################################################################
+
 # Clock
-while true; do
-    # clock icon is \uf017 if you want to add it
-    echo -e "TIME$(date +"%l:%M %p") "
-    sleep 30;
-done > "$PANEL_FIFO" &
+clock(){
+    echo -e "$(date +"%l:%M %p")"
+}
 
 # Date
-while true; do
-    # calendar icon is \uf073 if you want to add it
-    echo -e "DAY$(date +'%a, %b %d')"
-    sleep 60
-done > "$PANEL_FIFO" &
+cal(){
+    echo -e "$(date +'%a, %b %d')"
+}
 
 # Battery
-while true; do
-    BATT_LEVEL=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
-    if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
-    if [[ $BATT_LEVEL -ge 80 ]]; then
-        BATT_ICON='\uf240'
-    elif [[ $BATT_LEVEL -ge 60 && $BATT_LEVEL -lt 80 ]]; then
-        BATT_ICON='\uf241'
-    elif [[ $BATT_LEVEL -ge 40 && $BATT_LEVEL -lt 60 ]]; then
-        BATT_ICON='\uf242'
-    elif [[ $BATT_LEVEL -ge 20 && $BATT_LEVEL -lt 40 ]]; then
-        BATT_ICON='\uf243'
-    elif [[ $BATT_LEVEL -lt 20 ]]; then
-        BATT_ICON='\uf244'
+battery(){
+    if [ -f $POWERSUPPLY ]; then
+        BATT_LEVEL=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
+        if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
+            if [[ $BATT_LEVEL -ge 80 ]]; then
+                BATT_ICON=$ICON_BATT_FULL
+            elif [[ $BATT_LEVEL -ge 60 && $BATT_LEVEL -lt 80 ]]; then
+                BATT_ICON=$ICON_BATT_HIGH
+            elif [[ $BATT_LEVEL -ge 40 && $BATT_LEVEL -lt 60 ]]; then
+                BATT_ICON=$ICON_BATT_MED
+            elif [[ $BATT_LEVEL -ge 20 && $BATT_LEVEL -lt 40 ]]; then
+                BATT_ICON=$ICON_BATT_LOW
+            elif [[ $BATT_LEVEL -lt 20 ]]; then
+                BATT_ICON=$ICON_BATT_EMPTY
+            fi
+        else
+            BATT_ICON=$ICON_POWER_PLUG
+        fi
+        # Uncomment next and delete the line after that to see percentage
+        #echo -e $BATT_ICON $BATT_LEVEL%
+        echo -e $BATT_ICON
     fi
-    else
-        BATT_ICON='\uf1e6'
-    fi
-    #uncomment next and delete the line after that to see percentage
-    #echo -e $BATT_ICON $BATT_LEVEL%
-    echo -e BAT$BATT_ICON
-    sleep 30;
-done > "$PANEL_FIFO" &
+}
 
 # Alsa volume
-while true; do
+volume(){
     ALSA_VOLUME=$(amixer get Master | grep 'Mono: Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
     ALSA_STATE=$(amixer get Master | grep 'Mono: Playback' | grep -o '\[on]')
 
     if [[ $ALSA_STATE ]]; then
         if [[ $ALSA_VOLUME -ge 70 ]]; then
-            VOLUME_ICON='\uf028'
+            VOLUME_ICON=$ICON_VOL_UP
         elif [[ $ALSA_VOLUME -gt 0 && $ALSA_VOLUME -lt 70 ]]; then
-            VOLUME_ICON='\uf027'
+            VOLUME_ICON=$ICON_VOL_DOWN
         elif [[ $ALSA_VOLUME -eq 0 ]]; then
-            VOLUME_ICON='\uf026'
+            VOLUME_ICON=$ICON_VOL_OFF
         else
-            VOLUME_ICON='\uf026'
+            VOLUME_ICON=$ICON_VOL_OFF
         fi
         # uncomment next and delte the line after that to see volume percentage
-        #echo -e V$VOLUME_ICON $ALSA_VOLUME
-        echo -e VOL$VOLUME_ICON
+        #echo -e $VOLUME_ICON $ALSA_VOLUME
+        echo -e $VOLUME_ICON
     fi
-    sleep 2.0
-done > "$PANEL_FIFO" &
+}
 
 # Weechat (use hl2file weechat script)
-while true; do
-    UNREADMESSAGES=$(wc -l < "$MSGFILE")
-    if [[ $UNREADMESSAGES != 0 ]]; then
-        WEECHAT_ICON="\uf075  [$UNREADMESSAGES]"
-    else
-        WEECHAT_ICON='\uf0e5'
+weechat(){
+    if [ -f "$MSGFILE" ]; then
+        UNREADMESSAGES=$(wc -l < "$MSGFILE")
+        if [[ $UNREADMESSAGES != 0 ]]; then
+            WEECHAT_ICON="$ICON_CHAT_BUSY[$UNREADMESSAGES]"
+        else
+            WEECHAT_ICON=$ICON_CHAT_CLEAR
+        fi
     fi
-    echo -e MESSAGE$WEECHAT_ICON
-    sleep 5
-done > "$PANEL_FIFO" &
-
-# Email (work in progress)
-while true; do
-    EMAIL_ICON='\uf003'
-    echo -e EMAIL$EMAIL_ICON
-    sleep 60
-done > "$PANEL_FIFO" &
+    echo -e $WEECHAT_ICON
+}
 
 # Wifi
-while true; do
-#   WIFI_SSID=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
-    WIFI_SIGNAL=$(iw "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
-    if [[ $(iw "$WIFI_INTERFACE" link) != "Not connected." ]]; then
-        if [[ $WIFI_SIGNAL -ge -67 ]]; then
-            WIFI_COLOR=$COLOR_SIGNAL_HIGH
-        elif [[ $WIFI_SIGNAL -ge -70 && $WIFI_SIGNAL -lt -67 ]]; then
-            WIFI_COLOR=$COLOR_SIGNAL_MEDIUM
-        elif [[ $WIFI_SIGNAL -ge -80 && $WIFI_SIGNAL -lt -70 ]]; then
-            WIFI_COLOR=$COLOR_SIGNAL_LOW
+wifi(){
+    if (command -v iw >/dev/null 2>&1) && (iw dev $WIFI_INTERFACE link >/dev/null 2>&1); then
+        #WIFI_SSID=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
+        WIFI_SIGNAL=$(iw dev "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
+        if [ $? -eq 0 ]; then
+            if [[ $(iw dev "$WIFI_INTERFACE" link) != "Not connected." ]]; then
+                if [[ $WIFI_SIGNAL -ge -67 ]]; then
+                    WIFI_COLOR=$COLOR_SIGNAL_HIGH
+                elif [[ $WIFI_SIGNAL -ge -70 && $WIFI_SIGNAL -lt -67 ]]; then
+                    WIFI_COLOR=$COLOR_SIGNAL_MEDIUM
+                elif [[ $WIFI_SIGNAL -ge -80 && $WIFI_SIGNAL -lt -70 ]]; then
+                    WIFI_COLOR=$COLOR_SIGNAL_LOW
+                fi
+                echo -e "%{F$WIFI_COLOR}$ICON_WIFI%{F-}"
+            else
+                WIFI_COLOR=$COLOR_SIGNAL_NONE
+                echo -e "%{F$WIFI_COLOR}$ICON_WIFI%{F-}"
+            fi
         fi
-        echo -e "LINK%{F$WIFI_COLOR}\uf1eb%{F-}"
-    else
-        WIFI_COLOR=$COLOR_SIGNAL_NONE
-        echo -e "LINK%{F$WIFI_COLOR}\uf072%{F-}"
     fi
-        sleep 10
-done > "$PANEL_FIFO" &
+}
 
 # Music controls
-while true; do
+music(){
     SONG_NAME=$(mpc current)
     if [[ -z $(mpc current) ]]; then
-        # no music in playlist, or mpd is not running
-        echo -e "MUSIC%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc listall | mpc add; mpc shuffle; mpc play:}%{A3:mpd:}\uf19c  \uf198  \uf17c%{A}%{A}%{T1}%{F-}"
+        # No music in playlist, or mpd is not running
+        echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc listall | mpc add; mpc shuffle; mpc play:}%{A3:mpd:}$ICON_PREV $ICON_PLAY $ICON_NEXT%{A}%{A}%{T1}%{F-}"
     else
         if mpc status | grep -q 'paused'; then
-            # music is paused
-            echo -e "MUSIC%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc prev:}\uf19c %{A}%{A:mpc play:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} \uf17c%{A}%{T1}%{F-}"
+            # Music is paused
+            echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc prev:}$ICON_PREV %{A}%{A:mpc play:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} $ICON_NEXT%{A}%{T1}%{F-}"
         else
-            # music is playing
-            echo -e "MUSIC%{F$COLOR_FOCUSED_OCCUPIED_FG}%{T3}%{A:mpc prev:}\uf19c %{A}%{A:mpc pause:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} \uf17c%{A}%{T1}%{F-}"
+            # Music is playing
+            echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{T3}%{A:mpc prev:}$ICON_PREV %{A}%{A:mpc pause:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} $ICON_NEXT%{A}%{T1}%{F-}"
         fi
     fi
-    sleep 2.0
+}
+
+while true; do
+    echo "UPDATE"
+    sleep 1;
 done > "$PANEL_FIFO" &
 
 panel_bar() {
@@ -191,97 +252,63 @@ panel_bar() {
 
     while read -r line ; do
         case $line in
-            DAY*)
-                # date output
-                # date has no padding so it is snug with time, append $PADDING if you want
-                # you will want to add padding if you use an icon with time
-                date="$PADDING${line#???}"
+            UPDATE)
+                # Update polled state
+                local clock=$(clock)
+                local date=$(cal)
+                local battery=$(battery)
+                local volume=$(volume)
+                local messages=$(weechat)
+                local wifi=$(wifi)
+                local music=$(music)
                 ;;
-
-            EMAIL*)
-                # email alerts
-                email="$PADDING${line#?????}$PADDING"
-                ;;
-
-            MESSAGE*)
-                # Weechat messages
-                messages="$PADDING${line#???????}$PADDING"
-                ;;
-
-            MUSIC*)
-                # music info
-                music="$PADDING${line#?????}$PADDING"
-                ;;
-            TIME*)
-                # clock output
-                # clock has no padding so it is snug with date, prepend $PADDING if you want
-                # you will want to add padding iy you use an icon with time
-                clock="$PADDING${line#????}$PADDING"
-                ;;
-
-            BAT*)
-                # battery percent output
-                battery="$PADDING${line#???}$PADDING"
-                ;;
-
             TITLE*)
-                # xtitle output
-                title="${line#?????}$PADDING$PADDING"
+                # Xtitle output
+                local title="${line#?????}"
                 ;;
-
-            VOL*)
-                # alsa volume
-                volume="$PADDING${line#???}$PADDING"
-                ;;
-
-            LINK*)
-                # wifi link
-                wifi="$PADDING${line#????}$PADDING"
-                ;;
-
             W*)
-                # bspwm internal state
-                wm_infos=""
+                # Bspwm internal state
                 IFS=':'
+                local wm_infos=""
                 set -- ${line#?}
-                while [ $# -gt 0 ] ; do
+                while [ $# -gt 0 ]; do
                     item=$1
                     name=${item#?}
                     case $item in
                         M*)
-                            # active monitor
+                            # Active monitor
                             if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}  "
+                                wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}"
                             fi
                             ;;
                         m*)
-                            # inactive monitor
+                            # Inactive monitor
                             if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}  "
+                                wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}"
                             fi
                             ;;
                         O*)
-                            # focused occupied desktop
+                            # Focused occupied desktop
                             wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
                             ;;
                         F*)
-                            # focused free desktop
+                            # Focused free desktop
                             wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
                             ;;
                         U*)
-                            # focused urgent desktop
+                            # Focused urgent desktop
                             wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
                             ;;
                         o*)
-                            # occupied desktop
+                            # Occupied desktop
                             wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}$PADDING${name}$PADDING%{A}%{B-}%{F-}"
                             ;;
                         f*)
-                            # free desktop
+                            # Free desktop
                             wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}$PADDING${name}$PADDING%{A}%{B-}%{F-}"
                             ;;
                         u*)
-                            # urgent desktop
+                            # Urgent desktop
                             wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}$PADDING${name}$PADDING%{B-}%{F-}"
                             ;;
                     esac
@@ -293,7 +320,7 @@ panel_bar() {
     done
 }
 
-# dump panel into panel_bar and then into lemonbar
+# Dump panel into panel_bar and then into lemonbar
 panel_bar < "$PANEL_FIFO" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
 
 wait
