@@ -7,7 +7,6 @@
 #################################################################
 
 # File locations
-PANEL_FIFO=/tmp/panel-fifo
 MSGFILE=$HOME/.weechat/highlights.txt
 
 # Hardware
@@ -112,19 +111,6 @@ deinit(){
     trap - TERM; kill 0
 }
 trap deinit INT TERM QUIT EXIT
-
-# Remove old panel fifo, create new one
-[ -e "$PANEL_FIFO" ] && rm "$PANEL_FIFO"
-mkfifo "$PANEL_FIFO"
-
-# Set up bspwm to not overlap the panel
-bspc config top_padding "$PANEL_HEIGHT"
-
-# Get bspwms status feed
-bspc control --subscribe > "$PANEL_FIFO" &
-
-# Window title
-xtitle -sf 'TITLE%s' > "$PANEL_FIFO" &
 
 #################################################################
 #-
@@ -234,7 +220,7 @@ music(){
     if [[ -n $song_name ]]; then
         if mpc status | grep -q 'paused'; then
             # Music is paused
-            echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{A:mpc play:}$song_name%{A}%{F-}"
+            echo -e "%{F$COLOR_FOCUSED_URGENT_FG}%{A:mpc play:}$song_name%{A}%{F-}"
         else
             # Music is playing
             echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{A:mpc pause:}$song_name%{A}%{F-}"
@@ -242,15 +228,8 @@ music(){
     fi
 }
 
-while true; do
-    echo "UPDATE"
-    sleep 1;
-done > "$PANEL_FIFO" &
-
+# Message loop
 panel_bar() {
-    num_mon=$(bspc query -M | wc -l)
-    PADDING="  "
-
     while read -r line ; do
         case $line in
             UPDATE)
@@ -270,6 +249,7 @@ panel_bar() {
             W*)
                 # Bspwm internal state
                 IFS=':'
+                local cur_mon=0
                 local wm_infos=""
                 set -- ${line#?}
                 while [ $# -gt 0 ]; do
@@ -278,15 +258,13 @@ panel_bar() {
                     case $item in
                         M*)
                             # Active monitor
-                            if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG}  ${name}  %{B-}%{F-}"
-                            fi
+                            ((cur_mon++))
+                            if [ $cur_mon -ge 2 ]; then break; fi
                             ;;
                         m*)
                             # Inactive monitor
-                            if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG}  ${name}  %{B-}%{F-}"
-                            fi
+                            ((cur_mon++))
+                            if [ $cur_mon -ge 2 ]; then break; fi
                             ;;
                         O*)
                             # Focused occupied desktop
@@ -317,11 +295,38 @@ panel_bar() {
                 done
                 ;;
         esac
-        printf "%s\n" "%{l}${wm_infos}${title}%{c}${music}%{r}${messages}${wifi}${volume}${battery}${date}${clock}  "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages}${wifi}${volume}${battery}${date}${clock}  "
     done
 }
 
-# Dump panel into panel_bar and then into lemonbar
-panel_bar < "$PANEL_FIFO" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
+# Creates panel
+spawn_panel(){
+    # The fifo location
+    local panel_fifo="/tmp/panel-fifo"
+
+    # Remove old panel fifo, create new one
+    [ -e "$panel_fifo" ] && rm "$panel_fifo"
+    mkfifo "$panel_fifo"
+
+    # Set up bspwm to not overlap the panel
+    bspc config top_padding "$PANEL_HEIGHT"
+
+    # Get bspwms status feed
+    bspc control --subscribe > "$panel_fifo" &
+
+    # Window title
+    xtitle -sf 'TITLE%s' > "$panel_fifo" &
+
+    # Poll event sender
+    while true; do
+        echo "UPDATE"
+        sleep 1;
+    done > "$panel_fifo" &
+
+    # Dump panel into panel_bar and then into lemonbar
+    panel_bar < "$panel_fifo" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
+}
+
+spawn_panel
 
 wait
