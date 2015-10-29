@@ -145,80 +145,84 @@ cal(){
 # Battery
 battery(){
     if [ -f $POWERSUPPLY ]; then
-        BATT_LEVEL=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
+        local batt_icon=""
+        local batt_level=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
         if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
-            if [[ $BATT_LEVEL -ge 80 ]]; then
-                BATT_ICON=$ICON_BATT_FULL
-            elif [[ $BATT_LEVEL -ge 60 && $BATT_LEVEL -lt 80 ]]; then
-                BATT_ICON=$ICON_BATT_HIGH
-            elif [[ $BATT_LEVEL -ge 40 && $BATT_LEVEL -lt 60 ]]; then
-                BATT_ICON=$ICON_BATT_MED
-            elif [[ $BATT_LEVEL -ge 20 && $BATT_LEVEL -lt 40 ]]; then
-                BATT_ICON=$ICON_BATT_LOW
-            elif [[ $BATT_LEVEL -lt 20 ]]; then
-                BATT_ICON=$ICON_BATT_EMPTY
+            if [[ $batt_level -ge 80 ]]; then
+                batt_icon=$ICON_BATT_FULL
+            elif [[ $batt_level -ge 60 && $batt_level -lt 80 ]]; then
+                batt_icon=$ICON_BATT_HIGH
+            elif [[ $batt_level -ge 40 && $batt_level -lt 60 ]]; then
+                batt_icon=$ICON_BATT_MED
+            elif [[ $batt_level -ge 20 && $batt_level -lt 40 ]]; then
+                batt_icon=$ICON_BATT_LOW
+            elif [[ $batt_level -lt 20 ]]; then
+                batt_icon=$ICON_BATT_EMPTY
             fi
         else
-            BATT_ICON=$ICON_POWER_PLUG
+            batt_icon=$ICON_POWER_PLUG
         fi
         # Uncomment next and delete the line after that to see percentage
-        #echo -e $BATT_ICON $BATT_LEVEL%
-        echo -e $BATT_ICON
+        #echo -e $batt_icon $batt_level%
+        echo -e $batt_icon
     fi
 }
 
 # Alsa volume
 volume(){
-    ALSA_VOLUME=$(amixer get Master | grep 'Mono: Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
-    ALSA_STATE=$(amixer get Master | grep 'Mono: Playback' | grep -o '\[on]')
+    local alsa_volume=$(amixer get Master | grep 'Mono: Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
+    local alsa_state=$(amixer get Master | grep 'Mono: Playback' | grep -o '\[on]')
 
-    if [[ $ALSA_STATE ]]; then
-        if [[ $ALSA_VOLUME -ge 70 ]]; then
-            VOLUME_ICON=$ICON_VOL_UP
-        elif [[ $ALSA_VOLUME -gt 0 && $ALSA_VOLUME -lt 70 ]]; then
-            VOLUME_ICON=$ICON_VOL_DOWN
-        elif [[ $ALSA_VOLUME -eq 0 ]]; then
-            VOLUME_ICON=$ICON_VOL_OFF
+    if [[ $alsa_state ]]; then
+        local volume_icon=""
+        if [[ $alsa_volume -ge 70 ]]; then
+            volume_icon=$ICON_VOL_UP
+        elif [[ $alsa_volume -gt 0 && $alsa_volume -lt 70 ]]; then
+            volume_icon=$ICON_VOL_DOWN
+        elif [[ $alsa_volume -eq 0 ]]; then
+            volume_icon=$ICON_VOL_OFF
         else
-            VOLUME_ICON=$ICON_VOL_OFF
+            volume_icon=$ICON_VOL_OFF
         fi
-        # uncomment next and delte the line after that to see volume percentage
-        #echo -e $VOLUME_ICON $ALSA_VOLUME
-        echo -e $VOLUME_ICON
+        # Uncomment next and delte the line after that to see volume percentage
+        #echo -e $volume_icon $alsa_volume
+        echo -e $volume_icon
     fi
 }
 
 # Weechat (use hl2file weechat script)
 weechat(){
     if [ -f "$MSGFILE" ]; then
-        UNREADMESSAGES=$(wc -l < "$MSGFILE")
-        if [[ $UNREADMESSAGES != 0 ]]; then
-            WEECHAT_ICON="$ICON_CHAT_BUSY[$UNREADMESSAGES]"
+        local weechat_icon=""
+        local unreadmessages=$(wc -l < "$MSGFILE")
+        if [[ $unreadmessages != 0 ]]; then
+            weechat_icon="$ICON_CHAT_BUSY[$unreadmessages]"
         else
-            WEECHAT_ICON=$ICON_CHAT_CLEAR
+            weechat_icon=$ICON_CHAT_CLEAR
         fi
+        echo -e $weechat_icon
     fi
-    echo -e $WEECHAT_ICON
 }
 
 # Wifi
 wifi(){
     if (command -v iw >/dev/null 2>&1) && (iw dev $WIFI_INTERFACE link >/dev/null 2>&1); then
-        #WIFI_SSID=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
-        WIFI_SIGNAL=$(iw dev "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
+        #local wifi_ssid=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
+        local wifi_color=""
+        local wifi_signal=$(iw dev "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
         if [ $? -eq 0 ]; then
             if [[ $(iw dev "$WIFI_INTERFACE" link) != "Not connected." ]]; then
-                if [[ $WIFI_SIGNAL -ge -67 ]]; then
-                    WIFI_COLOR=$COLOR_SIGNAL_HIGH
-                elif [[ $WIFI_SIGNAL -ge -70 && $WIFI_SIGNAL -lt -67 ]]; then
-                    WIFI_COLOR=$COLOR_SIGNAL_MEDIUM
-                elif [[ $WIFI_SIGNAL -ge -80 && $WIFI_SIGNAL -lt -70 ]]; then
-                    WIFI_COLOR=$COLOR_SIGNAL_LOW
+                if [[ $wifi_signal -ge -67 ]]; then
+                    wifi_color=$COLOR_SIGNAL_HIGH
+                elif [[ $wifi_signal -ge -70 && $wifi_signal -lt -67 ]]; then
+                    wifi_color=$COLOR_SIGNAL_MEDIUM
+                elif [[ $wifi_signal -ge -80 && $wifi_signal -lt -70 ]]; then
+                    wifi_color=$COLOR_SIGNAL_LOW
                 fi
-                echo -e "%{F$WIFI_COLOR}$ICON_WIFI%{F-}"
+                echo -e "%{F$wifi_color}$ICON_WIFI%{F-}"
             else
-                WIFI_COLOR=$COLOR_SIGNAL_NONE
-                echo -e "%{F$WIFI_COLOR}$ICON_WIFI%{F-}"
+                wifi_color=$COLOR_SIGNAL_NONE
+                echo -e "%{F$wifi_color}$ICON_WIFI%{F-}"
             fi
         fi
     fi
@@ -226,17 +230,14 @@ wifi(){
 
 # Music controls
 music(){
-    SONG_NAME=$(mpc current)
-    if [[ -z $(mpc current) ]]; then
-        # No music in playlist, or mpd is not running
-        echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc listall | mpc add; mpc shuffle; mpc play:}%{A3:mpd:}$ICON_PREV $ICON_PLAY $ICON_NEXT%{A}%{A}%{T1}%{F-}"
-    else
+    local song_name=$(mpc current)
+    if [[ -n $song_name ]]; then
         if mpc status | grep -q 'paused'; then
             # Music is paused
-            echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{T3}%{A:mpc prev:}$ICON_PREV %{A}%{A:mpc play:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} $ICON_NEXT%{A}%{T1}%{F-}"
+            echo -e "%{F$COLOR_INACTIVE_MONITOR_FG}%{A:mpc play:}$song_name%{A}%{F-}"
         else
             # Music is playing
-            echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{T3}%{A:mpc prev:}$ICON_PREV %{A}%{A:mpc pause:}%{A3:mpc clear:}$SONG_NAME%{A}%{A}%{A:mpc next:} $ICON_NEXT%{A}%{T1}%{F-}"
+            echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{A:mpc pause:}$song_name%{A}%{F-}"
         fi
     fi
 }
@@ -278,45 +279,45 @@ panel_bar() {
                         M*)
                             # Active monitor
                             if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}"
+                                wm_infos="$wm_infos %{F$COLOR_ACTIVE_MONITOR_FG}%{B$COLOR_ACTIVE_MONITOR_BG}  ${name}  %{B-}%{F-}"
                             fi
                             ;;
                         m*)
                             # Inactive monitor
                             if [ $num_mon -gt 1 ] ; then
-                                wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG}$PADDING${name}$PADDING%{B-}%{F-}"
+                                wm_infos="$wm_infos %{F$COLOR_INACTIVE_MONITOR_FG}%{B$COLOR_INACTIVE_MONITOR_BG}  ${name}  %{B-}%{F-}"
                             fi
                             ;;
                         O*)
                             # Focused occupied desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
                             ;;
                         F*)
                             # Focused free desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
                             ;;
                         U*)
                             # Focused urgent desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}$PADDING${name}$PADDING%{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
                             ;;
                         o*)
                             # Occupied desktop
-                            wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}$PADDING${name}$PADDING%{A}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}  ${name}  %{A}%{B-}%{F-}"
                             ;;
                         f*)
                             # Free desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}$PADDING${name}$PADDING%{A}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}  ${name}  %{A}%{B-}%{F-}"
                             ;;
                         u*)
                             # Urgent desktop
-                            wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}$PADDING${name}$PADDING%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}  ${name}  %{B-}%{F-}"
                             ;;
                     esac
                     shift
                 done
                 ;;
         esac
-        printf "%s\n" "%{l}${wm_infos}${title}%{c}${music}%{r}${messages}${email}${wifi}${volume}${battery}${date}${clock}"
+        printf "%s\n" "%{l}${wm_infos}${title}%{c}${music}%{r}${messages}${wifi}${volume}${battery}${date}${clock}  "
     done
 }
 
