@@ -90,6 +90,10 @@ super + {_,shift + }{1-9,0}
 super + {Left, Up, Right, Down}
     bspc monitor -f {left, up, right, down}
 
+# Move window to monitor using arrow keys
+super + shift + {Left, Up, Right, Down}
+    bspc window -m {left, up, right, down}
+
 # Focus window on left mouse click
 ~button1
     bspc pointer -g focus
