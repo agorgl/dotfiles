@@ -86,6 +86,10 @@ super + ctrl + {1-9}
 super + {_,shift + }{1-9,0}
     bspc {desktop -f,window -d} ^{1-9,10}
 
+# Focus monitor using arrow keys
+super + {Left, Up, Right, Down}
+    bspc monitor -f {left, up, right, down}
+
 # Focus window on left mouse click
 ~button1
     bspc pointer -g focus
