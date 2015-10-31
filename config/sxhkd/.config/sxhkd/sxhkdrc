@@ -2,27 +2,35 @@
 # bspwm hotkeys
 #
 
+# Close bspwm
 super + alt + Escape
     pkill -x panel; bspc quit
 
+# Reload panel
 super + ctrl + Escape
     pkill -x panel; panel &
 
+# Close window
 super + w
     bspc window -c
 
+# Cycle through layouts (monocle & tiled)
 super + t
     bspc desktop -l next
 
+# Balance the split ratios of the tree in the selected desktop
 super + b
     bspc desktop -B
 
+# Make a window floating (s) or fullscreen (f)
 super + {s,f}
     bspc window -t {floating,fullscreen}
 
+# Alternate through last selected windows (`) or desktops (Tab)
 super + {grave,Tab}
     bspc {window,desktop} -f last
 
+# Swap the given window with the last selected one
 super + apostrophe
     bspc window -s last
 
@@ -34,42 +42,55 @@ super + {o,i}
 super + y
     bspc window -w last.manual
 
+# Swap the given window with the biggest one in the current desktop
 super + m
     bspc window -s biggest
 
+# Move and rearrange windows the vim way
 super + {_,shift + }{h,j,k,l}
     bspc window -{f,s} {left,down,up,right}
 
+# Focus the next/prev window in the tree
 super + {_,shift + }c
     bspc window -f {next,prev}
 
+# Circulate the windows in the current tree
 super + {comma,period}
     bspc desktop -C {backward,forward}
 
+# Focus the next/prev desktop
 super + bracket{left,right}
     bspc desktop -f {prev,next}
 
+# Preselect the splitting area of the current window
 super + ctrl + {h,j,k,l}
     bspc window -p {left,down,up,right}
 
+# Cancel the preselection
 super + ctrl + {_,shift + }space
     bspc {window -p cancel,desktop -c}
 
+# Change splitting ratios of edge
 super + alt + {h,j,k,l}
     bspc window -e {left -10,down +10,up -10,right +10}
 
+# Change splitting ratios of edge
 super + alt + shift + {h,j,k,l}
     bspc window -e {right -10,up +10,down -10,left +10}
 
+# Change splitting ratios of window
 super + ctrl + {1-9}
     bspc window -r 0.{1-9}
 
+# Change desktop or window focus using numbers
 super + {_,shift + }{1-9,0}
     bspc {desktop -f,window -d} ^{1-9,10}
 
+# Focus window on left mouse click
 ~button1
     bspc pointer -g focus
 
+# Move / resize size / resize corners of windows using mouse
 super + button{1-3}
     bspc pointer -g {move,resize_side,resize_corner}
 
@@ -80,15 +101,17 @@ super + @button{1-3}
     bspc pointer -u
 
 #
-# wm independent hotkeys
+# Wm independent hotkeys
 #
 
+# Launch Terminal
 super + Return
     termite
 
+# Start launcher
 super + space
     rofi -show run
 
-# make sxhkd reload its configuration files:
+# Make sxhkd reload its configuration files:
 super + Escape
     pkill -USR1 -x sxhkd
