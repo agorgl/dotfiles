@@ -1,0 +1,11 @@
+compton
+cower
+gtk-theme-arc-git
+lemonbar-xft-git
+pacaur
+paper-icon-theme-git
+powerline-fonts-git
+ttf-font-awesome
+ttf-monaco
+ttf-ms-fonts
+xtitle-git
