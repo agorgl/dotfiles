@@ -165,7 +165,7 @@ cal(){
 
 # Battery
 battery(){
-    if [ -f $POWERSUPPLY ]; then
+    if [ -d $POWERSUPPLY ]; then
         local batt_icon=""
         local batt_level=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
         if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
