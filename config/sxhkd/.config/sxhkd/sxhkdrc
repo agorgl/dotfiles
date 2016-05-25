@@ -1,114 +1,4 @@
 #
-# bspwm hotkeys
-#
-
-# Close bspwm
-super + alt + Escape
-    pkill -x panel; bspc quit
-
-# Reload panel
-super + ctrl + Escape
-    pkill -x panel; panel &
-
-# Close window
-super + w
-    bspc window -c
-
-# Cycle through layouts (monocle & tiled)
-super + t
-    bspc desktop -l next
-
-# Balance the split ratios of the tree in the selected desktop
-super + b
-    bspc desktop -B
-
-# Make a window floating (s) or fullscreen (f)
-super + {s,f}
-    bspc window -t {floating,fullscreen}
-
-# Alternate through last selected windows (`) or desktops (Tab)
-super + {grave,Tab}
-    bspc {window,desktop} -f last
-
-# Swap the given window with the last selected one
-super + apostrophe
-    bspc window -s last
-
-super + {o,i}
-    bspc control --record-history off; \
-    bspc window {older,newer} -f; \
-    bspc control --record-history on
-
-super + y
-    bspc window -w last.manual
-
-# Swap the given window with the biggest one in the current desktop
-super + m
-    bspc window -s biggest
-
-# Move and rearrange windows the vim way
-super + {_,shift + }{h,j,k,l}
-    bspc window -{f,s} {left,down,up,right}
-
-# Focus the next/prev window in the tree
-super + {_,shift + }c
-    bspc window -f {next,prev}
-
-# Circulate the windows in the current tree
-super + {comma,period}
-    bspc desktop -C {backward,forward}
-
-# Focus the next/prev desktop
-super + bracket{left,right}
-    bspc desktop -f {prev,next}
-
-# Preselect the splitting area of the current window
-super + ctrl + {h,j,k,l}
-    bspc window -p {left,down,up,right}
-
-# Cancel the preselection
-super + ctrl + {_,shift + }space
-    bspc {window -p cancel,desktop -c}
-
-# Change splitting ratios of edge
-super + alt + {h,j,k,l}
-    bspc window -e {left -10,down +10,up -10,right +10}
-
-# Change splitting ratios of edge
-super + alt + shift + {h,j,k,l}
-    bspc window -e {right -10,up +10,down -10,left +10}
-
-# Change splitting ratios of window
-super + ctrl + {1-9}
-    bspc window -r 0.{1-9}
-
-# Change desktop or window focus using numbers
-super + {_,shift + }{1-9,0}
-    bspc {desktop -f,window -d} ^{1-9,10}
-
-# Focus monitor using arrow keys
-super + {Left, Up, Right, Down}
-    bspc monitor -f {left, up, right, down}
-
-# Move window to monitor using arrow keys
-super + shift + {Left, Up, Right, Down}
-    bspc window -m {left, up, right, down}
-
-# Focus window on left mouse click
-~button1
-    bspc pointer -g focus
-
-# Move / resize size / resize corners of windows using mouse
-super + button{1-3}
-    bspc pointer -g {move,resize_side,resize_corner}
-
-super + !button{1-3}
-    bspc pointer -t %i %i
-
-super + @button{1-3}
-    bspc pointer -u
-
-#
 # Wm independent hotkeys
 #
 
@@ -123,3 +13,138 @@ super + space
 # Make sxhkd reload its configuration files:
 super + Escape
     pkill -USR1 -x sxhkd
+
+#
+# Bspwm hotkeys
+#
+
+# Close bspwm
+super + alt + Escape
+    pkill -x panel; bspc quit
+
+# Reload panel
+super + ctrl + Escape
+    pkill -x panel; panel &
+
+# Close window
+super + w
+    bspc node -c
+
+# Cycle through layouts (monocle & tiled)
+super + t
+    bspc desktop -l next
+
+# Swap the given window with the biggest one in the current desktop
+super + g
+    bspc node -s biggest
+
+#
+# State/flags
+#
+
+# Set the window state
+super + {t,shift + t,s,f}
+    bspc node -t {tiled,pseudo_tiled,floating,fullscreen}
+
+# Set the node flags
+super + ctrl + {x,y,z}
+    bspc node -g {locked,sticky,private}
+
+#
+# Focus/swap
+#
+
+# Focus the node in the given direction
+super + {_,shift + }{h,j,k,l}
+    bspc node -{f,s} {west,south,north,east}
+
+# Focus the node for the given path jump
+super + {p,b,comma,period}
+    bspc node -f @{parent,brother,first,second}
+
+# Focus the next/previous node
+super + {_,shift + }c
+    bspc node -f {next,prev}
+
+# Focus the next/prev desktop
+super + bracket{left,right}
+    bspc desktop -f {prev,next}
+
+# Focus the next/prev desktop
+super + bracket{left,right}
+    bspc desktop -f {prev,next}
+
+# Focus the last node/desktop
+super + {grave,Tab}
+    bspc {node,desktop} -f last
+
+# Focus the older or newer node in the focus history
+super + {o,i}
+    bspc wm -h off; \
+    bspc node {older,newer} -f; \
+    bspc wm -h on
+
+# Focus or send to the given desktop
+super + {_,shift + }{1-9,0}
+    bspc {desktop -f,node -d} '^{1-9,10}'
+
+# Focus monitor using arrow keys
+super + {Left, Up, Right, Down}
+    bspc monitor -f {left, up, right, down}
+
+# Move window to monitor using arrow keys
+super + shift + {Left, Up, Right, Down}
+    bspc node -m {left, up, right, down}
+
+#
+# Preselect
+#
+
+# Preselect the direction
+super + ctrl + {h,j,k,l}
+    bspc node -p {west,south,north,east}
+
+# Preselect the ratio
+super + ctrl + {1-9}
+    bspc node -o 0.{1-9}
+
+# Cancel the preselection for the focused node
+super + ctrl + space
+    bspc node -p cancel
+
+# Cancel the preselection for the focused desktop
+super + ctrl + shift + space
+    bspc query -N -d | xargs -I id -n 1 bspc node id -p cancel
+
+#
+# Move/Resize
+#
+
+# Expand a window by moving one of its side outward
+super + alt + {h,j,k,l}
+    bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
+
+# Contract a window by moving one of its side inward
+super + alt + shift + {h,j,k,l}
+    bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
+
+# Move a floating window
+super + {Left,Down,Up,Right}
+    bspc node -v {-20 0,0 20,0 -20,20 0}
+
+#
+# Mouse
+#
+# Focus window on left mouse click
+~button1
+    bspc pointer -g focus
+
+# Move / resize size / resize corners of windows using mouse
+super + button{1-3}
+    bspc pointer -g {move,resize_side,resize_corner}
+
+super + !button{1-3}
+    bspc pointer -t %i %i
+
+super + @button{1-3}
+    bspc pointer -u
