@@ -347,7 +347,7 @@ spawn_panel(){
     bspc config top_padding "$PANEL_HEIGHT"
 
     # Get bspwms status feed
-    bspc control --subscribe > "$panel_fifo" &
+    bspc subscribe > "$panel_fifo" &
 
     # Window title
     xtitle -sf 'TITLE%s' > "$panel_fifo" &
