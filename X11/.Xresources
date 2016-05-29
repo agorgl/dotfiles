@@ -1,4 +1,7 @@
 ! vim: set filetype=xdefaults :
+! ------------------------------------------------------------------------------
+! General colors
+! ------------------------------------------------------------------------------
 *foreground: #D7D0C7
 *background: #151515
 
@@ -29,6 +32,9 @@
 *color7:     #dddddd
 *color15:    #dddddd
 
+! ------------------------------------------------------------------------------
+! Fonts
+! ------------------------------------------------------------------------------
 Xft.dpi: 96
 Xft.antialias: true
 Xft.hinting: true
@@ -37,6 +43,9 @@ Xft.autohint: false
 Xft.hintstyle: hintslight
 Xft.lcdfilter: lcddefault
 
+! ------------------------------------------------------------------------------
+! URxvt settings
+! ------------------------------------------------------------------------------
 URxvt*depth: 32
 URxvt*background: [70]#151515
 URxvt*scrollBar: false
@@ -47,4 +56,20 @@ URxvt*borderColor: [70]#151515
 URxvt*colorBD: #ffffff
 URxvt*cursorColor: #ff8939
 URxvt*cursorColor2: #151515
+
+! ------------------------------------------------------------------------------
+! ROFI Color theme
+! ------------------------------------------------------------------------------
+! Use extended color scheme
+rofi.color-enabled:                  true
+! Color scheme for normal row
+rofi.color-normal:                   #ffffff,#525d76,#f5f5f5,#5294e2,#ffffff
+! Color scheme for urgent row
+rofi.color-urgent:                   #ffffff,#dc322f,#f5f5f5,#5294e2,#dc322f
+! Color scheme for active row
+rofi.color-active:                   #ffffff,#c2cad0,#f5f5f5,#5294e2,#c2cad0
+! Color scheme window
+rofi.color-window:                   #ffffff,#f5f5f5
+! Separator style (none, dash, solid)
+rofi.separator-style:                solid
 
