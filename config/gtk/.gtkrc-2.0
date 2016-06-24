@@ -3,7 +3,7 @@ gtk-icon-theme-name = "Paper"
 
 style "user-font"
 {
-	font_name = "Open Sans 9"
+    font_name = "Open Sans 9"
 }
 widget_class "*" style "user-font"
 gtk-font-name = "Open Sans 9"
@@ -12,3 +12,17 @@ gtk-xft-antialias = 1
 gtk-xft-hinting = 1
 gtk-xft-hintstyle = hintslight
 gtk-xft-rgba = rgb
+
+style "gvim"
+{
+    bg[NORMAL] = "#1B1D1E"
+}
+widget "vim-main-window.*GtkForm" style "gvim"
+
+style "no-resize-handle"
+{
+    GtkWindow::resize-grip-height = 0
+    GtkWindow::resize-grip-width = 0
+}
+
+class "GtkWidget" style "no-resize-handle"
