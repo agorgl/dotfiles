@@ -330,7 +330,7 @@ panel_bar() {
                 done
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages}${wifi}${volume}${battery}${date} ${clock}  "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock}  "
     done
 }
 
