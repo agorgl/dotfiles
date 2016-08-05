@@ -11,5 +11,4 @@ bspc config focus_by_distance   true
 #bspc monitor -d I II III IV V VI VII VIII IX X
 bspc monitor -d $(echo -e '\uf109') $(echo -e '\uf121') $(echo -e '\uf120') $(echo -e '\uf07c') $(echo -e '\uf0ac') $(echo -e '\uf0c3') $(echo -e '\uf001') $(echo -e '\uf141')
 
-sxhkd &
 panel &
