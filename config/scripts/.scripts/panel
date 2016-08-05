@@ -10,7 +10,7 @@
 MSGFILE=$HOME/.weechat/highlights.txt
 
 # Hardware
-WIFI_INTERFACE="wlan0"
+WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r 's/\s+Interface\s+(\W)*/\1/')
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
 
