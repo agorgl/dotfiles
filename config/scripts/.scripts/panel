@@ -184,8 +184,8 @@ battery(){
             batt_icon=$ICON_POWER_PLUG
         fi
         # Uncomment next and delete the line after that to see percentage
-        #echo -e $batt_icon $batt_level%
-        echo -e $batt_icon
+        echo -e $batt_icon[$batt_level%]
+        #echo -e $batt_icon
     fi
 }
 
@@ -336,7 +336,8 @@ panel_bar() {
 
 # Calculates and spawns a tray host matching the panel color and dimensions
 spawn_tray() {
-    stalonetray -bg $COLOR_BACKGROUND -i $(($PANEL_HEIGHT - 3)) --grow-gravity W --geometry 1x1-190+0 --window-layer top &
+    local padding=220
+    stalonetray -bg $COLOR_BACKGROUND -i $(($PANEL_HEIGHT - 3)) --grow-gravity W --geometry 1x1-$padding+0 --window-layer top &
 }
 
 # Creates panel
