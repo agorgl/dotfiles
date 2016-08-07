@@ -334,6 +334,11 @@ panel_bar() {
     done
 }
 
+# Calculates and spawns a tray host matching the panel color and dimensions
+spawn_tray() {
+    stalonetray -bg $COLOR_BACKGROUND -i $(($PANEL_HEIGHT - 3)) --grow-gravity W --geometry 1x1-190+0 --window-layer top &
+}
+
 # Creates panel
 spawn_panel(){
     # The fifo location
@@ -363,5 +368,7 @@ spawn_panel(){
 }
 
 spawn_panel
+sleep 1
+spawn_tray
 
 wait
