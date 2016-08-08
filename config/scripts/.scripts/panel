@@ -24,8 +24,10 @@ BATTERY="/sys/class/power_supply/BAT0"
 PANEL_HEIGHT=24
 
 # Fonts
-PANEL_FONT="Source Sans Pro:size=10"
-ICON_FONT="FontAwesome:size=13"
+PANEL_FONT="terminus:size=8"
+PANEL_FONT2="Source Sans Pro:size=10"
+ICON_FONT="FontAwesome:size=10"
+ICON_FONT2="Siji:size=8"
 
 #
 # Colors
@@ -101,31 +103,42 @@ COLOR_SIGNAL_HIGH=$COLOR_GREY_200
 #
 # Icons
 #
-
-# Battery & Power related icons
-ICON_BATT_FULL='\uf240'
-ICON_BATT_HIGH='\uf241'
-ICON_BATT_MED='\uf242'
-ICON_BATT_LOW='\uf243'
-ICON_BATT_EMPTY='\uf244'
-ICON_POWER_PLUG='\uf1e6'
-
-# Music player icons
-ICON_PREV='\uf048'
-ICON_PLAY='\uf04b'
-ICON_NEXT='\uf051'
-
-# Volume icons
-ICON_VOL_UP='\uf028'
-ICON_VOL_DOWN='\uf027'
-ICON_VOL_OFF='\uf026'
-
-# Chat icons
-ICON_CHAT_CLEAR='\uf075'
-ICON_CHAT_BUSY='\uf0e5'
-
-# Signal icons
-ICON_WIFI='\uf1eb'
+USE_FA_ICONS=false
+if [ "$USE_FA_ICONS" = true ]; then
+    ICON_BATT_FULL='\uf240'
+    ICON_BATT_HIGH='\uf241'
+    ICON_BATT_MED='\uf242'
+    ICON_BATT_LOW='\uf243'
+    ICON_BATT_EMPTY='\uf244'
+    ICON_POWER_PLUG='\uf1e6'
+    ICON_PREV='\uf048'
+    ICON_PLAY='\uf04b'
+    ICON_NEXT='\uf051'
+    ICON_VOL_UP='\uf028'
+    ICON_VOL_DOWN='\uf027'
+    ICON_VOL_OFF='\uf026'
+    ICON_CHAT_CLEAR='\uf075'
+    ICON_CHAT_BUSY='\uf0e5'
+    ICON_WIFI='\uf1eb'
+else
+    ICON_BATT_FULL='\ue23a'
+    ICON_BATT_HIGH='\ue253'
+    ICON_BATT_MED='\ue251'
+    ICON_BATT_LOW='\ue24e'
+    ICON_BATT_EMPTY='\ue24c'
+    ICON_POWER_PLUG='\ue239'
+    ICON_PREV='\ue096'
+    ICON_PLAY='\ue09a'
+    ICON_NEXT='\ue09c'
+    ICON_VOL_UP='\ue203'
+    ICON_VOL_DOWN='\ue204'
+    ICON_VOL_OFF='\ue202'
+    ICON_CHAT_CLEAR='\uf075'
+    ICON_CHAT_BUSY='\uf0e5'
+    ICON_WIFI='\ue1af'
+    ICON_CALENDAR='\ue226'
+    ICON_TIME='\ue015'
+fi
 
 #################################################################
 #-
@@ -155,12 +168,12 @@ trap deinit INT TERM QUIT EXIT
 
 # Clock
 clock(){
-    echo -e "$(date +"%l:%M %p")"
+    echo -e "$ICON_TIME[$(date +"%H:%M")]"
 }
 
 # Date
 cal(){
-    echo -e "$(date +'%a, %b %d')"
+    echo -e "$ICON_CALENDAR[$(date +'%a,%b %d')]"
 }
 
 # Battery
@@ -183,9 +196,7 @@ battery(){
         else
             batt_icon=$ICON_POWER_PLUG
         fi
-        # Uncomment next and delete the line after that to see percentage
         echo -e $batt_icon[$batt_level%]
-        #echo -e $batt_icon
     fi
 }
 
@@ -205,9 +216,7 @@ volume(){
         else
             volume_icon=$ICON_VOL_OFF
         fi
-        # Uncomment next and delte the line after that to see volume percentage
-        #echo -e $volume_icon $alsa_volume
-        echo -e $volume_icon
+        echo -e $volume_icon[$alsa_volume%]
     fi
 }
 
@@ -228,9 +237,10 @@ weechat(){
 # Wifi
 wifi(){
     if (command -v iw >/dev/null 2>&1) && (iw dev $WIFI_INTERFACE link >/dev/null 2>&1); then
-        #local wifi_ssid=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
+        local wifi_ssid=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
         local wifi_color=""
         local wifi_signal=$(iw dev "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
+        local wifi_icon=$ICON_WIFI
         if [ $? -eq 0 ]; then
             if [[ $(iw dev "$WIFI_INTERFACE" link) != "Not connected." ]]; then
                 if [[ $wifi_signal -ge -67 ]]; then
@@ -240,10 +250,10 @@ wifi(){
                 elif [[ $wifi_signal -ge -80 && $wifi_signal -lt -70 ]]; then
                     wifi_color=$COLOR_SIGNAL_LOW
                 fi
-                echo -e "%{F$wifi_color}$ICON_WIFI%{F-}"
+                echo -e "%{F$wifi_color}$wifi_icon%{F-}[$wifi_ssid]"
             else
                 wifi_color=$COLOR_SIGNAL_NONE
-                echo -e "%{F$wifi_color}$ICON_WIFI%{F-}"
+                echo -e "%{F$wifi_color}$wifi_icon%{F-}"
             fi
         fi
     fi
@@ -284,6 +294,7 @@ panel_bar() {
             W*)
                 # Bspwm internal state
                 IFS=':'
+                local spc=" "
                 local cur_mon=0
                 local wm_infos=""
                 set -- ${line#?}
@@ -303,40 +314,40 @@ panel_bar() {
                             ;;
                         O*)
                             # Focused occupied desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}$spc${name}$spc%{-u}%{B-}%{F-}"
                             ;;
                         F*)
                             # Focused free desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}$spc${name}$spc%{-u}%{B-}%{F-}"
                             ;;
                         U*)
                             # Focused urgent desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}  ${name}  %{-u}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}$spc${name}$spc%{-u}%{B-}%{F-}"
                             ;;
                         o*)
                             # Occupied desktop
-                            wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}  ${name}  %{A}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}$spc${name}$spc%{A}%{B-}%{F-}"
                             ;;
                         f*)
                             # Free desktop
-                            wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}  ${name}  %{A}%{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}$spc${name}$spc%{A}%{B-}%{F-}"
                             ;;
                         u*)
                             # Urgent desktop
-                            wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}  ${name}  %{B-}%{F-}"
+                            wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}$spc${name}$spc%{B-}%{F-}"
                             ;;
                     esac
                     shift
                 done
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock}  "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
     done
 }
 
 # Calculates and spawns a tray host matching the panel color and dimensions
 spawn_tray() {
-    local padding=220
+    local padding=400
     stalonetray -bg $COLOR_BACKGROUND -i $(($PANEL_HEIGHT - 3)) --grow-gravity W --geometry 1x1-$padding+0 --window-layer top &
 }
 
@@ -365,7 +376,7 @@ spawn_panel(){
     done > "$panel_fifo" &
 
     # Dump panel into panel_bar and then into lemonbar
-    panel_bar < "$panel_fifo" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
+    panel_bar < "$panel_fifo" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -f $ICON_FONT2 -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
 }
 
 spawn_panel
