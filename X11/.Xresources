@@ -47,15 +47,15 @@ Xft.lcdfilter: lcddefault
 ! URxvt settings
 ! ------------------------------------------------------------------------------
 URxvt*depth: 32
-URxvt*background: [70]#151515
+URxvt*background: [90]#2b2b2b
 URxvt*scrollBar: false
 URxvt*font: xft:DejaVu Sans Mono for Powerline:size=10,xft:Sigi:size=10
 URxvt*letterSpace: -1
 URxvt*internalBorder: 25
-URxvt*borderColor: [70]#151515
+URxvt*borderColor: [90]#2b2b2b
 URxvt*colorBD: #ffffff
 URxvt*cursorColor: #ff8939
-URxvt*cursorColor2: #151515
+URxvt*cursorColor2: #2b2b2b
 URxvt*cursorBlink: 1
 
 ! ------------------------------------------------------------------------------
