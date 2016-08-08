@@ -49,13 +49,14 @@ Xft.lcdfilter: lcddefault
 URxvt*depth: 32
 URxvt*background: [70]#151515
 URxvt*scrollBar: false
-URxvt*font: xft:Bitstream Vera Sans Mono:size=9
+URxvt*font: xft:DejaVu Sans Mono for Powerline:size=10,xft:Sigi:size=10
 URxvt*letterSpace: -1
 URxvt*internalBorder: 25
 URxvt*borderColor: [70]#151515
 URxvt*colorBD: #ffffff
 URxvt*cursorColor: #ff8939
 URxvt*cursorColor2: #151515
+URxvt*cursorBlink: 1
 
 ! ------------------------------------------------------------------------------
 ! ROFI Color theme
