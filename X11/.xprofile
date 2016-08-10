@@ -20,3 +20,5 @@ setxkbmap -layout us,el -option grp:lalt_lshift_toggle
 # If wallpaper was previously set, set it again
 [ -f ~/.fehbg ] && ~/.fehbg &
 
+# Launch conky HUD
+conky &
