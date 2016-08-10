@@ -26,9 +26,9 @@ super + alt + Escape
 super + ctrl + Escape
     pkill -x panel; panel &
 
-# Close window
-super + w
-    bspc node -c
+# Close or kill window
+super + {_,shift + }w
+    bspc node -{c,k}
 
 # Cycle through layouts (monocle & tiled)
 super + t
