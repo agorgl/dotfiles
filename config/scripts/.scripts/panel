@@ -261,14 +261,17 @@ wifi(){
 
 # Music controls
 music(){
-    local song_name=$(mpc current)
-    if [[ -n $song_name ]]; then
-        if mpc status | grep -q 'paused'; then
-            # Music is paused
-            echo -e "%{F$COLOR_FOCUSED_URGENT_FG}%{A:mpc play:}$song_name%{A}%{F-}"
-        else
-            # Music is playing
-            echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{A:mpc pause:}$song_name%{A}%{F-}"
+    pgrep mpd # To populate last error
+    if [[ $? -eq 0 ]]; then
+        local song_name=$(mpc current)
+        if [[ -n $song_name ]]; then
+            if mpc status | grep -q 'paused'; then
+                # Music is paused
+                echo -e "%{F$COLOR_FOCUSED_URGENT_FG}%{A:mpc play:}$song_name%{A}%{F-}"
+            else
+                # Music is playing
+                echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{A:mpc pause:}$song_name%{A}%{F-}"
+            fi
         fi
     fi
 }
