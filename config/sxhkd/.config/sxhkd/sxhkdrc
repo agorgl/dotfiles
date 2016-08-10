@@ -31,7 +31,7 @@ super + {_,shift + }w
     bspc node -{c,k}
 
 # Cycle through layouts (monocle & tiled)
-super + t
+super + m
     bspc desktop -l next
 
 # Swap the given window with the biggest one in the current desktop
