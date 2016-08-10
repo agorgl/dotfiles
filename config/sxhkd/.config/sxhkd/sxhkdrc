@@ -4,7 +4,7 @@
 
 # Launch Terminal
 super + Return
-    termite
+    urxvt
 
 # Start launcher
 super + space
