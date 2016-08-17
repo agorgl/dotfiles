@@ -5,9 +5,11 @@ bspc config window_gap         20       # Default=12
 
 bspc config split_ratio         0.52
 bspc config borderless_monocle  true
-bspc config gapless_monocle     true
+bspc config gapless_monocle     false
 bspc config focus_by_distance   true
 
-bspc monitor -d $(echo -e '\ue174') $(echo -e '\ue175') $(echo -e '\ue176') $(echo -e '\ue177')
+for m in $(bspc query -M); do
+    bspc monitor $m -d $(echo -e '\ue174') $(echo -e '\ue175') $(echo -e '\ue176') $(echo -e '\ue177')
+done
 
 panel &
