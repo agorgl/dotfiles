@@ -5,6 +5,8 @@ lemonbar-xft-git
 pacaur
 paper-icon-theme-git
 powerline-fonts-git
+siji-git
+conky-lua-nv
 ttf-font-awesome
 ttf-monaco
 ttf-ms-fonts
