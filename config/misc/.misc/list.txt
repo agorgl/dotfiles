@@ -22,6 +22,9 @@ nvidia
 nvidia-libgl
 openssh
 pango
+pulseaudio
+pulseaudio-alsa
+pavucontrol
 rofi
 rsync
 rxvt-unicode
