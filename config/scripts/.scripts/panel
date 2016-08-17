@@ -202,8 +202,8 @@ battery(){
 
 # Alsa volume
 volume(){
-    local alsa_volume=$(amixer get Master | grep 'Mono: Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
-    local alsa_state=$(amixer get Master | grep 'Mono: Playback' | grep -o '\[on]')
+    local alsa_volume=$(amixer get Master | grep -P '(Mono|Front Left): Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
+    local alsa_state=$(amixer get Master | grep -o '\[on\]')
 
     if [[ $alsa_state ]]; then
         local volume_icon=""
@@ -285,10 +285,13 @@ panel_bar() {
                 local clock=$(clock)
                 local date=$(cal)
                 local battery=$(battery)
-                local volume=$(volume)
                 local messages=$(weechat)
                 local wifi=$(wifi)
                 local music=$(music)
+                ;;
+            AUDIO*)
+                # Audio status
+                local volume="${line#?????}"
                 ;;
             TITLE*)
                 # Xtitle output
@@ -371,6 +374,24 @@ spawn_panel(){
 
     # Window title
     xtitle -sf 'TITLE%s' > "$panel_fifo" &
+
+    # Audio changes
+    if [[ $(pgrep -cx pulseaudio) -ge 1 ]]; then
+        # Launch pulseaudio subscription channel
+        while read -r subscribe; do
+            case "${subscribe}" in
+                *sink*)
+                    echo "AUDIO"$(volume)
+                    ;;
+            esac
+        done < <(echo sink && pactl subscribe) > "$panel_fifo" &
+    else
+        # Fallback to polling
+        while true; do
+            echo "AUDIO"$(volume)
+            sleep 1;
+        done > "$panel_fifo" &
+    fi
 
     # Poll event sender
     while true; do
