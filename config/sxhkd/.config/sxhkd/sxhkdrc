@@ -148,3 +148,12 @@ super + !button{1-3}
 
 super + @button{1-3}
     bspc pointer -u
+
+#
+# Media
+#
+XF86Audio{Raise,Lower}Volume
+    amixer set Master 1{+,-} unmute
+
+XF86AudioMute
+    amixer -q set Master toggle
