@@ -360,8 +360,7 @@ panel_bar() {
 
 # Calculates and spawns a tray host matching the panel color and dimensions
 spawn_tray() {
-    local padding=400
-    stalonetray -bg $COLOR_BACKGROUND -i $(($PANEL_HEIGHT - 3)) --grow-gravity W --geometry 1x1-$padding+0 --window-layer top &
+    stalonetray -bg $COLOR_BACKGROUND -t -i $(($PANEL_HEIGHT - 5)) --grow-gravity E --geometry 1x1-0-0 --window-layer top &
 }
 
 # Creates panel
