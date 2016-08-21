@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+echo "Taking and uploading screenshot..."
+maim -d 1 --format png /dev/stdout \
+    | curl -sS -F c=@- -F p=1 -F s=3600 https://ptpb.pw/ \
+    | sed -n -e "s/digest:\s/https:\/\/ptpb.pw\//p" \
+    | xclip -i -selection c
+echo Done:
+xclip -selection c -o
+notify-send -i info "Screenshot uploaded"
