@@ -28,7 +28,7 @@ super + alt + Escape
 
 # Reload panel
 super + ctrl + Escape
-    pkill -x panel; panel &
+    pkill -USR1 -x panel
 
 # Close or kill window
 super + {_,shift + }w

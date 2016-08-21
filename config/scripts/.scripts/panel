@@ -149,8 +149,18 @@ fi
 # Check if panel is already running
 if [[ $(pgrep -cx panel) -gt 1 ]]; then
     printf "%s\n" "The panel is already running." >&2
+    echo "Panel already running" | systemd-cat
     exit 1
 fi
+
+# Self reload through signal
+reset(){
+    bspc config top_padding 0
+    trap - USR1
+    echo "Resetting panel...: $0" | systemd-cat
+    exec $0
+}
+trap reset USR1
 
 # Exit gracefully if terminated
 deinit(){
