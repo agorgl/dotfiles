@@ -10,6 +10,14 @@ super + Return
 super + space
     rofi -show run
 
+# Start file explorer
+super + e
+    thunar
+
+# Start web browser
+super + i
+    chromium
+
 # Make sxhkd reload its configuration files:
 super + Escape
     pkill -USR1 -x sxhkd
