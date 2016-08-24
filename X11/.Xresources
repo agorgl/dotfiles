@@ -21,7 +21,8 @@ Xft.lcdfilter: lcddefault
 URxvt*depth: 32
 URxvt*background: [90]#2b2b2b
 URxvt*scrollBar: false
-URxvt*font: xft:DejaVu Sans Mono for Powerline:size=10,xft:Sigi:size=10
+!URxvt*font: xft:DejaVu Sans Mono for Powerline:size=10,xft:Sigi:size=10
+URxvt*font: xft:Hack:size=10,xft:Sigi:size=10
 URxvt*letterSpace: -1
 URxvt*internalBorder: 25
 URxvt*borderColor: [90]#2b2b2b
@@ -45,4 +46,3 @@ rofi.color-active:                   #ffffff,#c2cad0,#f5f5f5,#5294e2,#c2cad0
 rofi.color-window:                   #ffffff,#f5f5f5
 ! Separator style (none, dash, solid)
 rofi.separator-style:                solid
-
