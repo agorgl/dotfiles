@@ -301,12 +301,16 @@ workspaces() {
             M*)
                 # Active monitor
                 ((cur_mon++))
-                if [ $cur_mon -ge 2 ]; then break; fi
+                if [ $cur_mon -ge 2 ]; then
+                    wm_infos="${wm_infos}%{S$cur_mon}"
+                fi
                 ;;
             m*)
                 # Inactive monitor
                 ((cur_mon++))
-                if [ $cur_mon -ge 2 ]; then break; fi
+                if [ $cur_mon -ge 2 ]; then
+                    wm_infos="${wm_infos}%{S$cur_mon}"
+                fi
                 ;;
             O*)
                 # Focused occupied desktop
@@ -364,7 +368,7 @@ panel_bar() {
                 local wm_infos=$(workspaces ${line#?})
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos} ${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
+        printf "%s\n" "%{Sf}%{l}${wm_infos}%{Sf}%{c}${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
     done
 }
 
