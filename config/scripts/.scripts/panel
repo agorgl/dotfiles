@@ -392,7 +392,7 @@ spawn_panel(){
     xtitle -sf 'TITLE%s' > "$panel_fifo" &
 
     # Audio changes
-    if [[ $(pgrep -cx pulseaudio) -ge 1 ]]; then
+    if systemctl --user is-active pulseaudio.socket; then
         # Launch pulseaudio subscription channel
         while read -r subscribe; do
             case "${subscribe}" in
