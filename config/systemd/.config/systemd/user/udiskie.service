@@ -1,0 +1,9 @@
+[Unit]
+Description=Auto mount removable drives
+
+[Service]
+Type=Simple
+ExecStart=/usr/bin/udiskie -2 -s
+
+[Install]
+WantedBy=default.target
