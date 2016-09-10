@@ -330,7 +330,7 @@ workspaces() {
                 ;;
             u*)
                 # Urgent desktop
-                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}$pad${name}$pad%{B-}%{F-}"
+                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:bspc desktop -f ${name}:}$pad${name}$pad%{B-}%{F-}"
                 ;;
         esac
         shift
