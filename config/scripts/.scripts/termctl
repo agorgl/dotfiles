@@ -1,0 +1,148 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: termctl [help|cycle|init|list|switch <colorscheme>]"
+HELP="\
+termctl <command>
+Basic commands:
+  h,help                  print this help message
+  r,                      reset to terminal colors to default colorscheme
+  s,switch <colorscheme>  change terminal colors to <colorscheme>
+"
+
+die () {
+    echo >&2 "$*"
+    exit 1
+}
+
+#----------------------------------------------------------------------
+# OSC Command helpers
+#----------------------------------------------------------------------
+ESC="\033"
+BEL="\007"
+DSC="${ESC}P"
+OSC="${ESC}]"
+
+send_escape_sequence () {
+    escape_sequence="$1"
+    # Wrap escape sequence when within a TMUX session
+    [ ! -z "$TMUX" ] && escape_sequence="${DSC}tmux;${ESC}${escape_sequence}${ESC}\\"
+    printf "${escape_sequence}"
+}
+
+send_osc () {
+    Ps=$1
+    Pt=$2
+    command="$OSC$Ps;$Pt$BEL"
+    send_escape_sequence $command
+}
+
+change_color () {
+    case $1 in
+        color*)
+            send_osc 4 "${1#color};$2" ;;
+        foreground)
+            send_osc 10 "$2" ;;
+        background)
+            send_osc 11 "$2" ;;
+        cursor)
+            send_osc 12 "$2" ;;
+        mouse_foreground)
+            send_osc 13 "$2" ;;
+        mouse_background)
+            send_osc 14 "$2" ;;
+        highlight)
+            send_osc 17 "$2" ;;
+        border)
+            send_osc 708 "$2" ;;
+    esac
+}
+
+#----------------------------------------------------------------------
+# Color functions
+#----------------------------------------------------------------------
+colors=( background foreground cursor mouse_background mouse_foreground highlight border color0 color1 color2 color3 color4 color5 color6 color7 color8 color9 color10 color11 color12 color13 color14 color15 )
+color_names=( black red green yellow blue magenta cyan white brblack brred brgreen bryellow brblue brmagenta brcyan brwhite )
+COLORSCHEMES=.Xcolors
+
+unset_colors () {
+    for color in ${colors[@]}; do
+        unset ${!color}
+    done
+}
+
+set_colors () {
+    for color in ${colors[@]}; do
+        [[ ${!color} ]] && change_color "$color" "${!color}"
+    done
+}
+
+load_default_colorscheme_name () {
+    cat .Xresources | grep -P -o "(?<=\")$COLORSCHEMES/.*(?=\")"
+}
+
+convert_xres_to_bash() {
+    bvars=$(cat $1 | sed -r -e '/\s*!/d' -e '/^\s*$/d' -e 's/^\s*\*\.?//' -e 's/\s*:\s*/=/')
+    echo $bvars
+}
+
+load_colorscheme () {
+    [ ! -f "$1" ] && die "error: colorscheme file '$1' could not be found"
+    #. "$1" # Source colorscheme file
+    eval $(convert_xres_to_bash $1)
+}
+
+reset() {
+    default_colorscheme_name=$(load_default_colorscheme_name)
+    load_colorscheme "$default_colorscheme_name"
+    set_colors
+}
+
+switch () {
+    echo Switching to colorscheme with name $1
+    load_colorscheme "$COLORSCHEMES/$1"
+    set_colors
+}
+
+list () {
+    [ ! -d "$COLORSCHEMES" ] && die "error: colorschemes directory '$COLORSCHEMES' doesn't exist"
+    cd "$COLORSCHEMES"
+    for file in *; do
+        echo "${file}"
+    done
+}
+
+#----------------------------------------------------------------------
+# Command line interface
+#----------------------------------------------------------------------
+usage () {
+    die "$USAGE"
+}
+
+help () {
+    echo "$HELP"
+}
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        cmd="$1"
+        shift
+        case "$cmd" in
+            h|help)
+                help ;;
+            l|list)
+                list ;;
+            r|reset)
+                reset ;;
+            s|switch)
+                [ $# -ne 1 ] && usage
+                switch "$1" ;;
+            *)
+                usage ;;
+        esac
+esac
