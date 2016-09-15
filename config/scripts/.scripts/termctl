@@ -66,7 +66,7 @@ change_color() {
 #----------------------------------------------------------------------
 colors=( background foreground cursor mouse_background mouse_foreground highlight border color0 color1 color2 color3 color4 color5 color6 color7 color8 color9 color10 color11 color12 color13 color14 color15 )
 color_names=( black red green yellow blue magenta cyan white brblack brred brgreen bryellow brblue brmagenta brcyan brwhite )
-COLORSCHEMES=.Xcolors
+COLORSCHEMES=~/.Xcolors
 
 array_contains() {
     local in_arr=($1)
@@ -91,7 +91,7 @@ set_colors() {
 }
 
 load_default_colorscheme_name() {
-    cat .Xresources | grep -P -o "(?<=\")$COLORSCHEMES/.*(?=\")"
+    basename $(cat .Xresources | grep -P -o "(?<=\").*(?=\")")
 }
 
 convert_xres_to_bash() {
