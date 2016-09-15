@@ -13,7 +13,7 @@ Basic commands:
   s,switch <colorscheme>  change terminal colors to <colorscheme>
 "
 
-die () {
+die() {
     echo >&2 "$*"
     exit 1
 }
@@ -26,21 +26,21 @@ BEL="\007"
 DSC="${ESC}P"
 OSC="${ESC}]"
 
-send_escape_sequence () {
+send_escape_sequence() {
     escape_sequence="$1"
     # Wrap escape sequence when within a TMUX session
     [ ! -z "$TMUX" ] && escape_sequence="${DSC}tmux;${ESC}${escape_sequence}${ESC}\\"
     printf "${escape_sequence}"
 }
 
-send_osc () {
+send_osc() {
     Ps=$1
     Pt=$2
     command="$OSC$Ps;$Pt$BEL"
     send_escape_sequence $command
 }
 
-change_color () {
+change_color() {
     case $1 in
         color*)
             send_osc 4 "${1#color};$2" ;;
@@ -68,19 +68,19 @@ colors=( background foreground cursor mouse_background mouse_foreground highligh
 color_names=( black red green yellow blue magenta cyan white brblack brred brgreen bryellow brblue brmagenta brcyan brwhite )
 COLORSCHEMES=.Xcolors
 
-unset_colors () {
+unset_colors() {
     for color in ${colors[@]}; do
         unset ${!color}
     done
 }
 
-set_colors () {
+set_colors() {
     for color in ${colors[@]}; do
         [[ ${!color} ]] && change_color "$color" "${!color}"
     done
 }
 
-load_default_colorscheme_name () {
+load_default_colorscheme_name() {
     cat .Xresources | grep -P -o "(?<=\")$COLORSCHEMES/.*(?=\")"
 }
 
@@ -89,7 +89,7 @@ convert_xres_to_bash() {
     echo $bvars
 }
 
-load_colorscheme () {
+load_colorscheme() {
     [ ! -f "$1" ] && die "error: colorscheme file '$1' could not be found"
     #. "$1" # Source colorscheme file
     eval $(convert_xres_to_bash $1)
@@ -101,13 +101,13 @@ reset() {
     set_colors
 }
 
-switch () {
+switch() {
     echo Switching to colorscheme with name $1
     load_colorscheme "$COLORSCHEMES/$1"
     set_colors
 }
 
-list () {
+list() {
     [ ! -d "$COLORSCHEMES" ] && die "error: colorschemes directory '$COLORSCHEMES' doesn't exist"
     cd "$COLORSCHEMES"
     for file in *; do
@@ -118,11 +118,11 @@ list () {
 #----------------------------------------------------------------------
 # Command line interface
 #----------------------------------------------------------------------
-usage () {
+usage() {
     die "$USAGE"
 }
 
-help () {
+help() {
     echo "$HELP"
 }
 
