@@ -30,6 +30,7 @@ URxvt*colorBD: #ffffff
 URxvt*cursorColor: #ff8939
 URxvt*cursorColor2: #2b2b2b
 URxvt*cursorBlink: 1
+URxvt*dynamicColors: on
 
 ! ------------------------------------------------------------------------------
 ! ROFI Color theme
