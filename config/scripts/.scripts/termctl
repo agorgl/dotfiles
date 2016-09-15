@@ -68,6 +68,16 @@ colors=( background foreground cursor mouse_background mouse_foreground highligh
 color_names=( black red green yellow blue magenta cyan white brblack brred brgreen bryellow brblue brmagenta brcyan brwhite )
 COLORSCHEMES=.Xcolors
 
+array_contains() {
+    local in_arr=($1)
+    for var in ${in_arr[@]}; do
+        if [[ "$var" == "$2" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 unset_colors() {
     for color in ${colors[@]}; do
         unset ${!color}
@@ -89,6 +99,21 @@ convert_xres_to_bash() {
     echo $bvars
 }
 
+gather_urxvt_vars() {
+    bvars=$(cat ~/.Xresources | grep URxvt* | sed -r -e '/^\s*!/d' -e 's/\s*URxvt\*?\.?//I' -e 's/\s*:\s*/=/')
+    echo $bvars
+}
+
+load_urxvt_vars() {
+    list=($(gather_urxvt_vars))
+    for var in ${list[@]}; do
+        avar=(${var//=/ })
+        if array_contains "$(echo ${colors[@]})" ${avar[0]}; then
+            eval "${avar[0]}=${avar[1]}"
+        fi
+    done
+}
+
 load_colorscheme() {
     [ ! -f "$1" ] && die "error: colorscheme file '$1' could not be found"
     #. "$1" # Source colorscheme file
@@ -98,12 +123,13 @@ load_colorscheme() {
 reset() {
     default_colorscheme_name=$(load_default_colorscheme_name)
     load_colorscheme "$default_colorscheme_name"
+    load_urxvt_vars
     set_colors
 }
 
 switch() {
-    echo Switching to colorscheme with name $1
     load_colorscheme "$COLORSCHEMES/$1"
+    load_urxvt_vars
     set_colors
 }
 
