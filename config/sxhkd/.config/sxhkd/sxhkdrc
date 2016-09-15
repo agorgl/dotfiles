@@ -102,11 +102,11 @@ super + {_,shift + }{1-9,0}
 
 # Focus monitor using arrow keys
 super + {Left, Up, Right, Down}
-    bspc monitor -f {left, up, right, down}
+    bspc monitor -f {west, north, east, south}
 
 # Move window to monitor using arrow keys
 super + shift + {Left, Up, Right, Down}
-    bspc node -m {left, up, right, down}
+    bspc node -m {west, north, east, south}
 
 #
 # Preselect
