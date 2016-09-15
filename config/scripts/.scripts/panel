@@ -292,6 +292,7 @@ workspaces() {
     local line=$1
     local pad=" "
     local cur_mon=0
+    local cur_dsk=0
     local wm_infos=""
     set -- ${line}
     while [ $# -gt 0 ]; do
@@ -301,6 +302,7 @@ workspaces() {
             M*)
                 # Active monitor
                 ((cur_mon++))
+                cur_dsk=0
                 if [ $cur_mon -ge 2 ]; then
                     wm_infos="${wm_infos}%{S$cur_mon}"
                 fi
@@ -308,33 +310,43 @@ workspaces() {
             m*)
                 # Inactive monitor
                 ((cur_mon++))
+                cur_dsk=0
                 if [ $cur_mon -ge 2 ]; then
                     wm_infos="${wm_infos}%{S$cur_mon}"
                 fi
                 ;;
             O*)
                 # Focused occupied desktop
+                ((cur_dsk++))
                 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_OCCUPIED_FG}%{B$COLOR_FOCUSED_OCCUPIED_BG}%{U$COLOR_FOREGROUND}%{+u}$pad${name}$pad%{-u}%{B-}%{F-}"
                 ;;
             F*)
                 # Focused free desktop
+                ((cur_dsk++))
                 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_FREE_FG}%{B$COLOR_FOCUSED_FREE_BG}%{U$COLOR_FOREGROUND}%{+u}$pad${name}$pad%{-u}%{B-}%{F-}"
                 ;;
             U*)
                 # Focused urgent desktop
+                ((cur_dsk++))
                 wm_infos="${wm_infos}%{F$COLOR_FOCUSED_URGENT_FG}%{B$COLOR_FOCUSED_URGENT_BG}%{U$COLOR_FOREGROUND}%{+u}$pad${name}$pad%{-u}%{B-}%{F-}"
                 ;;
             o*)
                 # Occupied desktop
-                wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:bspc desktop -f ${name}:}$pad${name}$pad%{A}%{B-}%{F-}"
+                ((cur_dsk++))
+                local click_action="bspc desktop -f ^${cur_mon}\\:^${cur_dsk}"
+                wm_infos="${wm_infos}%{F$COLOR_OCCUPIED_FG}%{B$COLOR_OCCUPIED_BG}%{A:${click_action}:}$pad${name}$pad%{A}%{B-}%{F-}"
                 ;;
             f*)
                 # Free desktop
-                wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:bspc desktop -f ${name}:}$pad${name}$pad%{A}%{B-}%{F-}"
+                ((cur_dsk++))
+                local click_action="bspc desktop -f ^${cur_mon}\\:^${cur_dsk}"
+                wm_infos="${wm_infos}%{F$COLOR_FREE_FG}%{B$COLOR_FREE_BG}%{A:${click_action}:}$pad${name}$pad%{A}%{B-}%{F-}"
                 ;;
             u*)
                 # Urgent desktop
-                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:bspc desktop -f ${name}:}$pad${name}$pad%{B-}%{F-}"
+                ((cur_dsk++))
+                local click_action="bspc desktop -f ^${cur_mon}\\:^${cur_dsk}"
+                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:${click_action}:}$pad${name}$pad%{B-}%{F-}"
                 ;;
         esac
         shift
