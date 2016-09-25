@@ -4,12 +4,13 @@ set -e
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: termctl [help|cycle|init|list|switch <colorscheme>]"
+USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]"
 HELP="\
 termctl <command>
 Basic commands:
   h,help                  print this help message
-  r,                      reset to terminal colors to default colorscheme
+  l,list                  list available colorschemes
+  r,reset                 reset to terminal colors to default colorscheme
   s,switch <colorscheme>  change terminal colors to <colorscheme>
 "
 
