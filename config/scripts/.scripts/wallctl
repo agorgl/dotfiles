@@ -1,0 +1,132 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: wallctl [help|list|blur <on|off>|change <wallpaper>]"
+HELP="\
+wallctl <command>
+Basic commands:
+  h,help                  print this help message
+  l,list                  list available wallpapers
+  b,blur <on|off>         blur currently set wallpaper
+  c,change <wallpaper>    change wallpaper to <wallpaper>
+"
+
+die() {
+    echo >&2 "$*"
+    exit 1
+}
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+WALLPAPERS=~/Wallpapers
+CACHE_DIR=~/.cache/wallmon
+
+list() {
+    [ ! -d "$WALLPAPERS" ] && die "error: wallpapers directory '$WALLPAPERS' doesn't exist"
+    cd "$WALLPAPERS"
+    counter=0
+    for file in *; do
+        echo "$counter) ${file}"
+        (( ++counter ))
+    done
+}
+
+blurred_wallpaper_path() {
+    local curwallext="${1##*.}"
+    local curwallfname=$(basename "$1")
+    local fnamenoext=${curwallfname%.*}
+    local blurwall=$CACHE_DIR/${fnamenoext}_blurred.$curwallext
+    echo $blurwall
+}
+
+preprocess_wallpaper() {
+    [ ! -d "$CACHE_DIR" ] && mkdir -p $CACHE_DIR
+    blurwall=$(blurred_wallpaper_path $1)
+    if [ ! -f $blurwall ]; then
+        echo Creating blurred version of $1
+        convert $1 -blur 0x32 $blurwall
+    fi
+}
+
+wallpaper_set() {
+    feh --bg-scale --no-xinerama $1
+}
+
+# Non persistent version (to be used by the blur option)
+wallpaper_set_temp() {
+    feh --no-fehbg --bg-scale --no-xinerama $1
+}
+
+blur() {
+    local curwall=$(cat ~/.fehbg | grep feh | cut -d ' ' -f4 | sed "s/'//g")
+    local blurwall=$(blurred_wallpaper_path $(basename $curwall))
+    if [ ! -f $blurwall ]; then
+        echo Could not find blurred version of \"$curwall\"
+        echo Did you set this wallpaper using "wallctl change"?
+        return
+    fi
+    case $1 in
+        on)
+            echo Setting wallpaper to $blurwall
+            wallpaper_set_temp $blurwall
+            ;;
+        off)
+            echo Setting wallpaper to $curwall
+            wallpaper_set_temp $curwall
+            ;;
+        *)
+            echo Blur command parameter must be either on\|off
+            return
+    esac
+}
+
+wallpaper_change() {
+    if ! [[ $1 =~ ^[0-9]+$ ]]; then
+        echo Incorrect index!
+        return
+    fi
+    # Pick wallpaper using index
+    nwall=$(list | grep -P -o "(?<=$1\)\s).*$")
+    # Create blurred version
+    preprocess_wallpaper $WALLPAPERS/$nwall
+    # Set it active
+    echo Changing wallpaper to "$nwall"
+    wallpaper_set $WALLPAPERS/$nwall
+}
+
+#----------------------------------------------------------------------
+# Command line interface
+#----------------------------------------------------------------------
+usage() {
+    die "$USAGE"
+}
+
+help() {
+    echo "$HELP"
+}
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        cmd="$1"
+        shift
+        case "$cmd" in
+            h|help)
+                help ;;
+            l|list)
+                list ;;
+            b|blur)
+                [ $# -ne 1 ] && usage
+                blur "$1" ;;
+            c|change)
+                [ $# -ne 1 ] && usage
+                wallpaper_change "$1" ;;
+            *)
+                usage ;;
+        esac
+esac
