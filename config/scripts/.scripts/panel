@@ -191,6 +191,7 @@ battery(){
     if [ -d $POWERSUPPLY ]; then
         local batt_icon=""
         local batt_level=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
+        local batt_remain=$(acpi -b | cut -d " " -f 5 | cut -d ":" -f 1,2)
         if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
             if [[ $batt_level -ge 80 ]]; then
                 batt_icon=$ICON_BATT_FULL
@@ -206,7 +207,7 @@ battery(){
         else
             batt_icon=$ICON_POWER_PLUG
         fi
-        echo -e $batt_icon[$batt_level%]
+        echo -e $batt_icon[$batt_level%/$batt_remain]
     fi
 }
 
