@@ -387,7 +387,7 @@ panel_bar() {
 
 # Calculates and spawns a tray host matching the panel color and dimensions
 spawn_tray() {
-    stalonetray -bg $COLOR_BACKGROUND -t -i $(($PANEL_HEIGHT - 5)) --grow-gravity E --geometry 1x1-0-0 --window-layer top &
+    stalonetray -bg $COLOR_BACKGROUND -t -i $(($PANEL_HEIGHT - 5)) --grow-gravity E --geometry 1x1-0-0 --window-layer top --kludges force_icons_size &
 }
 
 # Creates panel
