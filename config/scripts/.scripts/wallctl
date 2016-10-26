@@ -4,14 +4,14 @@ set -e
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: wallctl [help|list|blur <on|off>|change <wallpaper>]"
+USAGE="Usage: wallctl [help|list|blur <region>|change <wallpaper>]"
 HELP="\
 wallctl <command>
 Basic commands:
-  h,help                  print this help message
-  l,list                  list available wallpapers
-  b,blur <on|off>         blur currently set wallpaper
-  c,change <wallpaper>    change wallpaper to <wallpaper>
+  h,help                        print this help message
+  l,list                        list available wallpapers
+  b,blur <left|right|both|none> blur currently set wallpaper region
+  c,change <wallpaper>          change wallpaper to <wallpaper>
 "
 
 die() {
@@ -36,20 +36,41 @@ list() {
 }
 
 blurred_wallpaper_path() {
+    local region=$2
     local curwallext="${1##*.}"
     local curwallfname=$(basename "$1")
     local fnamenoext=${curwallfname%.*}
-    local blurwall=$CACHE_DIR/${fnamenoext}_blurred.$curwallext
+    local blurwall=$CACHE_DIR/${fnamenoext}_blurred_${region}.$curwallext
     echo $blurwall
 }
 
 preprocess_wallpaper() {
     [ ! -d "$CACHE_DIR" ] && mkdir -p $CACHE_DIR
-    blurwall=$(blurred_wallpaper_path $1)
-    if [ ! -f $blurwall ]; then
-        echo Creating blurred version of $1
-        convert $1 -blur 0x32 $blurwall
-    fi
+    local wall_w=$(identify -format "%[fx:w]" $1)
+    for region in left right both; do
+        blurwall=$(blurred_wallpaper_path $1 $region)
+        if [ ! -f $blurwall ]; then
+            echo Creating \($region\) blurred version of $1
+            local region_param=
+            case $region in
+                left)
+                    region_param=50%x100%+0+0
+                    ;;
+                right)
+                    region_param=50%x100%+$((wall_w / 2))+0
+                    ;;
+                both)
+                    region_param=100%x100%+0+0
+                    ;;
+            esac
+            local shrink_perc=10 # Percentage
+            convert $1 -region $region_param \
+                       -resize $shrink_perc% \
+                       -blur 0x8 \
+                       -resize $(((100 / shrink_perc) * 100))% \
+                       $blurwall
+        fi
+    done
 }
 
 wallpaper_set() {
@@ -63,23 +84,23 @@ wallpaper_set_temp() {
 
 blur() {
     local curwall=$(cat ~/.fehbg | grep feh | cut -d ' ' -f4 | sed "s/'//g")
-    local blurwall=$(blurred_wallpaper_path $(basename $curwall))
-    if [ ! -f $blurwall ]; then
-        echo Could not find blurred version of \"$curwall\"
-        echo Did you set this wallpaper using "wallctl change"?
-        return
-    fi
     case $1 in
-        on)
+        left|right|both)
+            local blurwall=$(blurred_wallpaper_path $(basename $curwall) $1)
+            if [ ! -f $blurwall ]; then
+                echo Could not find $1 blurred version of \"$curwall\" \($blurwall\)
+                echo Did you set this wallpaper using "wallctl change"?
+                return
+            fi
             echo Setting wallpaper to $blurwall
             wallpaper_set_temp $blurwall
             ;;
-        off)
+        none)
             echo Setting wallpaper to $curwall
             wallpaper_set_temp $curwall
             ;;
         *)
-            echo Blur command parameter must be either on\|off
+            echo Blur command parameter must be either left\|right\|both\|none
             return
     esac
 }
@@ -122,7 +143,13 @@ case "$#" in
                 list ;;
             b|blur)
                 [ $# -ne 1 ] && usage
-                blur "$1" ;;
+                case "$1" in
+                    left|right|both|none)
+                        blur "$1" ;;
+                    *)
+                        usage ;;
+                esac
+                ;;
             c|change)
                 [ $# -ne 1 ] && usage
                 wallpaper_change "$1" ;;
