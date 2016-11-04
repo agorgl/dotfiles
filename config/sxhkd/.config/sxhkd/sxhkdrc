@@ -66,9 +66,11 @@ super + ctrl + {x,y,z}
 # Focus/swap
 #
 
-# Focus the node in the given direction
+# Focus the node in the given direction. If monitor is empty, focus monitor in given direction
 super + {_,shift + }{h,j,k,l}
-    bspc node -{f,s} {west,south,north,east}
+    act={f,s}; \
+    dir={west,south,north,east}; \
+    bspc query -N -d && bspc node -$act $dir || bspc monitor -f $dir
 
 # Focus the node for the given path jump
 super + {p,b,comma,period}
