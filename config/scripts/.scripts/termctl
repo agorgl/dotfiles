@@ -64,6 +64,22 @@ change_color() {
     esac
 }
 
+remap_uint16_to_uint8() {
+    local n=0x$1
+    printf "%X" $((n * 0xFF / 0xFFFF))
+}
+
+rxvt_col_to_hex() {
+    # rgba:2aff/2aff/2aff/e666
+    local num=$(echo $1 | grep -P -o '(?<=rgba:).*')
+    local c=(${num//\// })
+    local oc=""
+    for cc in "${c[@]}"; do
+        oc+=$(remap_uint16_to_uint8 $cc)
+    done
+    echo 0x$oc
+}
+
 query_color() {
     # Store old tty opts
     local oldstty=$(stty -g)
@@ -79,7 +95,9 @@ query_color() {
     # Restore tty opts
     stty $oldstty
     # Remove escape at the end.
-    echo $result | sed 's/[^rgb:0-9a-f/]\+$//'
+    local rxvt_num=`echo $result | sed 's/[^rgb:0-9a-f/]\+$//'`
+    # Convert rxvt format to casual RGBA hex format
+    echo $(rxvt_col_to_hex $rxvt_num)
 }
 
 #----------------------------------------------------------------------
