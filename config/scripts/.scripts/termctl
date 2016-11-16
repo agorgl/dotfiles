@@ -1,10 +1,10 @@
 #!/bin/bash
-set -e
+#set -e
 
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]"
+USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]|query <color>"
 HELP="\
 termctl <command>
 Basic commands:
@@ -12,6 +12,7 @@ Basic commands:
   l,list                  list available colorschemes
   r,reset                 reset to terminal colors to default colorscheme
   s,switch <colorscheme>  change terminal colors to <colorscheme>
+  q,query                 query given terminal color for current value
 "
 
 die() {
@@ -60,6 +61,24 @@ change_color() {
         border)
             send_osc 708 "$2" ;;
     esac
+}
+
+query_color() {
+    # Store old tty opts
+    local oldstty=$(stty -g)
+    # Set tty in no echo and raw mode, with minimum zero input chars
+    stty raw -echo min 0 time 0
+    # Send osc query command
+    change_color $1 "?"
+    # xterm needs the sleep (or "time 1" in stty opts, but that is 1/10th second).
+    sleep 0.00000001
+    read -r answer
+    # echo $answer | cat -A
+    local result=${answer#*;}
+    # Restore tty opts
+    stty $oldstty
+    # Remove escape at the end.
+    echo $result | sed 's/[^rgb:0-9a-f/]\+$//'
 }
 
 #----------------------------------------------------------------------
@@ -169,6 +188,9 @@ case "$#" in
             s|switch)
                 [ $# -ne 1 ] && usage
                 switch "$1" ;;
+            q|query)
+                [ $# -ne 1 ] && usage
+                query_color "$1" ;;
             *)
                 usage ;;
         esac
