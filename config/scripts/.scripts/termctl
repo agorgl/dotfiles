@@ -4,7 +4,7 @@
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]|query <color>"
+USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]|query <color>|change <color>]"
 HELP="\
 termctl <command>
 Basic commands:
@@ -12,7 +12,8 @@ Basic commands:
   l,list                  list available colorschemes
   r,reset                 reset to terminal colors to default colorscheme
   s,switch <colorscheme>  change terminal colors to <colorscheme>
-  q,query                 query given terminal color for current value
+  q,query  <color>        query given terminal color for current value
+  c,change <color>        change given terminal color's value
 "
 
 die() {
@@ -191,6 +192,9 @@ case "$#" in
             q|query)
                 [ $# -ne 1 ] && usage
                 query_color "$1" ;;
+            c|change)
+                [ $# -ne 2 ] && usage
+                change_color "$1" "$2" ;;
             *)
                 usage ;;
         esac
