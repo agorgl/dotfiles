@@ -71,7 +71,7 @@ remap_uint16_to_uint8() {
 
 rxvt_col_to_hex() {
     # rgba:2aff/2aff/2aff/e666
-    local num=$(echo $1 | grep -P -o '(?<=rgba:).*')
+    local num=$(echo $1 | sed -r 's/rgba?://')
     local c=(${num//\// })
     local oc=""
     for cc in "${c[@]}"; do
