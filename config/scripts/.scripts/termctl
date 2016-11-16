@@ -88,7 +88,8 @@ rxvt_col_to_hex() {
 hex_col_to_rxvt() {
     # #2A2A2AE5
     local num=$(echo ${1:1})
-    local out="rgba:"
+    local out=""
+    [ "${#num}" -eq "8" ] && out="rgba:" || out="rgb:"
     while [ ! -z $num ]; do
         out+=$(remap_uint8_to_uint16 ${num:0:2})
         out+="/"
@@ -120,7 +121,7 @@ query_color() {
 
 change_color_temp() {
     local col=`hex_col_to_rxvt $2`
-    change_color $1 $2
+    change_color $1 $col
 }
 
 #----------------------------------------------------------------------
