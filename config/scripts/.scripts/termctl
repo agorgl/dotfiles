@@ -69,6 +69,11 @@ remap_uint16_to_uint8() {
     printf "%X" $((n * 0xFF / 0xFFFF))
 }
 
+remap_uint8_to_uint16() {
+    local n=0x$1
+    printf "%04x" $((n * 0xFFFF / 0xFF))
+}
+
 rxvt_col_to_hex() {
     # rgba:2aff/2aff/2aff/e666
     local num=$(echo $1 | sed -r 's/rgba?://')
@@ -77,7 +82,20 @@ rxvt_col_to_hex() {
     for cc in "${c[@]}"; do
         oc+=$(remap_uint16_to_uint8 $cc)
     done
-    echo 0x$oc
+    echo \#$oc
+}
+
+hex_col_to_rxvt() {
+    # #2A2A2AE5
+    local num=$(echo ${1:1})
+    local out="rgba:"
+    while [ ! -z $num ]; do
+        out+=$(remap_uint8_to_uint16 ${num:0:2})
+        out+="/"
+        num=${num:2}
+    done
+    out=${out:0:${#num}-1}
+    echo $out
 }
 
 query_color() {
@@ -98,6 +116,11 @@ query_color() {
     local rxvt_num=`echo $result | sed 's/[^rgb:0-9a-f/]\+$//'`
     # Convert rxvt format to casual RGBA hex format
     echo $(rxvt_col_to_hex $rxvt_num)
+}
+
+change_color_temp() {
+    local col=`hex_col_to_rxvt $2`
+    change_color $1 $2
 }
 
 #----------------------------------------------------------------------
@@ -212,7 +235,7 @@ case "$#" in
                 query_color "$1" ;;
             c|change)
                 [ $# -ne 2 ] && usage
-                change_color "$1" "$2" ;;
+                change_color_temp "$1" "$2" ;;
             *)
                 usage ;;
         esac
