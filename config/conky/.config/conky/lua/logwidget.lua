@@ -76,6 +76,7 @@ function logwidget(cr, title, cmd)
     local stdout = command(cmd)
     local lines = stdout:split("\n")
     -- Draw text
+    ypos = ypos + 2
     cairo_move_to(cr, xpos, ypos)
     for i, line in ipairs(lines) do
         -- Draw line
@@ -85,7 +86,8 @@ function logwidget(cr, title, cmd)
         local extents = cairo_text_extents_t:create()
         cairo_text_extents(cr, line, extents)
         -- Newline
-        ypos = ypos + extents.height + 2
+        --ypos = ypos + extents.height -- Normal
+        ypos = ypos + 12 -- Monospace
         cairo_move_to(cr, xpos, ypos)
     end
 end
