@@ -8,12 +8,13 @@ USAGE="Usage: termctl [help|list|reset|switch <colorscheme>]|query <color>|chang
 HELP="\
 termctl <command>
 Basic commands:
-  h,help                  print this help message
-  l,list                  list available colorschemes
-  r,reset                 reset to terminal colors to default colorscheme
-  s,switch <colorscheme>  change terminal colors to <colorscheme>
-  q,query  <color>        query given terminal color for current value
-  c,change <color>        change given terminal color's value
+  h,help                        print this help message
+  l,list                        list available colorschemes
+  r,reset                       reset to terminal colors to default colorscheme
+  s,switch       <colorscheme>  change terminal colors to <colorscheme>
+  q,query        <color>        query given terminal color for current value
+  qs,querysaved  <color>        query given terminal color for persistent value
+  c,change       <color>        change given terminal color's value
 "
 
 die() {
@@ -99,6 +100,16 @@ hex_col_to_rxvt() {
     echo $out
 }
 
+xrdb_col_to_hex() {
+    # [90]#2b2b2b
+    local nowhitespace=${1//[[:space:]]/}
+    local a=$(echo $nowhitespace | grep -o -P "(?<=\[)\d+(?=\])")
+    local ha=$(printf "%x" $a)
+    local rgb=`echo $nowhitespace | sed -r 's/\[[[:digit:]]+\]\#//'`
+    local rgba=$rgb$ha
+    echo \#${rgba^^}
+}
+
 query_color() {
     # Store old tty opts
     local oldstty=$(stty -g)
@@ -117,6 +128,11 @@ query_color() {
     local rxvt_num=`echo $result | sed 's/[^rgb:0-9a-f/]\+$//'`
     # Convert rxvt format to casual RGBA hex format
     echo $(rxvt_col_to_hex $rxvt_num)
+}
+
+query_saved_color() {
+    local scol=`xrdb -query | grep -P -o "(?<=URxvt\*$1:\s).*"`
+    echo $(xrdb_col_to_hex $scol)
 }
 
 change_color_temp() {
@@ -234,6 +250,9 @@ case "$#" in
             q|query)
                 [ $# -ne 1 ] && usage
                 query_color "$1" ;;
+            qs|querysaved)
+                [ $# -ne 1 ] && usage
+                query_saved_color "$1" ;;
             c|change)
                 [ $# -ne 2 ] && usage
                 change_color_temp "$1" "$2" ;;
