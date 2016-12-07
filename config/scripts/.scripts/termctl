@@ -104,7 +104,7 @@ xrdb_col_to_hex() {
     # [90]#2b2b2b
     local nowhitespace=${1//[[:space:]]/}
     local a=$(echo $nowhitespace | grep -o -P "(?<=\[)\d+(?=\])")
-    local ha=$(printf "%x" $a)
+    local ha=$(printf "%x" $((a * 0xFF / 100)))
     local rgb=`echo $nowhitespace | sed -r 's/\[[[:digit:]]+\]\#//'`
     local rgba=$rgb$ha
     echo \#${rgba^^}
