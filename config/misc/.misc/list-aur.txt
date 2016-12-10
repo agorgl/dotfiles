@@ -11,6 +11,7 @@ paper-icon-theme-git
 powerline-fonts-git
 proggyfonts
 python-themer-git
+qt5-styleplugins
 siji-git
 skypeforlinux-bin
 ttf-font-awesome
