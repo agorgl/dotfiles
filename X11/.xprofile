@@ -21,4 +21,4 @@ setxkbmap -layout us,el -option grp:lalt_lshift_toggle
 [ -f ~/.fehbg ] && ~/.fehbg &
 
 # Launch conky HUD
-conky &
+for rc in .config/conky/widgets-enabled/*; do conky -c $rc & done
