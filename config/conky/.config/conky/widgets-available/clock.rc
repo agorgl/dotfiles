@@ -1,0 +1,52 @@
+-- rings.rc
+-- Lua script path
+lsp = "~/.config/conky/lua"
+function lua_load_from_list(list)
+    local r = ""
+    for i, f in ipairs(list) do
+        r = r .. lsp .. '/' .. f .. ' '
+    end
+    return r
+end
+
+conky.config = {
+    alignment = 'top_left',
+    background = false,
+    border_width = 1,
+    cpu_avg_samples = 2,
+    default_color = 'white',
+    default_outline_color = 'white',
+    default_shade_color = 'white',
+    double_buffer = true,
+    draw_borders = false,
+    draw_graph_borders = false,
+    draw_outline = false,
+    draw_shades = false,
+    use_xft = true,
+    font = 'DejaVu Sans Mono:size=18',
+    gap_x = 5,
+    gap_y = 30,
+    minimum_height = 300,
+    minimum_width = 650,
+    net_avg_samples = 2,
+    no_buffers = true,
+    out_to_console = false,
+    out_to_stderr = false,
+    extra_newline = false,
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_type = 'desktop',
+    own_window_transparent = true,
+    stippled_borders = 0,
+    update_interval = 0.5,
+    uppercase = false,
+    use_spacer = 'none',
+    use_xft = true,
+    xftalpha = 0.8,
+    show_graph_scale = false,
+    show_graph_range = false,
+    lua_load = lua_load_from_list({'util.lua', 'clock.lua'}),
+    lua_draw_hook_pre = 'clock_rings'
+}
+
+conky.text = [[ ${voffset 90}${goto 280}${cpugraph 50,324 d5dcde ffffff} ]]
