@@ -1,0 +1,29 @@
+#!/bin/bash
+# Parameters
+SUPERNODE="${VLAN_HOST:?Must set VLAN_HOST to supernode host}"
+PARTY="${VLAN_PARTY:?Must set VLAN_PARTY to target party name}"
+PASS="${VLAN_PASS:?Must set VLAN_PASS to target party password}"
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root!" 1>&2
+   exit 1
+fi
+
+# Constants
+VTAP=n2n0
+PIPE=/tmp/n2n-pipe
+
+echo [+] Connecting to VPN...
+mkfifo $PIPE
+function ctrl_c() {
+    echo [+] Ctrl-C caught!
+    echo [+] Killing edge with pid $EDGE_PID...
+    kill $EDGE_PID
+    wait
+    rm $PIPE
+}
+trap ctrl_c INT
+
+edge -f -d $VTAP -r -a dhcp:0.0.0.0 -c $PARTY -k $PASS -l $SUPERNODE 2>&1 >$PIPE &
+EDGE_PID=$!
+(sleep 4 && dhcpcd -B $VTAP 2> $PIPE) &
+cat $PIPE
