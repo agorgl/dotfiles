@@ -27,7 +27,7 @@ PANEL_HEIGHT=24
 PANEL_FONT="terminus:size=8"
 PANEL_FONT2="Source Sans Pro:size=10"
 ICON_FONT="FontAwesome:size=10"
-ICON_FONT2="Siji:size=8"
+ICON_FONT2="Wuncon Siji:size=8"
 
 #
 # Colors
@@ -433,7 +433,7 @@ spawn_panel(){
     done > "$panel_fifo" &
 
     # Dump panel into panel_bar and then into lemonbar
-    panel_bar < "$panel_fifo" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -f $ICON_FONT2 -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
+    panel_bar < "$panel_fifo" | lemonbar -g x"$PANEL_HEIGHT" -f "$PANEL_FONT" -f "$ICON_FONT" -f "$ICON_FONT2" -F "$COLOR_FOREGROUND" -B "$COLOR_BACKGROUND" -u 2 | bash &
 }
 
 spawn_panel
