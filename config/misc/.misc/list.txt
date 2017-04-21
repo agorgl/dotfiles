@@ -42,6 +42,7 @@ mpd
 mplayer
 mupdf
 ncmpcpp
+noto-fonts
 ntfs-3g
 nvidia
 nvidia-libgl
