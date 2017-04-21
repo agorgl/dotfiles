@@ -61,6 +61,7 @@ stalonetray
 stow
 sudo
 sxhkd
+terminus-font
 termite
 thunar
 tree
