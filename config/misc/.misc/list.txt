@@ -71,6 +71,7 @@ polkit-gnome
 pulseaudio
 pulseaudio-alsa
 qbittorrent
+refind-efi
 rofi
 rsync
 rxvt-unicode
