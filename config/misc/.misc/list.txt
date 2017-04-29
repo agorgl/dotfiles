@@ -14,10 +14,13 @@ chromium
 clang
 cmake
 compton
+connman
 coreutils
 cryptsetup
 cups
 device-mapper
+dhclient
+dhcpcd
 diffutils
 dos2unix
 doxygen
@@ -41,6 +44,7 @@ gzip
 htop
 imagemagick
 indent
+iw
 less
 lightdm
 lightdm-gtk-greeter
@@ -92,6 +96,7 @@ unzip
 valgrind-multilib
 weechat
 wget
+wpa_supplicant
 xclip
 xorg-server
 xorg-xev

@@ -2,6 +2,7 @@ awf-git
 cli-visualizer-git
 compton
 conky-lua-nv
+connman-gtk
 cower
 git-lfs
 gtk-theme-arc-git
