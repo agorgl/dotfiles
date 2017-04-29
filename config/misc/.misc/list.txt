@@ -52,6 +52,7 @@ pamixer
 pango
 patch
 pavucontrol
+polkit-gnome
 pulseaudio
 pulseaudio-alsa
 qbittorrent

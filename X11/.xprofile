@@ -23,5 +23,8 @@ setxkbmap -layout us,el -option grp:lalt_lshift_toggle
 # If wallpaper was previously set, set it again
 [ -f ~/.fehbg ] && ~/.fehbg &
 
+# Launch policy kit auth agent
+/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+
 # Launch conky HUD
 for rc in .config/conky/widgets-enabled/*; do conky -c $rc & done
