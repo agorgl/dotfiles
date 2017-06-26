@@ -1,19 +1,37 @@
+-- logwidget.lua
+
+-- Config
+LOG_WIDGET_HEADER_FONT = "hack"
+LOG_WIDGET_HEADER_SIZE = 18
+LOG_WIDGET_HEADER_COLOR = {0xa5adff, 0xFF}
+LOG_WIDGET_CONTENT_FONT = "hack"
+LOG_WIDGET_CONTENT_SIZE = 9
+LOG_WIDGET_CONTENT_COLOR = {0x796a7b, 0xFF}
+
+local function logwidget_set_font_options(cr)
+    -- Font options
+    local fnt_opts
+    fnt_opts = cairo_font_options_create()
+    cairo_font_options_set_antialias(fnt_opts, CAIRO_ANTIALIAS_BEST)
+    cairo_font_options_set_hint_style(fnt_opts, CAIRO_HINT_STYLE_FULL)
+    cairo_font_options_set_hint_metrics(fnt_opts, CAIRO_HINT_METRICS_ON)
+    cairo_set_font_options(cr, fnt_opts)
+    cairo_font_options_destroy(fnt_opts)
+end
+
 -- Returns bottom left corner of header
-function log_header(cr, title, xpos, ypos)
+function logwidget_header(cr, title, xpos, ypos)
     -- Header opts
     local header_text = title
-    local header_text_sz = 18
-    local header_font = "mono"
-    local header_font_slant = CAIRO_FONT_SLANT_NORMAL
-    local header_font_weight = CAIRO_FONT_WEIGHT_NORMAL
-    local header_font_col = {0xa5adff, 0xFF}
-    cairo_select_font_face(cr, header_font, header_font_slant, header_font_weight)
-    cairo_set_font_size(cr, header_text_sz)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(header_font_col))
+    cairo_select_font_face(cr, LOG_WIDGET_HEADER_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
+    cairo_set_font_size(cr, LOG_WIDGET_HEADER_SIZE)
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(LOG_WIDGET_HEADER_COLOR))
+
     -- Calculate text decoration positioning
     -- Members: x_bearing y_bearing width height x_advance y_advance
     local extents = cairo_text_extents_t:create()
     cairo_text_extents(cr, header_text, extents)
+
     --
     -- Draw decoration
     --
@@ -26,6 +44,7 @@ function log_header(cr, title, xpos, ypos)
     local hpad = 20
     local vpad = 10
     cairo_set_line_width(cr, 1)
+
     -- tl
     cairo_move_to(cr, xpos, ypos - h - vpad)
     cairo_rel_line_to(cr, ll, 0)
@@ -57,24 +76,19 @@ function log_header(cr, title, xpos, ypos)
     return xpos, ypos + h + vpad
 end
 
-function logwidget(cr, title, cmd)
+function logwidget(cr, title, content)
+    -- Setup common font options
+    logwidget_set_font_options(cr)
     -- Initial positioning
     local xpos, ypos = 5, 30
     -- Draw header
-    xpos, ypos = log_header(cr, title, xpos, ypos)
+    xpos, ypos = logwidget_header(cr, title, xpos, ypos)
     -- Syslog opts
-    local syslog_text_sz = 10
-    local syslog_font = "mono"
-    local syslog_font_slant = CAIRO_FONT_SLANT_NORMAL
-    local syslog_font_weight = CAIRO_FONT_WEIGHT_NORMAL
-    --local syslog_font_col = {0x494a5b, 0xFF}
-    local syslog_font_col = {0x796a7b, 0xFF}
-    cairo_select_font_face(cr, syslog_font, syslog_font_slant, syslog_font_weight)
-    cairo_set_font_size(cr, syslog_text_sz)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(syslog_font_col))
-    -- Execute command and gather output
-    local stdout = command(cmd)
-    local lines = stdout:split("\n")
+    cairo_select_font_face(cr, LOG_WIDGET_CONTENT_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
+    cairo_set_font_size(cr, LOG_WIDGET_CONTENT_SIZE)
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(LOG_WIDGET_CONTENT_COLOR))
+    -- Split contents to lines
+    local lines = content:split("\n")
     -- Draw text
     ypos = ypos + 2
     cairo_move_to(cr, xpos, ypos)
@@ -86,8 +100,9 @@ function logwidget(cr, title, cmd)
         local extents = cairo_text_extents_t:create()
         cairo_text_extents(cr, line, extents)
         -- Newline
-        --ypos = ypos + extents.height -- Normal
-        ypos = ypos + 12 -- Monospace
+        --local line_advance = extents.height -- Normal
+        local line_advance = LOG_WIDGET_CONTENT_SIZE + 3 -- Monospace
+        ypos = ypos + line_advance
         cairo_move_to(cr, xpos, ypos)
     end
 end

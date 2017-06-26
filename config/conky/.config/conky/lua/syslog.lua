@@ -19,7 +19,8 @@ function conky_draw_main()
     --
     local title = "SYS LOGS"
     local cmd = "journalctl -b -e | cut -d\" \" -f3,5- | cut -c1-83 | tail -n 15"
-    logwidget(cr, title, cmd)
+    local stdout = command(cmd)
+    logwidget(cr, title, stdout)
     --
     cairo_destroy(cr)
     cairo_surface_destroy(cs)
