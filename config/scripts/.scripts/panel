@@ -406,7 +406,7 @@ spawn_panel(){
     bspc subscribe > "$panel_fifo" &
 
     # Window title
-    xtitle -sf 'TITLE%s' > "$panel_fifo" &
+    xtitle -sf 'TITLE%s\n' > "$panel_fifo" &
 
     # Audio changes
     if systemctl --user is-active pulseaudio.socket; then
