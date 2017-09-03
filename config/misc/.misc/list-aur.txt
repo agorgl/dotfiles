@@ -13,6 +13,7 @@ paper-icon-theme-git
 powerline-fonts-git
 proggyfonts
 python-themer-git
+termsyn-font
 qt5-styleplugins
 siji-git
 skypeforlinux-bin
