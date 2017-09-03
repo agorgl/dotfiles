@@ -1,0 +1,12 @@
+;-----------------------------------------------------
+; Colors
+;-----------------------------------------------------
+primary        = ${xrdb:color14:#ffb52a}
+secondary      = ${xrdb:color8:#e60053}
+alert          = ${xrdb:color14:#bd2c40}
+background     = ${xrdb:background}
+foreground     = ${self.primary}
+foreground-alt = ${self.secondary}
+background-alt = ${self.primary}
+
+; vim:ft=dosini

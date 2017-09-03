@@ -1,0 +1,11 @@
+;-----------------------------------------------------
+; CPU
+;-----------------------------------------------------
+type = internal/cpu
+interval = 2
+format-prefix = ""
+format-prefix-margin-right = 1
+format-prefix-foreground = ${colors.foreground-alt}
+label = %percentage%%
+
+; vim:ft=dosini
