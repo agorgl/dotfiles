@@ -24,7 +24,7 @@ BATTERY="/sys/class/power_supply/BAT0"
 PANEL_HEIGHT=24
 
 # Fonts
-PANEL_FONT="terminus:size=8"
+PANEL_FONT="Misc Termsynu:size=9"
 PANEL_FONT2="Source Sans Pro:size=10"
 ICON_FONT="FontAwesome:size=10"
 ICON_FONT2="Wuncon Siji:size=8"
