@@ -2,7 +2,7 @@
 ! ------------------------------------------------------------------------------
 ! General colors
 ! ------------------------------------------------------------------------------
-#include ".Xcolors/kasugano"
+#include ".Xcolors/molokai"
 
 ! ------------------------------------------------------------------------------
 ! Fonts
@@ -18,14 +18,16 @@ Xft.lcdfilter: lcddefault
 ! ------------------------------------------------------------------------------
 ! URxvt settings
 ! ------------------------------------------------------------------------------
-#define URXVT_BG [90]#2b2b2b
+!#define URXVT_BG [90]#2b2b2b
+#ifdef URXVT_BG
+URxvt*background:  URXVT_BG
+URxvt*borderColor: URXVT_BG
+#endif
 URxvt*depth: 32
-URxvt*background: URXVT_BG
 URxvt*scrollBar: false
 URxvt*font: xft:xos4 Terminess Powerline:pixelsize=14,xft:Wuncon Siji:size=10,xft:FontAwesome:size=10
 !URxvt*letterSpace: -1
 URxvt*internalBorder: 25
-URxvt*borderColor: URXVT_BG
 URxvt*colorBD: #ffffff
 URxvt*cursorColor: #ff8939
 URxvt*cursorColor2: #2b2b2b
