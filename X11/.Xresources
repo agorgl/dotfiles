@@ -21,8 +21,7 @@ Xft.lcdfilter: lcddefault
 URxvt*depth: 32
 URxvt*background: [90]#2b2b2b
 URxvt*scrollBar: false
-!URxvt*font: xft:Hack:size=10,xft:Sigi:size=10
-URxvt*font: xft:xos4 Terminess Powerline:pixelsize=14,xft:Sigi:size=10
+URxvt*font: xft:xos4 Terminess Powerline:pixelsize=14,xft:Wuncon Siji:size=10,xft:FontAwesome:size=10
 !URxvt*letterSpace: -1
 URxvt*internalBorder: 25
 URxvt*borderColor: [90]#2b2b2b
