@@ -6,7 +6,7 @@ if test -d /etc/profile.d/; then
     unset profile
 fi
 
-export PATH=$PATH:$HOME/.scripts
+export PATH=$PATH:$HOME/.scripts:$HOME/.bin
 export XDG_CONFIG_HOME=~/.config
 [ "$XDG_CURRENT_DESKTOP" = "KDE" ] || [ "$XDG_CURRENT_DESKTOP" = "GNOME" ] || export QT_QPA_PLATFORMTHEME="gtk2"
 
