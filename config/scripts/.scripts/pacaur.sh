@@ -22,7 +22,7 @@ cd pacaur-tmp/
 wget http://aur.archlinux.org/cgit/aur.git/snapshot/cower.tar.gz
 tar xzvf cower.tar.gz
 cd cower
-gpg --keyserver pgp.mit.edu --recv-keys F56C0C53
+gpg --recv-keys --keyserver hkp://pgp.mit.edu 1EB2638FF56C0C53
 makepkg
 sudo pacman -U --noconfirm cower-*-x86_64.pkg.tar.xz
 cd ..
