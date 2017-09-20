@@ -3,10 +3,10 @@
 -- Config
 LOG_WIDGET_HEADER_FONT = "hack"
 LOG_WIDGET_HEADER_SIZE = 18
-LOG_WIDGET_HEADER_COLOR = {0xa5adff, 0xFF}
+LOG_WIDGET_HEADER_COLOR = {color_by_name("color4"), 0xFF}
 LOG_WIDGET_CONTENT_FONT = "hack"
 LOG_WIDGET_CONTENT_SIZE = 9
-LOG_WIDGET_CONTENT_COLOR = {0x796a7b, 0xFF}
+LOG_WIDGET_CONTENT_COLOR = {color_by_name("color8"), 0xFF}
 
 local function logwidget_set_font_options(cr)
     -- Font options

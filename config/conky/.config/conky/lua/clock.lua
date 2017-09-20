@@ -1,14 +1,16 @@
 require 'cairo'
 
 -- Constants
+COLOR_MAIN = color_by_name("color4")
+COLOR_ALT = color_by_name("color8")
 CLOCK_R = 125
 CLOCK_X = 160
 CLOCK_Y = 155
-CLOCK_COLOUR = {0x607D8B, 0.5}
-RING_BG_COL = 0x212121
-RING_FG_COL = 0x607D8B
+CLOCK_COLOUR = {COLOR_MAIN, 0.8}
+RING_BG_COL = COLOR_MAIN
+RING_FG_COL = COLOR_MAIN
 FONT = "DejaVu Sans"
-FONT_COL = {0xFFFFFF, 0xFF}
+FONT_COL = {COLOR_ALT, 0xFF}
 
 -- Arc values
 arc_settings_table = {
@@ -117,7 +119,7 @@ arc_settings_table = {
         max = 100,
         bg_alpha = 0.2,
         fg_alpha = 0.6,
-        radius = 445,
+        radius = 450,
         thickness = 2,
         start_angle = 86,
         end_angle = 94
@@ -238,7 +240,7 @@ end
 function draw_graph_line(cr, x_pivot, y_pivot)
     local x = x_pivot + 120
     local y = y_pivot + 1
-    local length = 325
+    local length = 330
     cairo_move_to(cr, x, y)
     cairo_line_to(cr, x + length, y)
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND)

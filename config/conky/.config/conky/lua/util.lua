@@ -21,3 +21,10 @@ function rgba_to_r_g_b_a(tcolor)
            (color % 0x100) / 255.,
            alpha
 end
+
+function color_by_name(name)
+    local cmd = "xcolor" .. " " .. name
+    local stdout = command(cmd)
+    local colstr = "0x" .. stdout:sub(2)
+    return tonumber(colstr)
+end

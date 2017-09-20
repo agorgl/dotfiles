@@ -49,4 +49,4 @@ conky.config = {
     lua_draw_hook_pre = 'clock_rings'
 }
 
-conky.text = [[ ${voffset 90}${goto 280}${cpugraph 50,324 d5dcde ffffff} ]]
+conky.text = [[ ${voffset 90}${goto 280}${cpugraph 50,329 d5dcde 808080} ]]
