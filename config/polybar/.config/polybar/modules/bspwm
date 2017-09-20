@@ -9,7 +9,7 @@ label-focused-background = ${colors.background-alt}
 label-focused-padding = 2
 
 label-occupied = %index%
-label-occupied-foreground = ${colors.primary}
+label-occupied-foreground = ${colors.foreground-alt}
 label-occupied-padding = 2
 
 label-urgent = %index%!
