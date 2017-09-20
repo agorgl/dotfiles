@@ -1,0 +1,3 @@
+#!/bin/bash
+qname=$1
+xrdb -query | sed -n "s/*$qname\s*:\s*\(.*\)\s*/\L\1/p"
