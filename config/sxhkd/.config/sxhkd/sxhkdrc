@@ -36,7 +36,7 @@ super + alt + Escape
 
 # Reload panel
 super + ctrl + Escape
-    pkill -USR1 -x panel
+    pgrep panel && pkill -USR1 -x panel || panel
 
 # Close or kill window
 super + {_,shift + }w
