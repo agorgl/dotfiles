@@ -113,11 +113,16 @@ fi
 #=- Setup
 #-
 #################################################################
+# Used to log into system logs
+logmsg() {
+    local msg=$1
+    echo $msg | systemd-cat -t panel
+}
 
 # Check if panel is already running
 if [[ $(pgrep -cx panel) -gt 1 ]]; then
     printf "%s\n" "The panel is already running." >&2
-    echo "Panel already running" | systemd-cat
+    logmsg "Panel already running"
     exit 1
 fi
 
@@ -125,7 +130,7 @@ fi
 reset(){
     bspc config top_padding 0
     trap - USR1
-    echo "Resetting panel...: $0" | systemd-cat
+    logmsg "Resetting panel...: $0"
     exec $0
 }
 trap reset USR1
