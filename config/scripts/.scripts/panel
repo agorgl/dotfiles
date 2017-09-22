@@ -245,17 +245,20 @@ wifi(){
 
 # Music controls
 music(){
-    pgrep mpd # To populate last error
+    pgrep mpd >/dev/null # To populate last error
     if [[ $? -eq 0 ]]; then
         local song_name=$(mpc current)
         if [[ -n $song_name ]]; then
+            local sidx=$(($(date +%s) % ${#song_name}))
+            local pp
             if mpc status | grep -q 'paused'; then
                 # Music is paused
-                echo -e "%{F$COLOR_FOCUSED_URGENT_FG}%{A:mpc play:}$song_name%{A}%{F-}"
+                pp="%{A:mpc play:}$ICON_PLAY%{A}"
             else
                 # Music is playing
-                echo -e "%{F$COLOR_FOCUSED_OCCUPIED_FG}%{A:mpc pause:}$song_name%{A}%{F-}"
+                pp="%{A:mpc pause:}${song_name:$sidx}%{A}"
             fi
+            printf "%b %-10b %b\n" "|%{A:mpc next:}$ICON_PREV%{A}" "$pp" "%{A:mpc prev:}$ICON_NEXT%{A}|"
         fi
     fi
 }
@@ -354,7 +357,7 @@ panel_bar() {
                 local wm_infos=$(workspaces ${line#?})
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos}%{Sf}%{c}${title}%{Sl}%{c}${music}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${music}%{Sf}%{c}${title}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
     done
 }
 
