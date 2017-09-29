@@ -49,6 +49,7 @@ less
 lightdm
 lightdm-gtk-greeter
 lm_sensors
+lsof
 maim
 mesa
 mpc
@@ -77,6 +78,7 @@ rsync
 rxvt-unicode
 stalonetray
 stow
+strace
 sudo
 sxhkd
 sxiv
