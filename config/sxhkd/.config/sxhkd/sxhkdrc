@@ -24,7 +24,7 @@ super + Escape
 
 # Screenshot to clipboard
 {_,ctrl +} Print
-    maim { ,-s} --format png /dev/stdout | xclip -selection clipboard -t image/png -i
+    maim { ,-s} -u --format png /dev/stdout | xclip -selection clipboard -t image/png -i
 
 #
 # Bspwm hotkeys
