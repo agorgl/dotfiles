@@ -138,8 +138,8 @@ super + alt + {j,k}
     bspc node -r {-,+}10
 
 # Move a floating window
-super + {Left,Down,Up,Right}
-    bspc node -v {-20 0,0 20,0 -20,20 0}
+super + ctrl + {Left,Down,Up,Right}
+    bspc node -v {-10 0, 0 10, 0 -10, 10 0}
 
 #
 # Media
