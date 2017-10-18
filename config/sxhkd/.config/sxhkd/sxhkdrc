@@ -88,10 +88,6 @@ super + {_,shift + }c
 super + bracket{left,right}
     bspc desktop -f {prev,next}
 
-# Focus the next/prev desktop
-super + bracket{left,right}
-    bspc desktop -f {prev,next}
-
 # Focus the last node/desktop
 super + {grave,Tab}
     bspc {node,desktop} -f last
