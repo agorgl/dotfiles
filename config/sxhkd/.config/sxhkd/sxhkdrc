@@ -51,8 +51,8 @@ super + y
     bspc query -N -n focused.automatic && bspc node -n last.!automatic || bspc node last.leaf -n focused
 
 # Swap the given window with the biggest one in the current desktop
-super + g
-    bspc node -s biggest
+super + {_,shift + } g
+    bspc node -s {biggest,@brother}
 
 #
 # State/flags
@@ -137,14 +137,9 @@ super + ctrl + shift + space
 #
 # Move/Resize
 #
-
-# Expand a window by moving one of its side outward
-super + alt + {h,j,k,l}
-    bspc node -z {left -20 0,bottom 0 20,top 0 -20,right 20 0}
-
-# Contract a window by moving one of its side inward
-super + alt + shift + {h,j,k,l}
-    bspc node -z {right -20 0,top 0 20,bottom 0 -20,left 20 0}
+# Change split ratios
+super + alt + {j,k}
+    bspc node -r {-,+}10
 
 # Move a floating window
 super + {Left,Down,Up,Right}
