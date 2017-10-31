@@ -21,4 +21,5 @@ skypeforlinux-bin
 ttf-font-awesome
 ttf-monaco
 ttf-ms-fonts
+xst-git
 xtitle-git

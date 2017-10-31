@@ -14,6 +14,7 @@ bluez-tools
 bluez-utils
 bspwm
 bzip2
+cdemu-client
 chromium
 clang
 cmake
@@ -71,6 +72,7 @@ refind-efi
 rofi
 rsync
 rxvt-unicode
+samba
 stalonetray
 stow
 strace
