@@ -4,6 +4,7 @@ cli-visualizer-git
 conky-lua-nv
 connman-gtk
 cower
+downgrade
 git-lfs
 gtk-theme-arc-git
 lemonbar-xft-git

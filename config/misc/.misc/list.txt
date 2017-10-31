@@ -61,6 +61,7 @@ p7zip
 pamixer
 pango
 pavucontrol
+perf
 polkit-gnome
 pulseaudio
 pulseaudio-alsa
@@ -77,6 +78,7 @@ sxhkd
 sxiv
 terminus-font
 termite
+the_silver_searcher
 thunar
 thunar-archive-plugin
 thunar-volman
