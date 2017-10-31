@@ -1,6 +1,5 @@
 awf-git
 cli-visualizer-git
-compton
 conky-lua-nv
 connman-gtk
 cower
