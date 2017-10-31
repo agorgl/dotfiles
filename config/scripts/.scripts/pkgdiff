@@ -1,0 +1,111 @@
+#!/bin/bash
+# Create package list from text files
+inplist=$(cat ~/.misc/list.txt ~/.misc/list-aur.txt)
+pkglist=(); grplist=()
+for p in $inplist; do
+    # Check if package is group
+    grppkgs=$(pacman -Qqg $p 2>/dev/null)
+    if [ $? -eq 1 ] ; then
+        pkglist+=($p)
+    else
+        grplist+=($p)
+        # Append each group's pkg to list
+        for gp in ${grppkgs[@]}; do
+            pkglist+=($gp)
+        done
+    fi
+done
+pkglist=($(printf "%s\n" ${pkglist[@]} | sort))
+
+# Gather installed packages
+installed_list=($(pacaur -Qqe | sort))
+
+# Retrieve foreign packages (not installed by pacman)
+foreign_packages=($(pacman -Qqme | sort))
+
+# Check if bash array contains element
+function contains() {
+    local e match="$1"
+    shift
+    for e; do [[ "$e" == "$match" ]] && return 0; done
+    return 1
+}
+
+# Join bash array by multichar separator
+function join_by { perl -e '$s = shift @ARGV; print join($s, @ARGV);' "$@"; }
+
+# Retrieve a package's group (first in list)
+function pkggrp { pacman -Qi $1 | sed -nr 's/Groups\s+:\s+(\S*).*/\1/p'; }
+
+# Check duplicate package references in package lists
+# (possibly some packages also referenced by groups)
+function duplicate_packages() {
+    # Get duplicate packages on list
+    pkgs=($(printf "%s\n" "${pkglist[@]}" | sort | uniq -cd | sed -nr 's/\s+[0-9]+\s+//p'))
+    for p in ${pkgs[@]}; do
+        if ! contains $(pkggrp $p) ${grplist[@]}; then
+            # Show only packages not duplicate by group references
+            echo $p
+        fi
+    done
+}
+
+# Not installed packages from package lists
+function not_installed_pkgs() {
+    for p in ${pkglist[@]}; do
+        if ! pacman -Qi $p &> /dev/null; then
+            echo $p
+        fi
+    done
+}
+
+# Missing packages from lists that are currently installed in system
+function missing_pkgs() {
+    comm -13 \
+        <(printf "%s\n" ${pkglist[@]}) \
+        <(printf "%s\n" ${installed_list[@]})
+}
+
+function show_duplicate_packages() {
+    pkgs=()
+    for p in $(duplicate_packages); do
+        grp=$(pkggrp $p)
+        pkgs+=("$p ($grp)")
+    done
+    if [ ! ${#pkgs[@]} -eq 0 ]; then
+        echo "[+] Found duplicate package references!"
+        echo $(join_by ", " "${pkgs[@]}")
+    fi
+}
+
+function show_not_installed_packages() {
+    pkgs=($(not_installed_pkgs))
+    if [ ! ${#pkgs} -eq 0 ]; then
+        echo "[+] Found not installed package references!"
+        echo $(join_by ", " "${pkgs[@]}")
+    fi
+}
+
+function show_missing_packages() {
+    pkgs=($(missing_pkgs))
+    official_pkgs=(); aur_pkgs=();
+    for p in ${pkgs[@]}; do
+        if ! contains $p ${foreign_packages[@]}; then
+            official_pkgs+=($p)
+        else
+            aur_pkgs+=($p)
+        fi
+    done
+    if [ ! ${#official_pkgs} -eq 0 ]; then
+        echo "[+] Found missing package references!"
+        echo $(join_by ", " "${official_pkgs[@]}")
+    fi
+    if [ ! ${#aur_pkgs} -eq 0 ]; then
+        echo "[+] Found missing package references (AUR)!"
+        echo $(join_by ", " "${aur_pkgs[@]}")
+    fi
+}
+
+show_duplicate_packages
+show_not_installed_packages
+show_missing_packages
