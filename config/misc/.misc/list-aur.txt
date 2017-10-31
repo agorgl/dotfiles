@@ -1,4 +1,5 @@
 awf-git
+bluez-rfcomm
 cli-visualizer-git
 conky-lua-nv
 connman-gtk

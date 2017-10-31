@@ -8,6 +8,10 @@ base
 base-devel
 bc
 bison
+bluez
+bluez-plugins
+bluez-tools
+bluez-utils
 bspwm
 bzip2
 chromium
@@ -60,6 +64,7 @@ pavucontrol
 polkit-gnome
 pulseaudio
 pulseaudio-alsa
+pulseaudio-bluetooth
 qbittorrent
 refind-efi
 rofi
