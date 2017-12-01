@@ -174,12 +174,12 @@ load_default_colorscheme_name() {
 }
 
 convert_xres_to_bash() {
-    bvars=$(cat $1 | sed -r -e '/\s*!/d' -e '/^\s*$/d' -e 's/^\s*\*\.?//' -e 's/\s*:\s*/=/')
+    bvars=$(cpp -E -P $1 | sed -r -e '/\s*!/d' -e '/^\s*$/d' -e 's/^\s*\*\.?//' -e 's/\s*:\s*/=/')
     echo $bvars
 }
 
 gather_urxvt_vars() {
-    bvars=$(cat ~/.Xresources | grep URxvt* | sed -r -e '/^\s*!/d' -e 's/\s*URxvt\*?\.?//I' -e 's/\s*:\s*/=/')
+    bvars=$(cpp -E -P ~/.Xresources | grep URxvt* | sed -r -e '/^\s*!/d' -e 's/\s*URxvt\*?\.?//I' -e 's/\s*:\s*/=/')
     echo $bvars
 }
 
@@ -197,6 +197,7 @@ load_colorscheme() {
     [ ! -f "$1" ] && die "error: colorscheme file '$1' could not be found"
     #. "$1" # Source colorscheme file
     eval $(convert_xres_to_bash $1)
+    border=${border:-${background}}
 }
 
 reset() {
