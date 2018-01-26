@@ -9,6 +9,7 @@ fi
 export PATH=$PATH:$HOME/.scripts:$HOME/.bin
 export XDG_CONFIG_HOME=~/.config
 export QT_QPA_PLATFORMTHEME="gtk2"
+export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Source .environment if exists
 [[ -f ~/.environment ]] && . ~/.environment
