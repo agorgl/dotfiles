@@ -8,7 +8,6 @@ downgrade
 git-lfs
 gtk-theme-arc-git
 lemonbar-xft-git
-notify-osd-customizable
 pacaur
 paper-icon-theme-git
 powerline-fonts-git
