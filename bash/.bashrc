@@ -30,5 +30,8 @@ PS1='[\u@\h \W]\$ '
 # Setup needed environment variables for Android development
 setup_droid_dev_env
 
+# Setup z
+[[ -r "/usr/share/z/z.sh" ]] && source /usr/share/z/z.sh
+
 # Disable STAHP combo
 stty -ixon
