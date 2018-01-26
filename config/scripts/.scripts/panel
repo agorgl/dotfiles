@@ -357,7 +357,7 @@ panel_bar() {
                 local wm_infos=$(workspaces ${line#?})
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos} ${music}%{Sf}%{c}${title}%{r}${messages} ${wifi} ${volume} ${battery} ${date} ${clock} "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${music}%{Sf}%{c}${title}%{r}${messages} %{Sl}${wifi} ${volume} ${battery} ${date} ${clock} "
     done
 }
 
