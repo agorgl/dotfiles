@@ -20,6 +20,7 @@ RING_BG_COL = COLOR_MAIN
 RING_FG_COL = COLOR_MAIN
 FONT = "DejaVu Sans"
 FONT_COL = {COLOR_ALT, 0xFF}
+CPUGRAPH_LENGTH = 330
 
 -- Arc values
 arc_settings_table = {
@@ -249,7 +250,7 @@ end
 function draw_graph_line(cr, x_pivot, y_pivot)
     local x = x_pivot + 120
     local y = y_pivot + 1
-    local length = 330
+    local length = CPUGRAPH_LENGTH
     cairo_move_to(cr, x, y)
     cairo_line_to(cr, x + length, y)
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND)
@@ -281,6 +282,24 @@ function draw_time(cr)
     cairo_stroke(cr)
 end
 
+function clock_text()
+    -- Skip some ticks
+    local updates = conky_parse('${updates}')
+    update_num = tonumber(updates)
+    if update_num <= 5 then return "" end
+
+    -- CPU Graph
+    local height = 50
+    local width = CPUGRAPH_LENGTH - 1
+    local x = cpugraph_x
+    local y = cpugraph_y - (height + conky_window.text_start_y + 10)
+    local color0, color1 = 0xd5dcde, 0x808080
+    local s = "${goto %d}${voffset %d}${cpugraph %u,%u %x %x}"
+    local cpugtxt = s:format(x, y, height, width, color0, color1)
+    return cpugtxt
+end
+conky_clock_text = clock_text
+
 function clock_main()
     if conky_window == nil then
         return
@@ -311,6 +330,8 @@ function clock_main()
         -- Date
         gx, gy = draw_graph_line(cr, CLOCK_X, CLOCK_Y)
         draw_analytic_date(cr, gx, gy)
+        -- Store to use by clock_text()
+        cpugraph_x, cpugraph_y = gx, gy
     end
 
     cairo_destroy(cr)

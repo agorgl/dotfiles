@@ -44,6 +44,6 @@ conky.config = {
     lua_draw_hook_pre = 'clock_main'
 }
 
-conky.text = [[ ${voffset 90}${goto 280}${cpugraph 50,329 d5dcde 808080} ]]
+conky.text = [[ ${lua_parse clock_text} ]]
 
 -- vi: ft=lua
