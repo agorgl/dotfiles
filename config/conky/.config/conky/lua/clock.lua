@@ -1,3 +1,12 @@
+--
+-- clock.lua
+--
+
+-- Extend package search to directory of current script
+current_path = debug.getinfo(1).source:match("@?(.*/)")
+package.path = current_path .. "?.lua;" .. package.path
+
+require 'util'
 require 'cairo'
 
 -- Constants
@@ -272,7 +281,7 @@ function draw_time(cr)
     cairo_stroke(cr)
 end
 
-function conky_clock_rings()
+function clock_main()
     if conky_window == nil then
         return
     end
@@ -303,4 +312,11 @@ function conky_clock_rings()
         gx, gy = draw_graph_line(cr, CLOCK_X, CLOCK_Y)
         draw_analytic_date(cr, gx, gy)
     end
+
+    cairo_destroy(cr)
+    cairo_surface_destroy(cs)
+    cr = nil
 end
+
+-- Alias for conky config to find it
+conky_clock_main = clock_main

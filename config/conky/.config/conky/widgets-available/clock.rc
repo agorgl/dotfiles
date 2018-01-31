@@ -1,13 +1,8 @@
--- rings.rc
--- Lua script path
-lsp = "~/.config/conky/lua"
-function lua_load_from_list(list)
-    local r = ""
-    for i, f in ipairs(list) do
-        r = r .. lsp .. '/' .. f .. ' '
-    end
-    return r
-end
+--[[
+    Clock widget
+--]]
+
+conky.user_lua_path = '~/.config/conky/lua/'
 
 conky.config = {
     alignment = 'top_left',
@@ -45,8 +40,10 @@ conky.config = {
     xftalpha = 0.8,
     show_graph_scale = false,
     show_graph_range = false,
-    lua_load = lua_load_from_list({'util.lua', 'clock.lua'}),
-    lua_draw_hook_pre = 'clock_rings'
+    lua_load = conky.user_lua_path .. 'clock.lua',
+    lua_draw_hook_pre = 'clock_main'
 }
 
 conky.text = [[ ${voffset 90}${goto 280}${cpugraph 50,329 d5dcde 808080} ]]
+
+-- vi: ft=lua

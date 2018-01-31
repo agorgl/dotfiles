@@ -1,4 +1,13 @@
+--
 -- logwidget.lua
+--
+
+-- Extend package search to directory of current script
+current_path = debug.getinfo(1).source:match("@?(.*/)")
+package.path = current_path .. "?.lua;" .. package.path
+
+require 'util'
+require 'cairo'
 
 -- Config
 LOG_WIDGET_HEADER_FONT = "hack"
@@ -106,3 +115,36 @@ function logwidget(cr, title, content)
         cairo_move_to(cr, xpos, ypos)
     end
 end
+
+function logwidget_main(title, cmd)
+    if conky_window == nil then
+        return
+    end
+
+    local cs = cairo_xlib_surface_create(
+        conky_window.display,
+        conky_window.drawable,
+        conky_window.visual,
+        conky_window.width,
+        conky_window.height
+    )
+    cr = cairo_create(cs)
+
+    --local updates = tonumber(conky_parse('${updates}'))
+    --if updates > 5 then
+    --    print("Hello world")
+    --end
+
+    -- Strip surrounding brackets
+    local title = title:sub(2, -2)
+    local cmd = cmd:sub(2, -2)
+    local stdout = command(cmd)
+    logwidget(cr, title, stdout)
+
+    cairo_destroy(cr)
+    cairo_surface_destroy(cs)
+    cr = nil
+end
+
+-- Alias for conky config to find it
+conky_logwidget_main = logwidget_main

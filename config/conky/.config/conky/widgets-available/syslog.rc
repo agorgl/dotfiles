@@ -1,16 +1,8 @@
 --[[
-    Conky main configuration
-]]
+    Syslog widget
+--]]
 
--- Lua script path
-lsp = "~/.config/conky/lua"
-function lua_load_from_list(list)
-    local r = ""
-    for i, f in ipairs(list) do
-        r = r .. lsp .. '/' .. f .. ' '
-    end
-    return r
-end
+conky.user_lua_path = '~/.config/conky/lua/'
 
 conky.config = {
     alignment = 'bottom_left',
@@ -46,8 +38,10 @@ conky.config = {
     use_spacer = 'none',
     show_graph_scale = false,
     show_graph_range = false,
-    lua_load = lua_load_from_list({'util.lua','logwidget.lua','syslog.lua'}),
-    lua_draw_hook_post = 'conky_draw_main'
+    lua_load = conky.user_lua_path .. 'logwidget.lua',
+    lua_draw_hook_post = 'logwidget_main {SYS LOGS} {journalctl -b -e | cut -d" " -f3,5- | cut -c1-83 | tail -n 15}'
 }
 
 conky.text = [[]]
+
+-- vi: ft=lua
