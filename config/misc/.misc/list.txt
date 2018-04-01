@@ -3,6 +3,7 @@ adobe-source-sans-pro-fonts
 alsa-firmware
 alsa-utils
 amule
+arc-gtk-theme
 aspell
 base
 base-devel
