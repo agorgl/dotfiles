@@ -10,5 +10,4 @@ fi
 [ -f ~/.xprofile ] && . ~/.xprofile
 
 # Window manager
-sxhkd &
 exec bspwm
