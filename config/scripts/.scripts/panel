@@ -186,21 +186,22 @@ battery(){
 
 # Alsa volume
 volume(){
-    local alsa_volume=$(amixer get Master | grep -P '(Mono|Front Left): Playback' | grep -o '...%' | sed 's/\[//' | sed 's/%//' | sed 's/ //')
-    local alsa_state=$(amixer get Master | grep -o '\[on\]')
+    local volume_value=$(pamixer --get-volume)
+    local volume_state=$(pamixer --get-mute)
 
-    if [[ $alsa_state ]]; then
+    if [[ $volume_state == "false" ]]; then
         local volume_icon=""
-        if [[ $alsa_volume -ge 70 ]]; then
+        if [[ $volume_value -ge 70 ]]; then
             volume_icon=$ICON_VOL_UP
-        elif [[ $alsa_volume -gt 0 && $alsa_volume -lt 70 ]]; then
+        elif [[ $volume_value -gt 0 && $volume_value -lt 70 ]]; then
             volume_icon=$ICON_VOL_DOWN
-        elif [[ $alsa_volume -eq 0 ]]; then
-            volume_icon=$ICON_VOL_OFF
-        else
+        elif [[ $volume_value -eq 0 ]]; then
             volume_icon=$ICON_VOL_OFF
         fi
-        echo -e $volume_icon[$alsa_volume%]
+        echo -e $volume_icon[$volume_value%]
+    else
+        volume_icon=$ICON_VOL_OFF
+        echo -e $volume_icon
     fi
 }
 
@@ -357,7 +358,7 @@ panel_bar() {
                 local wm_infos=$(workspaces ${line#?})
                 ;;
         esac
-        printf "%s\n" "%{Sf}%{l}${wm_infos} ${music}%{Sf}%{c}${title}%{r}${messages} %{Sl}${wifi} ${volume} ${battery} ${date} ${clock} "
+        printf "%s\n" "%{Sf}%{l}${wm_infos} ${music}%{Sf}%{c}${title}%{r}${messages} %{Sl}${wifi} ${battery} ${volume} ${date} ${clock} "
     done
 }
 
