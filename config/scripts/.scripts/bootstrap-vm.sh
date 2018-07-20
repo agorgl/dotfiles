@@ -38,7 +38,7 @@ msg "Installing VM modules"
 sudo pacman -S xf86-input-vmmouse xf86-video-vmware
 
 # Install aur helper
-. `dirname "$0"`/aurman.sh
+~/.dot/dotfiles/scripts/.scripts/aurman.sh
 
 # Install aur packages
 msg "Installing aur packages..."

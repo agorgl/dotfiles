@@ -21,6 +21,7 @@ mkdir aurman-tmp
 cd aurman-tmp/
 curl https://aur.archlinux.org/cgit/aur.git/snapshot/aurman.tar.gz | tar xzv
 cd aurman
+gpg --recv-keys 465022E743D71E39
 makepkg -s -i
 cd ../../..
 rm -rf aurman-tmp/
