@@ -144,8 +144,8 @@ super + ctrl + {Left,Down,Up,Right}
 #
 # Media
 #
-XF86Audio{Raise,Lower}Volume
-    amixer set Master 1%{+,-} unmute
+XF86Audio{Lower,Raise}Volume
+    pamixer {-d,-i} 1
 
 XF86AudioMute
-    amixer -q set Master toggle
+    pamixer -t
