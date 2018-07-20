@@ -8,7 +8,6 @@ downgrade
 git-lfs
 indent
 lemonbar-xft-git
-pacaur
 paper-icon-theme-git
 powerline-fonts-git
 proggyfonts
