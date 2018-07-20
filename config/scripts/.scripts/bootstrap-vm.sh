@@ -38,23 +38,7 @@ msg "Installing VM modules"
 sudo pacman -S xf86-input-vmmouse xf86-video-vmware
 
 # Install aur helper
-msg "Installing aur helper..."
-mkdir pacaur-tmp
-cd pacaur-tmp/
-wget http://aur.archlinux.org/cgit/aur.git/snapshot/cower.tar.gz
-tar xzvf cower.tar.gz 
-cd cower
-gpg --keyserver pgp.mit.edu --recv-keys F56C0C53
-makepkg
-sudo pacman -U --noconfirm cower-*-x86_64.pkg.tar.xz 
-cd ..
-wget http://aur.archlinux.org/cgit/aur.git/snapshot/pacaur.tar.gz
-tar xzvf pacaur.tar.gz 
-cd pacaur
-makepkg
-sudo pacman -U --noconfirm pacaur-4.4.4-1-any.pkg.tar.xz 
-cd ../../..
-rm -rf pacaur-tmp/
+. `dirname "$0"`/aurman.sh
 
 # Install aur packages
 msg "Installing aur packages..."
