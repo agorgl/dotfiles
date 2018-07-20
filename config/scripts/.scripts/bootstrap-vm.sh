@@ -42,7 +42,7 @@ sudo pacman -S xf86-input-vmmouse xf86-video-vmware
 
 # Install aur packages
 msg "Installing aur packages..."
-pacaur -S --needed --noconfirm --noedit $(cat .dot/dotfiles/misc/.misc/list-aur.txt | tr "\n" " ")
+aurman -S --needed --noconfirm --noedit $(cat .dot/dotfiles/misc/.misc/list-aur.txt | tr "\n" " ")
 
 # Move the relevant dotfiles in their place
 msg "Bootstraping dotfiles..."
