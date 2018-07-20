@@ -16,7 +16,6 @@ python-themer-git
 termsyn-font
 qt5-styleplugins
 siji-git
-skypeforlinux-bin
 ttf-font-awesome
 ttf-monaco
 ttf-ms-fonts
