@@ -6,6 +6,7 @@ connman-gtk
 cower
 downgrade
 git-lfs
+indent
 lemonbar-xft-git
 pacaur
 paper-icon-theme-git

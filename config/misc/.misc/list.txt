@@ -41,7 +41,6 @@ gvfs-mtp
 gvim
 htop
 imagemagick
-indent
 iw
 lightdm
 lightdm-gtk-greeter
