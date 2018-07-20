@@ -27,11 +27,11 @@ sudo pacman -S --noconfirm git
 # Clone my dots
 cd
 msg "Cloning dotfiles..."
-git clone https://github.com/ElArtista/dotfiles
+git clone https://github.com/ElArtista/dotfiles .dot/dotfiles
 
 # Install official packages
 msg "Bootstraping packages..."
-sudo pacman -S --needed $(cat dotfiles/misc/.misc/list.txt | sed '/nvidia.*/d' | tr "\n" " ")
+sudo pacman -S --needed $(cat .dot/dotfiles/misc/.misc/list.txt | sed '/nvidia.*/d' | tr "\n" " ")
 
 # Install VM stuff
 msg "Installing VM modules"
@@ -42,14 +42,14 @@ sudo pacman -S xf86-input-vmmouse xf86-video-vmware
 
 # Install aur packages
 msg "Installing aur packages..."
-pacaur -S --needed --noconfirm --noedit $(cat dotfiles/misc/.misc/list-aur.txt | tr "\n" " ")
+pacaur -S --needed --noconfirm --noedit $(cat .dot/dotfiles/misc/.misc/list-aur.txt | tr "\n" " ")
 
 # Move the relevant dotfiles in their place
 msg "Bootstraping dotfiles..."
 cd
 rm -rf .bash*
-cd dotfiles/
-stow *
+cd .dot/dotfiles/
+stow -t ../../.. *
 cd ..
 
 # Install open-vm-tools
