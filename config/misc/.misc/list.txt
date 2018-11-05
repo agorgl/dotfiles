@@ -56,8 +56,6 @@ mupdf
 ncmpcpp
 noto-fonts
 ntfs-3g
-nvidia
-nvidia-libgl
 openssh
 p7zip
 pamixer

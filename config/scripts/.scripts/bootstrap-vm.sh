@@ -31,7 +31,7 @@ git clone https://github.com/ElArtista/dotfiles .dot/dotfiles
 
 # Install official packages
 msg "Bootstraping packages..."
-sudo pacman -S --needed $(cat .dot/dotfiles/misc/.misc/list.txt | sed '/nvidia.*/d' | tr "\n" " ")
+sudo pacman -S --needed $(cat .dot/dotfiles/misc/.misc/list.txt | tr "\n" " ")
 
 # Install VM stuff
 msg "Installing VM modules"
