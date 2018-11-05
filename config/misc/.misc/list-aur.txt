@@ -10,7 +10,6 @@ indent
 lemonbar-xft-git
 paper-icon-theme-git
 powerline-fonts-git
-python-themer-git
 termsyn-font
 qt5-styleplugins
 siji-git
