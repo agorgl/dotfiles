@@ -126,22 +126,29 @@ if [[ $(pgrep -cx panel) -gt 1 ]]; then
     exit 1
 fi
 
+# Kill child processes and reset global settings
+cleanup() {
+    # Reset bspwm top_padding
+    bspc config top_padding 0
+    # Kill child processes
+    kill $(jobs -p)
+}
+
 # Self reload through signal
 reset(){
-    bspc config top_padding 0
     trap - USR1
     logmsg "Resetting panel...: $0"
+    cleanup
     exec $0
 }
 trap reset USR1
 
 # Exit gracefully if terminated
 deinit(){
-    # Reset bspwm top_padding
-    bspc config top_padding 0
-    trap - TERM; kill 0
+    trap - TERM
+    cleanup
 }
-trap deinit INT TERM QUIT EXIT
+trap deinit TERM
 
 #################################################################
 #-
