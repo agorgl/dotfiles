@@ -21,7 +21,7 @@ conky.config = {
     font = 'DejaVu Sans Mono:size=18',
     gap_x = 5,
     gap_y = 30,
-    minimum_height = 300,
+    minimum_height = 280,
     minimum_width = 650,
     net_avg_samples = 2,
     no_buffers = true,
