@@ -15,9 +15,9 @@ conky.user_lua_path = conky_luadir
 -- Main configuration
 conky.config = {
     -- Position and Size
-    alignment = 'middle_left',
-    gap_x = 20,
-    gap_y = -50,
+    alignment = 'bottom_right',
+    gap_x = 10,
+    gap_y = 10,
     maximum_width = 320,
     minimum_width = 320,
     minimum_height = 280,

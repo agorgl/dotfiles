@@ -13,13 +13,13 @@ require 'util'
 conky.user_lua_path = conky_luadir
 
 conky.config = {
-    alignment = 'middle_left',
+    alignment = 'top_right',
     background = false,
     border_width = 1,
     double_buffer = true,
     draw_borders = false,
-    gap_x = 50,
-    gap_y = 160,
+    gap_x = 30,
+    gap_y = 60,
     minimum_width = 260,
     minimum_height = 110,
     own_window = true,
