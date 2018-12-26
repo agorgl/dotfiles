@@ -1,0 +1,171 @@
+--[[
+-- Monitor widget
+--]]
+
+-- Extend package search to lua directory
+conky_luadir = debug.getinfo(1).source:match("@?(.*/).*/") .. '/lua/'
+package.path = conky_luadir .. "?.lua;" .. package.path
+
+-- Import utils
+require 'util'
+
+-- Search path for lua_* config variables
+conky.user_lua_path = conky_luadir
+
+-- Main configuration
+conky.config = {
+    -- Position and Size
+    alignment = 'middle_left',
+    gap_x = 20,
+    gap_y = -50,
+    maximum_width = 320,
+    minimum_width = 320,
+    minimum_height = 280,
+    use_spacer = 'none',
+
+    -- Visual values
+    font = 'Bitstream Vera Sans:size=8',
+    font1 = 'Bitstream Vera Sans:size=10',
+    default_color = config_color("color8"),
+    default_outline_color = 'red',
+    default_shade_color = 'black',
+    color2 = config_color("color4"),
+    template1 = 'sample_template\1 \2 \3',
+
+    -- Window
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_colour = 'black',
+    own_window_hints = nil, -- undecorated,below,above,sticky,skip_taskbar,skip_pager
+    own_window_title = 'Conky',
+    own_window_argb_visual = true,
+    own_window_argb_value = 0,
+    own_window_transparent = false,
+    own_window_type = 'desktop',
+    double_buffer = true,
+    xinerama_head = 0,
+    out_to_x = true,
+
+    -- Metrics
+    cpu_avg_samples = 4,
+    diskio_avg_samples = 8,
+    net_avg_samples = 8,
+    top_cpu_separate = true,
+    top_name_verbose = false,
+    top_name_width = 15,
+
+    -- Run and update
+    background = false,
+    update_interval = 0.5,
+    update_interval_on_battery = 1,
+    detect_battery = 'BAT0,BAT1',
+    no_buffers = true,
+    total_run_times = 0,
+
+    -- Dimensions
+    default_bar_height = 6,
+    default_bar_width = 0,
+    default_gauge_height = 25,
+    default_gauge_width = 40,
+    default_graph_height = 25,
+    default_graph_width = 0,
+
+    -- Debug
+    draw_borders = false,
+    draw_graph_borders = false,
+    draw_outline = false,
+    draw_shades = false,
+    border_inner_margin = 10,
+    border_outer_margin = 1,
+    border_width = 1,
+    stippled_borders = 4,
+    max_text_width = 0,
+
+    -- Font and locale
+    use_xft = true,
+    xftalpha = 1,
+    short_units = false,
+    override_utf8_locale = true,
+    format_human_readable = true,
+    pad_percents = 0,
+
+    -- Lua
+    lua_draw_hook_post = nil, -- function_name [function arguments]
+    lua_draw_hook_pre = nil,  -- function_name [function arguments]
+    lua_load = nil,
+    lua_shutdown_hook = nil,  -- function_name [function arguments]
+    lua_startup_hook = nil,   -- function_name [function arguments]
+}
+
+--
+-- Helper variables and functions
+--
+
+-- Half of viewport width
+half_width = (conky.config.maximum_width
+            + conky.config.border_width * 2
+            + conky.config.border_inner_margin * 2
+            + conky.config.border_outer_margin * 2) / 2
+
+-- Active net device
+netdev = command('ip link show | grep -P -o -m1 "(?<=\\d:\\s)\\S+(?=:.*state\\s+UP)"'):gsub( '\n$', '')
+
+--
+-- Conky text construction
+--
+
+-- CPU
+cpu_text = [[
+${color2}${cpugraph 40}${color}
+${color2}${voffset -18}${hr}${color}
+CPU${alignr}${cpu}%
+]]
+
+-- RAM
+ram_text = [[
+${color2}${memgraph 40}${color}
+${color2}${voffset -18}${hr}${color}
+RAM${alignr}(${mem} / ${memmax}) - ${memperc}%
+]]
+
+-- DISK
+disk_text = [[
+${color2}${diskiograph 40,0 1000}${color}
+${color2}${voffset -18}${hr}${color}
+DISK${alignr}${diskio}
+]]
+
+-- NET
+--[[
+network_text = ''
+    .. '${color2}${downspeedgraph {net} 40,{gw}}${goto {m}}${upspeedgraph {net} 40}${color}\n'
+    .. 'DOWN: ${downspeedf {net}} Kb/s${goto {m}}UP: ${upspeedf {net}} Kb/s'
+    .. '\n'
+network_text = network_text:gsub('{net}', netdev)
+network_text = network_text:gsub('{gw}', half_width - 24)
+network_text = network_text:gsub('{m}', half_width)
+]]
+
+-- PROC
+processes_text = ''
+    .. '${voffset 25}LOAD${alignr}${loadavg}\n${voffset -4}${color2}${hr}${color}\n'
+    .. 'CPU${goto {hw}}RAM\n'
+processes_text = processes_text:gsub('{hw}', half_width)
+for i = 1, 5 do
+    local l = '${color2}${top name {i}}${color}${goto 120}${top cpu {i}}%'
+           .. '${goto {hw}}'
+           .. '${color2}${top_mem name {i}}${color}${alignr}${top_mem mem_res {i}}'
+           .. '\n'
+    l = l:gsub('{i}', i)
+    l = l:gsub('{hw}', half_width)
+    processes_text = processes_text .. l
+end
+
+local vpad = '${voffset 3}'
+conky.text = ''
+    .. vpad .. cpu_text       .. vpad
+    .. vpad .. ram_text       .. vpad
+    .. vpad .. disk_text      .. vpad
+    .. vpad .. processes_text .. vpad
+
+-- vi: ft=lua
