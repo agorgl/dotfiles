@@ -1,0 +1,15 @@
+#!/bin/bash
+SWAPFILE=/swapfile
+if [ ! -f $SWAPFILE ]; then
+    echo [+] Creating $SWAPFILE...
+    fallocate -l 8G $SWAPFILE
+    chmod 600 $SWAPFILE
+    mkswap $SWAPFILE
+    echo [+] Enabling $SWAPFILE
+    swapon $SWAPFILE
+else
+    echo [+] Disabling $SWAPFILE
+    swapoff $SWAPFILE
+    echo [+] Deleting $SWAPFILE...
+    rm $SWAPFILE
+fi
