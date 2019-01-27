@@ -267,7 +267,7 @@ function draw_time(cr)
     -- Setup datetime font
     setup_dtime_font(cr, 24)
     -- Current time
-    local hours = os.date("%I")
+    local hours = os.date("%H")
     local mins = os.date("%M")
     local time_text = hours .. ":" .. mins
     -- Calculate text positioning
