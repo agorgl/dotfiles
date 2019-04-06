@@ -12,6 +12,7 @@ Params:
 TAP=tap0
 NIC=$(route | grep '^default' | grep -o '[^ ]*$')
 NET=10.10.10
+UVR=uefi_vars.bin
 
 function trace { echo " -  $@"; }
 function info { echo "[+] $@"; }
@@ -63,6 +64,18 @@ function net_remove {
     fi
 }
 
+function uefi_setup {
+    local vars_file=/usr/share/ovmf/x64/OVMF_VARS.fd
+    if [ -f $vars_file ]; then
+        trace "Found OVMF!"
+        [ ! -f $UVR ] && cp $vars_file $UVR
+        trace "Enabling UEFI support"
+        uefi_params="-drive if=pflash,format=raw,readonly,file=/usr/share/ovmf/x64/OVMF_CODE.fd -drive if=pflash,format=raw,file=$UVR"
+    else
+        trace "OVMF not found"
+    fi
+}
+
 function cleanup {
     info "Cleaning up..."
     net_remove
@@ -87,11 +100,14 @@ trap cleanup EXIT
 info "Setting up network..."
 net_setup
 
+info "Setting up UEFI..."
+uefi_setup
+
 info "Firing up VM..."
 [ -n "$VMDISK" ] && disk_params="-drive file=$VMDISK,if=virtio"
 [ -n "$ISOIMG" ] && drive_params="-boot d -cdrom $ISOIMG"
 qemu-system-x86_64 \
-  $disk_params $drive_params -usb -device usb-tablet -show-cursor \
+  $uefi_params $disk_params $drive_params -usb -device usb-tablet -show-cursor \
   -m 4096 -enable-kvm -M q35 -cpu host -smp 4,sockets=1,cores=4,threads=1 \
   -vga virtio -display gtk,gl=off \
   -netdev tap,id=net0,ifname=$TAP,script=no,downscript=no -device e1000,netdev=net0,mac=DE:AD:BE:EF:E0:01
