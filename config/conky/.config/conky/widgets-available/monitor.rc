@@ -130,7 +130,7 @@ RAM${alignr}(${mem} / ${memmax}) - ${memperc}%
 
 -- DISK
 disk_text = [[
-${color2}${diskiograph 40,0 1000}${color}
+${color2}${diskiograph 40,0 10000}${color}
 ${color2}${voffset -18}${hr}${color}
 DISK${alignr}${diskio}
 ]]
