@@ -18,7 +18,7 @@ done
 pkglist=($(printf "%s\n" ${pkglist[@]} | sort))
 
 # Gather installed packages
-installed_list=($(pacaur -Qqe | sort))
+installed_list=($(yay -Qqe | sort))
 
 # Retrieve foreign packages (not installed by pacman)
 foreign_packages=($(pacman -Qqme | sort))
