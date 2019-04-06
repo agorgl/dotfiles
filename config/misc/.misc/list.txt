@@ -26,7 +26,6 @@ dhclient
 dos2unix
 doxygen
 dunst
-expac
 feh
 file-roller
 filelight
