@@ -17,14 +17,13 @@ function msg {
 
 # Install aur helper
 msg "Installing aur helper..."
-mkdir aurman-tmp
-cd aurman-tmp/
-curl https://aur.archlinux.org/cgit/aur.git/snapshot/aurman.tar.gz | tar xzv
-cd aurman
-gpg --recv-keys 465022E743D71E39
+mkdir yay-tmp
+cd yay-tmp/
+curl https://aur.archlinux.org/cgit/aur.git/snapshot/yay.tar.gz | tar xzv
+cd yay
 makepkg -s -i
 cd ../../..
-rm -rf aurman-tmp/
+rm -rf yay-tmp/
 
 # Finish
 msg "Done."
