@@ -3,8 +3,8 @@
 #
 
 # Launch Terminal
-super + Return
-    urxvt
+super + {_,shift +} Return
+    { ,bspc rule -a URxvt -o state=floating && } urxvt
 
 # Start launcher
 super + space
