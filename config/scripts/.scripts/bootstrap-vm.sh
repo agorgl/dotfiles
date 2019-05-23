@@ -11,10 +11,7 @@ trap ctrl_c INT
 COL_RESET="\e[0m"
 COL_TEXT="\e[1;36m"
 
-function msg
-{
-    echo -e "$COL_TEXT$1$COL_RESET"
-}
+function msg { echo -e "$COL_TEXT$1$COL_RESET"; }
 
 # Update
 msg "Updating system..."
