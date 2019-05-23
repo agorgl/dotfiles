@@ -13,6 +13,14 @@ function command(line)
 end
 
 --
+-- Execute external command and return result
+--
+function command_exec(line)
+    local result = os.execute(line)
+    return result
+end
+
+--
 -- Tokenize string to given delimeter
 --
 function string:split(delimiter)

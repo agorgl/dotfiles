@@ -128,6 +128,16 @@ ${color2}${voffset -18}${hr}${color}
 RAM${alignr}(${mem} / ${memmax}) - ${memperc}%
 ]]
 
+-- GPU
+has_nvidia = command_exec('lspci | grep -i "vga\\|3d\\|2d" | grep -iq nvidia')
+if has_nvidia then
+gpu_text = [[
+${color2}${nvidiagraph gpuutil 40,0 0}${color}
+${color2}${voffset -18}${hr}${color}
+GPU${alignr}(${nvidia memused 0}MB / ${nvidia memtotal 0}MB) - ${nvidia gpuutil 0}%
+]]
+end
+
 -- DISK
 disk_text = [[
 ${color2}${diskiograph 40,0 10000}${color}
@@ -162,10 +172,13 @@ for i = 1, 5 do
 end
 
 local vpad = '${voffset 3}'
-conky.text = ''
+local text = ''
     .. vpad .. cpu_text       .. vpad
     .. vpad .. ram_text       .. vpad
+    .. (has_nvidia and (vpad .. gpu_text .. vpad) or '')
     .. vpad .. disk_text      .. vpad
     .. vpad .. processes_text .. vpad
+
+conky.text = text
 
 -- vi: ft=lua
