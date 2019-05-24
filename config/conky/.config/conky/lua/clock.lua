@@ -18,7 +18,7 @@ CLOCK_Y = 155
 CLOCK_COLOUR = {COLOR_MAIN, 0.8}
 RING_BG_COL = COLOR_MAIN
 RING_FG_COL = COLOR_MAIN
-FONT = "DejaVu Sans"
+FONT = "Open Sans"
 FONT_COL = {COLOR_ALT, 0xFF}
 CPUGRAPH_LENGTH = 330
 
@@ -224,7 +224,7 @@ end
 --
 function setup_dtime_font(cr, font_sz)
     -- Set font properties
-    cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD)
+    cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, font_sz)
     cairo_set_source_rgba(cr, rgba_to_r_g_b_a(FONT_COL))
 end
@@ -237,8 +237,8 @@ function draw_analytic_date(cr, x, y)
     local px = x + 8
     local py = y + 22
     -- Setup datetime font
-    setup_dtime_font(cr, 17)
-    local text = conky_parse("${time %A %d  %B  %Y}")
+    setup_dtime_font(cr, 18)
+    local text = conky_parse("${time %A %d %B %Y}")
     cairo_move_to(cr, px, py)
     cairo_show_text(cr, text)
     cairo_stroke(cr)
@@ -265,7 +265,7 @@ end
 --
 function draw_time(cr)
     -- Setup datetime font
-    setup_dtime_font(cr, 24)
+    setup_dtime_font(cr, 25)
     -- Current time
     local hours = os.date("%H")
     local mins = os.date("%M")
