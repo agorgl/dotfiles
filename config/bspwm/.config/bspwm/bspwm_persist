@@ -1,0 +1,123 @@
+#!/bin/bash
+shopt -s nullglob
+
+STATEFOLDER=~/.cache/bspwm_persist
+declare -A CLASSMAP
+
+#----------------------------------------------------------------------
+# Utils
+#----------------------------------------------------------------------
+function window_class() {
+    sed -e 's/^"//' -e 's/"$//' <<< $(xprop -id $1 -f WM_CLASS 8u " \$1\n" WM_CLASS | awk '{print $2}')
+}
+
+function window_type() {
+    local wtype=$(xprop -id $1 _NET_WM_WINDOW_TYPE | sed -nr 's/.*=\s+//p')
+    if [ -z "$wtype" ]; then
+        wtype=_NET_WM_WINDOW_TYPE_NORMAL
+    fi
+    echo $wtype
+}
+
+function add_rule() {
+    local class=$1
+    local state=$2
+    bspc rule -r $class
+    bspc rule -a $class state=$state
+}
+
+function save_rule() {
+    local class=$1
+    local state=$2
+    local statefile=$STATEFOLDER/$class
+    echo $state > $statefile
+}
+
+function load_class_state() {
+    local class=$1
+    local statefile=$STATEFOLDER/$class
+    if [[ ! -f $statefile ]]; then
+        echo tiled > $statefile
+    fi
+    cat $statefile
+}
+
+#----------------------------------------------------------------------
+# Callbacks
+#----------------------------------------------------------------------
+function node_created() {
+    local nid=$1
+    local class=$(window_class $nid)
+    echo New\($nid\): $class
+    CLASSMAP[$nid]=$class
+}
+
+function node_destroyed() {
+    local nid=$1
+    local class=${CLASSMAP[$nid]}
+    unset ${CLASSMAP[$nid]}
+    echo Delete\($nid\): $class
+}
+
+
+function node_state_changed() {
+    local nid=$1
+    local state=$2
+    local class=${CLASSMAP[$nid]}
+    echo Change\($nid\): $class -\> $state
+    #add_rule $class $state
+    save_rule $class $state
+}
+
+#----------------------------------------------------------------------
+# Main
+#----------------------------------------------------------------------
+function load_rules() {
+    if [[ ! -d "$STATEFOLDER" ]]; then
+        mkdir -p $STATEFOLDER
+    fi
+
+    for sf in $STATEFOLDER/*; do
+        local class=$(basename $sf)
+        echo Loading rule for $class
+        add_rule $class $(load_class_state $class)
+    done
+}
+
+function bspwm_state_track_loop() {
+    while read -r event; do
+        local params=(${event})
+        local ev_type=${params[0]}
+        case "${ev_type}" in
+            node_manage)
+                node_created ${params[3]}
+                ;;
+            node_unmanage)
+                node_destroyed ${params[3]}
+                ;;
+            node_state)
+                if [[ ${params[5]} == "on" ]]; then
+                    node_state_changed ${params[3]} ${params[4]}
+                fi
+                ;;
+        esac
+    done < <(bspc subscribe node)
+}
+
+function bspwm_rules_fetcher() {
+    local wid=$1
+    local class=$2
+    local instance=$3
+    local monitor=$4
+    local desktop=$5
+    local node_selectors=$6
+
+    local window_type=$(window_type $wid)
+    local window_state=tiled
+
+    if [ "$window_type" != "_NET_WM_WINDOW_TYPE_NORMAL" ]; then
+        notify-send "Non-normal window: $class - $window_type"
+        window_state=floating
+    fi
+    echo state=$window_state
+}

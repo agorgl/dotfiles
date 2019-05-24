@@ -13,5 +13,11 @@ for m in $(bspc query -M); do
     bspc monitor $m -d $(echo -e '\ue174') $(echo -e '\ue175') $(echo -e '\ue176') $(echo -e '\ue177')
 done
 
+if [ ! -z "$BSPWM_PERSIST_WND_STATE" ]; then
+    source $(dirname $0)/bspwm_persist
+    bspwm_state_track_loop &
+    bspc config external_rules_command $(dirname $0)/bspwm_rules_fetcher
+fi
+
 sxhkd &
 panel &

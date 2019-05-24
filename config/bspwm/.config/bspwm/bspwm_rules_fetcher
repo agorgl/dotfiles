@@ -1,0 +1,36 @@
+#!/bin/bash
+
+STATEFOLDER=~/.cache/bspwm_persist
+
+function window_type() {
+    local wtype=$(xprop -id $1 _NET_WM_WINDOW_TYPE | sed -nr 's/.*=\s+//p')
+    if [ -z "$wtype" ]; then
+        wtype=_NET_WM_WINDOW_TYPE_NORMAL
+    fi
+    echo $wtype
+}
+
+function load_class_state() {
+    local class=$1
+    local statefile=$STATEFOLDER/$class
+    if [[ ! -f $statefile ]]; then
+        echo tiled > $statefile
+    fi
+    cat $statefile
+}
+
+wid=$1
+class=$2
+instance=$3
+monitor=$4
+desktop=$5
+node_selectors=$6
+
+window_type=$(window_type $wid)
+window_state=$(load_class_state $class)
+
+if [ "$window_type" != "_NET_WM_WINDOW_TYPE_NORMAL" ]; then
+    notify-send "Non-normal window: $class - $window_type"
+    window_state=floating
+fi
+echo state=$window_state
