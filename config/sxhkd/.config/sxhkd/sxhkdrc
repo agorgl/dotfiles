@@ -71,10 +71,20 @@ super + ctrl + {x,y,z}
 #
 
 # Focus the node in the given direction. If monitor is empty, focus monitor in given direction
-super + {_,shift + }{h,j,k,l}
-    act={f,s}; \
+super + {h,j,k,l}
     dir={west,south,north,east}; \
-    bspc query -N -d && bspc node -$act $dir || bspc monitor -f $dir
+    bspc query -N -d \
+        && bspc node -f $dir \
+        || bspc monitor -f $dir
+
+# Move the node in the given direction. If on edge of a monitor move to neighboring monitor
+super + shift + {h,j,k,l}
+    dir={west,south,north,east}; \
+    bspc query -N -n $dir.local.leaf \
+        && bspc node -s $dir \
+        || (bspc query -N -n $dir \
+            && bspc node -n $dir.leaf --follow \
+            || bspc node -m $dir --follow)
 
 # Focus the node for the given path jump
 super + {p,b,comma,period}
