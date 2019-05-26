@@ -110,6 +110,10 @@ super + {Left, Up, Right, Down}
 super + shift + {Left, Up, Right, Down}
     bspc node -m {west, north, east, south}
 
+# Rotate the selected tree
+super + {_,shift + }x
+    bspc node -R {+,-}90
+
 #
 # Preselect
 #
