@@ -374,26 +374,28 @@ spawn_tray() {
     # Calculate icon size relative to panel size
     local icn_size=$(($PANEL_HEIGHT - 5))
 
-    # Find rightmost display dimensions
-    local max_offs=0
-    local use_dims=0
+    # Find the most optimal position for the tray
+    local cp=(0 0) # Current position
+    local mo=(0 0) # Max offset
     while read -r line; do
-        arr=($line)
-        cur_offs=${arr[1]:-0}
-        if (( $cur_offs >= $max_offs )); then
-            max_offs=$cur_offs
-            use_dims=${arr[0]}
+        arr=(${line/x/ })
+        local co=(${arr[2]:-0} ${arr[3]:-0})                                     # Current offsets are the +offx+offy part of screen info
+        local rb=($(( ${arr[0]:-0} + ${co[0]} )) $(( ${arr[1]:-0} + ${co[1]} ))) # Rightmost bottom corner is dimen size + dimen offset
+        # If current offsets are bigger than the max offsets
+        if (( ${co[1]} >= ${mo[1]} )) && (( ${co[0]} >= ${mo[0]} )); then
+            mo=(${co[@]}) # Update max offsets
+            cp=(${rb[@]}) # Update current position
         fi
-    done <<< `xrandr | grep -w connected | awk -F'[ +]' '{print $3,$4}' | sed 's/primary\s//'`
+    done <<< `xrandr | grep -w connected | sed 's/primary\s//' | awk -F'[ +]' '{print $3,$4,$5}'`
 
-    # Extract height and calculate height offset
-    local use_dims=${use_dims/x/ }
-    local dims_arr=($use_dims)
-    local h=${dims_arr[1]}
+    # Calculate absolute position
+    local w=${cp[0]}
+    local h=${cp[1]}
+    local x=$(( w - $icn_size ))
     local y=$(( h - $icn_size ))
 
     # Fire up tray
-    stalonetray -bg $COLOR_BACKGROUND -t -i $icn_size --grow-gravity E --icon-gravity E --geometry 1x1-0+$y --window-layer top --window-strut none --kludges force_icons_size &
+    stalonetray -bg $COLOR_BACKGROUND -t -i $icn_size --grow-gravity E --icon-gravity E --geometry 1x1+$x+$y --window-layer top --window-strut none --kludges force_icons_size &
 }
 
 # Creates panel
