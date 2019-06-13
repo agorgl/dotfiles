@@ -15,6 +15,8 @@ Basic commands:
   q,query        <color>        query given terminal color for current value
   qs,querysaved  <color>        query given terminal color for persistent value
   c,change       <color>        change given terminal color's value
+Flags:
+  -k,--keep-bg                  keep current background (used with switch command)
 "
 
 die() {
@@ -246,7 +248,19 @@ case "$#" in
             r|reset)
                 reset ;;
             s|switch)
-                [ $# -ne 1 ] && usage
+                [ $# -gt 2 ] && usage
+                if [ $# -eq 2 ]; then
+                    case "$2" in
+                        -k|--keep-bg)
+                            bgkeys=(background border)
+                            for k in ${bgkeys[@]}; do
+                                colors=("${colors[@]/$k}")
+                            done
+                            ;;
+                        *)
+                        usage ;;
+                    esac
+                fi
                 switch "$1" ;;
             q|query)
                 [ $# -ne 1 ] && usage
