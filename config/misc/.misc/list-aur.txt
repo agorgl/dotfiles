@@ -7,11 +7,12 @@ downgrade
 git-lfs
 indent
 lemonbar-xft-git
+mirage
 paper-icon-theme-git
 powerline-fonts-git
-termsyn-font
 qt5-styleplugins
 siji-git
+termsyn-font
 ttf-font-awesome
 ttf-monaco
 ttf-ms-fonts
