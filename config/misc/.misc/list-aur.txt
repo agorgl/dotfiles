@@ -11,6 +11,7 @@ mirage
 paper-icon-theme-git
 powerline-fonts-git
 qt5-styleplugins
+rxvt-unicode-patched
 siji-git
 termsyn-font
 ttf-font-awesome
