@@ -39,33 +39,6 @@ URxvt.url-launcher: /usr/bin/xdg-open
 URxvt.matcher.button: 1
 
 ! ------------------------------------------------------------------------------
-! XSt settings
-! ------------------------------------------------------------------------------
-!st.termname: st-256color
-st.termname: xterm-256color
-! if you do not set shell, precedence is: -e arg, utmp option, SHELL env var, /etc/passwd shell
-!st.shell: /bin/bash
-! The following options options can be reloaded via USR1 signal.
-st.font: xos4 Terminess Powerline:pixelsize=14
-st.borderpx: 20
-! Available cursor values: 2 4 6 7 = █ _ | ☃ (1 3 5 are blinking versions)
-st.cursorshape: 1
-st.cursorthickness: 2
-st.cursorblinkstyle: 0
-st.cursorblinkontype: 0
-st.bold_font: 0
-st.xfps: 120
-st.actionfps: 30
-st.chscale: 1.0
-st.cwscale: 1.0
-st.blinktimeout: 600
-st.bellvolume: 100
-! This is a char that is exposed like so: `printf '\033[z'`
-st.prompt_char: $
-! Opacity 255 means what terminal will be not transparent, 0 - fully transparent
-st.opacity: 255
-
-! ------------------------------------------------------------------------------
 ! Rofi
 ! ------------------------------------------------------------------------------
 ! Enabled modes
