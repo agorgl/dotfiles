@@ -127,7 +127,7 @@ ttf-ubuntu-font-family
 udiskie
 unrar
 unzip
-valgrind-multilib
+valgrind
 vnstat
 vorbis-tools
 weechat
