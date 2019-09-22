@@ -4,7 +4,6 @@ cli-visualizer-git
 conky-lua-nv
 connman-gtk
 downgrade
-git-lfs
 indent
 lemonbar-xft-git
 mirage

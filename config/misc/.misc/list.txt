@@ -44,6 +44,7 @@ filelight
 galculator
 gdb
 git
+git-lfs
 gnu-netcat
 grub
 gtk-engine-murrine
