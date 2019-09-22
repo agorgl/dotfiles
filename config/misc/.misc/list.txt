@@ -4,7 +4,6 @@ acpid
 adobe-source-sans-pro-fonts
 alsa-firmware
 alsa-utils
-amule
 arc-gtk-theme
 aspell
 base
@@ -152,7 +151,6 @@ xorg-xsetroot
 xorg-xwininfo
 xsel
 xterm
-yajl
 youtube-dl
 zathura
 zathura-pdf-mupdf
