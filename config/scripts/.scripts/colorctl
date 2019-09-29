@@ -1,0 +1,107 @@
+#!/bin/bash
+#set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: colorctl [help|list|switch <colorscheme>]"
+HELP="\
+colorctl <command>
+Basic commands:
+  h,help                        print this help message
+  l,list                        list available colorschemes
+  s,switch       <colorscheme>  change terminal colors to <colorscheme>
+  c,cycle                       cycle through available colorschemes
+"
+
+die() {
+    echo >&2 "$*"
+    exit 1
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+COLORSCHEMES=~/.Xcolors
+
+current() {
+    echo $(basename $(readlink -f $HOME/.xcolor))
+}
+
+refresh() {
+    # Update color in all open terminals
+    echo $(current) >> /tmp/curcol
+
+    # Refresh X resource database
+    xrdb ~/.Xresources
+
+    # Reload panel
+    pgrep panel > /dev/null && pkill -USR1 -x panel || panel
+
+    # Reload conky widgets
+    killall -SIGUSR1 conky
+}
+
+switch() {
+    local cs=$COLORSCHEMES/$1
+    [ -f $HOME/.xcolor ] && rm $HOME/.xcolor
+    ln -s $cs $HOME/.xcolor
+    refresh
+    notify-send -i info -t 2000 "Changed colorscheme to: " $(current)
+}
+
+list() {
+    [ ! -d "$COLORSCHEMES" ] && die "error: colorschemes directory '$COLORSCHEMES' doesn't exist"
+    cd "$COLORSCHEMES"
+    for file in *; do
+        echo "${file}"
+    done
+}
+
+cycle() {
+    [ ! -d "$COLORSCHEMES" ] && die "error: colorschemes directory '$COLORSCHEMES' doesn't exist"
+    cd "$COLORSCHEMES"
+    local ccol=$(current)
+    local csch=($(ls *))
+    echo Previous: $ccol
+    for i in "${!csch[@]}"; do
+       if [[ "${csch[$i]}" = "${ccol}" ]]; then
+           [ ${i} -lt $((${#csch[@]} - 1)) ] && next_index=$((${i} + 1)) || next_index=0
+           local next_colorscheme=${csch[$next_index]}
+           echo Current: $next_colorscheme
+           switch $next_colorscheme
+       fi
+    done
+}
+
+#----------------------------------------------------------------------
+# Command line interface
+#----------------------------------------------------------------------
+usage() {
+    die "$USAGE"
+}
+
+help() {
+    echo "$HELP"
+}
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        cmd="$1"
+        shift
+        case "$cmd" in
+            h|help)
+                help ;;
+            l|list)
+                list ;;
+            s|switch)
+                [ $# -ne 1 ] && usage
+                switch "$1" ;;
+            c|cycle)
+                cycle ;;
+            *)
+                usage ;;
+        esac
+esac
