@@ -1,0 +1,40 @@
+--[[
+-- Polyhedron widget
+--]]
+
+-- Extend package search to lua directory
+conky_luadir = debug.getinfo(1).source:match("@?(.*/).*/") .. '/lua/'
+package.path = conky_luadir .. "?.lua;" .. package.path
+
+-- Import utils
+require 'util'
+
+-- Search path for lua_* config variables
+conky.user_lua_path = conky_luadir
+
+conky.config = {
+    alignment = 'middle_middle',
+    background = false,
+    border_width = 1,
+    double_buffer = true,
+    draw_borders = true,
+    gap_x = 0,
+    gap_y = 0,
+    minimum_width = 640,
+    minimum_height = 480,
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_colour = 'black',
+    own_window_argb_visual = true,
+    own_window_argb_value  = 0,
+    own_window_transparent = false,
+    own_window_type = 'desktop',
+    update_interval = 0.03,
+    use_xft = true,
+    lua_load = conky.user_lua_path .. 'poly.lua',
+    lua_draw_hook_pre = 'poly_main'
+}
+
+conky.text = [[]]
+
+-- vi: ft=lua
