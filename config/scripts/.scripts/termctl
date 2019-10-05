@@ -16,6 +16,7 @@ Basic commands:
   qs,querysaved  <color>        query given terminal color for persistent value
   c,change       <color>        change given terminal color's value
 Flags:
+  -a,--all                      changes affect all open terminals
   -k,--keep-bg                  keep current background (used with switch command)
 "
 
@@ -46,7 +47,7 @@ send_osc() {
     send_escape_sequence $command
 }
 
-change_color() {
+send_color_osc() {
     case $1 in
         color*)
             send_osc 4 "${1#color};$2" ;;
@@ -65,6 +66,16 @@ change_color() {
         border)
             send_osc 708 "$2" ;;
     esac
+}
+
+change_color() {
+    if [ "$change_globally" = "true" ]; then
+        for f in /dev/pts/*[0-9]; do
+            send_color_osc $@ > $f
+        done
+    else
+        send_color_osc $@
+    fi
 }
 
 remap_uint16_to_uint8() {
@@ -118,7 +129,7 @@ query_color() {
     # Set tty in no echo and raw mode, with minimum zero input chars
     stty raw -echo min 0 time 0
     # Send osc query command
-    change_color $1 "?"
+    send_color_osc $1 "?"
     # xterm needs the sleep (or "time 1" in stty opts, but that is 1/10th second).
     sleep 0.00000001
     read -r answer
@@ -233,6 +244,16 @@ usage() {
 help() {
     echo "$HELP"
 }
+
+change_globally=false
+for arg in "$@"; do
+    case $arg in
+        -a|--all)
+            change_globally=true
+            shift
+            ;;
+    esac
+done
 
 case "$#" in
     0)
