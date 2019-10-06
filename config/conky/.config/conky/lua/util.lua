@@ -127,7 +127,7 @@ function main_common(update_fn)
 
     -- Update
     local updates = tonumber(conky_parse('${updates}'))
-    if updates > 5 then
+    if updates > 3 then
         update_fn(display)
     end
 

@@ -313,7 +313,7 @@ function clock_main()
     -- Spawn with some delay
     local updates = conky_parse('${updates}')
     update_num = tonumber(updates)
-    if update_num > 5 then
+    if update_num > 3 then
         -- Clock
         for i in pairs(arc_settings_table) do
             local pt = arc_settings_table[i]
