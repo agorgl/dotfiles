@@ -53,21 +53,11 @@ end
 --
 -- Fetch color value using xcolor script
 --
-function color_by_name(name)
+function xcolor(name)
     local cmd = "xcolor" .. " " .. name
     local stdout = command(cmd)
     local colstr = "0x" .. stdout:sub(2)
     return tonumber(colstr)
-end
-
---
--- Fetch color value using xcolor script (for conky config use)
---
-function config_color(name)
-    local cmd = "xcolor" .. " " .. name
-    local stdout = command(cmd):gsub('\n$', '')
-    local colstr = stdout:sub(2)
-    return colstr
 end
 
 --

@@ -6,16 +6,14 @@
 current_path = debug.getinfo(1).source:match("@?(.*/)")
 package.path = current_path .. "?.lua;" .. package.path
 
+require 'conf'
 require 'util'
 require 'cairo'
 
 -- Config
-LOG_WIDGET_HEADER_FONT = "hack"
+LOG_WIDGET_FONT = "Hack"
 LOG_WIDGET_HEADER_SIZE = 18
-LOG_WIDGET_HEADER_COLOR = {color_by_name("color4"), 0xFF}
-LOG_WIDGET_CONTENT_FONT = "hack"
 LOG_WIDGET_CONTENT_SIZE = 9
-LOG_WIDGET_CONTENT_COLOR = {color_by_name("color8"), 0xFF}
 
 local function logwidget_set_font_options(cr)
     -- Font options
@@ -32,9 +30,11 @@ end
 function logwidget_header(cr, title, xpos, ypos)
     -- Header opts
     local header_text = title
-    cairo_select_font_face(cr, LOG_WIDGET_HEADER_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
+    local header_font = LOG_WIDGET_FONT
+    local header_color = {config_color("main"), 0xFF}
+    cairo_select_font_face(cr, header_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, LOG_WIDGET_HEADER_SIZE)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(LOG_WIDGET_HEADER_COLOR))
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(header_color))
 
     -- Calculate text decoration positioning
     -- Members: x_bearing y_bearing width height x_advance y_advance
@@ -93,9 +93,11 @@ function logwidget(cr, title, content)
     -- Draw header
     xpos, ypos = logwidget_header(cr, title, xpos, ypos)
     -- Syslog opts
-    cairo_select_font_face(cr, LOG_WIDGET_CONTENT_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
+    local content_font = LOG_WIDGET_FONT
+    local content_color = {config_color("altn"), 0xFF}
+    cairo_select_font_face(cr, content_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, LOG_WIDGET_CONTENT_SIZE)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(LOG_WIDGET_CONTENT_COLOR))
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(content_color))
     -- Split contents to lines
     local lines = content:split("\n")
     -- Draw text
@@ -129,11 +131,6 @@ function logwidget_main(title, cmd)
         conky_window.height
     )
     cr = cairo_create(cs)
-
-    --local updates = tonumber(conky_parse('${updates}'))
-    --if updates > 5 then
-    --    print("Hello world")
-    --end
 
     -- Strip surrounding brackets
     local title = title:sub(2, -2)

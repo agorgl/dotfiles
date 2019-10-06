@@ -7,6 +7,7 @@ current_path = debug.getinfo(1).source:match("@?(.*/)")
 package.path = current_path .. "?.lua;" .. package.path
 
 require 'cairo'
+require 'conf'
 require 'text'
 require 'line'
 require 'ring'
@@ -20,8 +21,8 @@ function table.copy(t)
 end
 
 function temperature_widget(display, pos, sa, ea, label, value)
-    local color_prim = color_by_name('color4')
-    local color_text = color_by_name('color8')
+    local color_prim = config_color('main')
+    local color_text = config_color('altn')
 
     -- Ring graph
     local r = {

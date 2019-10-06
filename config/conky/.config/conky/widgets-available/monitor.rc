@@ -6,7 +6,8 @@
 conky_luadir = debug.getinfo(1).source:match("@?(.*/).*/") .. '/lua/'
 package.path = conky_luadir .. "?.lua;" .. package.path
 
--- Import utils
+-- Import conf and utils
+require 'conf'
 require 'util'
 
 -- Search path for lua_* config variables
@@ -26,10 +27,10 @@ conky.config = {
     -- Visual values
     font = 'Bitstream Vera Sans:size=8',
     font1 = 'Bitstream Vera Sans:size=10',
-    default_color = config_color("color8"),
+    default_color = string.format('#%06X', config_color("main")),
     default_outline_color = 'red',
     default_shade_color = 'black',
-    color2 = config_color("color4"),
+    color2 = string.format('#%06X', config_color("altn")),
     template1 = 'sample_template\1 \2 \3',
 
     -- Window

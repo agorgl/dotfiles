@@ -6,20 +6,15 @@
 current_path = debug.getinfo(1).source:match("@?(.*/)")
 package.path = current_path .. "?.lua;" .. package.path
 
+require 'conf'
 require 'util'
 require 'cairo'
 
 -- Constants
-COLOR_MAIN = color_by_name("color4")
-COLOR_ALT = color_by_name("color8")
-CLOCK_R = 125
-CLOCK_X = 160
-CLOCK_Y = 155
-CLOCK_COLOUR = {COLOR_MAIN, 0.8}
-RING_BG_COL = COLOR_MAIN
-RING_FG_COL = COLOR_MAIN
-FONT = "Open Sans"
-FONT_COL = {COLOR_ALT, 0xFF}
+CLOCK_FONT      = "Open Sans"
+CLOCK_R         = 125
+CLOCK_X         = 160
+CLOCK_Y         = 155
 CPUGRAPH_LENGTH = 330
 
 -- Arc values
@@ -140,7 +135,7 @@ function draw_ring(cr, t, pt)
     local w, h = conky_window.width, conky_window.height
 
     local xc, yc, ring_r, ring_w, sa, ea = CLOCK_X, CLOCK_Y, pt['radius'], pt['thickness'], pt['start_angle'], pt['end_angle']
-    local bgc, bga, fgc, fga = RING_BG_COL, pt['bg_alpha'], RING_FG_COL, pt['fg_alpha']
+    local bgc, bga, fgc, fga = config_color("main"), pt['bg_alpha'], config_color("main"), pt['fg_alpha']
 
     local angle_0 = sa * (2 * math.pi / 360) - math.pi / 2
     local angle_f = ea * (2 * math.pi / 360) - math.pi / 2
@@ -162,6 +157,7 @@ end
 -- Draws main clock hands
 --
 function draw_clock_hands(cr, xc, yc)
+    local clock_colour = {config_color("main"), 0.8}
     local secs, mins, hours, secs_arc, mins_arc, hours_arc
     local xh, yh, xm, ym, xs, ys
 
@@ -180,7 +176,7 @@ function draw_clock_hands(cr, xc, yc)
 
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND)
     cairo_set_line_width(cr, 5)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(CLOCK_COLOUR))
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(clock_colour))
     cairo_stroke(cr)
 
     xm = xc + CLOCK_R * math.sin(mins_arc)
@@ -224,9 +220,9 @@ end
 --
 function setup_dtime_font(cr, font_sz)
     -- Set font properties
-    cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
+    cairo_select_font_face(cr, CLOCK_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL)
     cairo_set_font_size(cr, font_sz)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a(FONT_COL))
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a({config_color('altn'), 0xFF}))
 end
 
 --
@@ -255,7 +251,7 @@ function draw_graph_line(cr, x_pivot, y_pivot)
     cairo_line_to(cr, x + length, y)
     cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND)
     cairo_set_line_width(cr, 1)
-    cairo_set_source_rgba(cr, rgba_to_r_g_b_a({RING_FG_COL, 0xF0}))
+    cairo_set_source_rgba(cr, rgba_to_r_g_b_a({config_color("main"), 0xF0}))
     cairo_stroke(cr)
     return x, y
 end
