@@ -30,7 +30,7 @@ current() {
 
 refresh() {
     # Update color in all open terminals
-    echo $(current) >> /tmp/curcol
+    termctl -a s $(current)
 
     # Refresh X resource database
     xrdb ~/.Xresources
