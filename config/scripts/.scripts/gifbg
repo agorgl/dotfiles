@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# File to be executed in order to restore last wallpaper setting
+RESTORE_FILE=${HOME}/.gifbg
+
+# Store arguments to use later after modifications
+args=$@
+
+# Function that spawns xwinwrap/mpv combo to show gif wallpaper in given screen geometry
+function wallpaper_spawn() {
+    # Gather parameters
+    local geom=$1
+    local img_file=$2
+
+    # Construct xwinwrap command
+    xwin="xwinwrap -g $geom -ni -fdt -sh rectangle -un -b -nf -ov -- "
+
+    # Construct mpv command
+    mpv="mpv --gamma=-15 --scale=oversample --panscan=1.0 --wid WID --no-config --loop \
+        --no-border --vd-lavc-fast --x11-bypass-compositor=no \
+        --gapless-audio=yes --hwdec=auto --really-quiet \
+        --name=gifbg"
+
+    # Set the wallpaper
+    echo "Setting wallpaper $img_file to screen with geom: $geom"
+    $xwin $mpv "$img_file" > /dev/null 2>&1 &
+}
+
+# Kill previous xwinwrap instances
+pkill -9 xwinwrap
+
+# Gather list of available screen geometries
+screens=($(xrandr | grep "connected" | grep -Po "\d+x\d+\+\d+\+\d+"))
+
+# Set wallpaper for each screen
+for screen in ${screens[@]}; do
+    wallpaper=$1
+    if [ ! -z "$wallpaper" ]; then
+        shift
+        wallpaper_spawn $screen $wallpaper
+    fi
+done
+
+# Store executed command to file
+printf "#!/bin/sh\ngifbg ${args}" > $RESTORE_FILE
+chmod a+x $RESTORE_FILE
+
+# Store our pid here so we can avoid killing our background later
+# Example: $ kill $(pgrep mpv | grep -v $(pgrep -P $(cat ${HOME}/.cache/gifbg.pid)))
+#           --- Here we are killing "all mpvs, except with THIS PID"
+#           --- This lets us kill a video we're watching, without stopping our desktop background!
+echo -n $! > ${HOME}/.cache/gifbg.pid
