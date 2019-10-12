@@ -27,10 +27,10 @@ conky.config = {
     -- Visual values
     font = 'Bitstream Vera Sans:size=8',
     font1 = 'Bitstream Vera Sans:size=10',
-    default_color = string.format('#%06X', config_color("main")),
+    default_color = string.format('#%06X', config_color("altn")),
     default_outline_color = 'red',
     default_shade_color = 'black',
-    color2 = string.format('#%06X', config_color("altn")),
+    color2 = string.format('#%06X', config_color("main")),
     template1 = 'sample_template\1 \2 \3',
 
     -- Window
