@@ -37,7 +37,7 @@ ICON_FONT2="Siji:size=8"
 #
 xcolor(){
     local qname=$1
-    xrdb -query | sed -nr "s/\*\.?$qname\s*:\s*(.*)\s*/\L\1/p"
+    xrdb -query | sed -nr "s/\*\.?$qname\s*:\s*(.*)\s*/\L\1/p" | head -n 1
 }
 
 # Main colors
