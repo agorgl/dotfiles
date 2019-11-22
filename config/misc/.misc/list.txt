@@ -22,7 +22,6 @@ cdrtools
 chromium
 clang
 cmake
-compton
 connman
 crda
 cups
@@ -88,6 +87,7 @@ pamixer
 pango
 pavucontrol
 perf
+picom
 pkgfile
 polkit-gnome
 pulseaudio
