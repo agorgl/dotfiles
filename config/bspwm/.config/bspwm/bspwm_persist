@@ -59,7 +59,6 @@ function node_destroyed() {
     echo Delete\($nid\): $class
 }
 
-
 function node_state_changed() {
     local nid=$1
     local state=$2
