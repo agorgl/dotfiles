@@ -132,6 +132,7 @@ vnstat
 vorbis-tools
 weechat
 wget
+wmctrl
 wpa_supplicant
 xclip
 xdo
