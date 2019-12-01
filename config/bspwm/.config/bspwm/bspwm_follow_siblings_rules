@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Grab positional arguments
+wid=$1
+class=$2
+instance=$3
+
+# Grab varargs
+shift 3
+rest=$@
+
+# Fetch process id from window id
+function pid_from_wid() {
+    xprop -id $1 _NET_WM_PID | cut -d' ' -f3
+}
+
+# Fetch window id from process id
+function wids_from_pid() {
+    local pid=$1
+    awk "\$3 == $pid {print \$1}" <(wmctrl -lp)
+}
+
+# Get current window pid
+wpid=$(pid_from_wid $wid)
+
+# Get window opened from current window pid
+wids=$(wids_from_pid $wpid | head -n 1)
+
+# Find desktop id that holds sibling window
+rdid=$(bspc query -D -n $wids)
+
+# If desktop for sibling window exists, move onto that desktop
+if [ ! -z $rdid ]; then
+    echo desktop=$rdid
+fi
