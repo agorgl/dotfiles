@@ -6,7 +6,7 @@
 command -v vmware-user-suid-wrapper >/dev/null 2>&1 && (vmware-user-suid-wrapper) &
 
 # Launch composite manager
-compton &
+picom &
 
 # Merge user .Xresources
 xrdb -merge ~/.Xresources
