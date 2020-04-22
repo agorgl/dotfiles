@@ -13,7 +13,7 @@ PANEL_WM_NAME=lemonbar_panel
 MSGFILE=$HOME/.weechat/highlights.txt
 
 # Hardware
-WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r 's/\s+Interface\s+(\W)*/\1/')
+WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r 's/\s+Interface\s+(\W)*/\1/' | tail -n 1)
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
 
