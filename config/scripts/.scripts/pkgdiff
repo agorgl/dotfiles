@@ -7,11 +7,11 @@ USAGE="Usage: pkgdiff [OPTIONS]"
 HELP="\
 pkgdiff [OPTIONS]
 Flags:
-  -i,--not-installed            prints packages not installed from the package list
-  -p,--missing-packages         prints packages installed in system, but missing in package list
-  -r,--missing-packages-aur     prints aur packages installed in system, but missing in aur package list
+  -i,--not-installed            prints packages in package lists but not in system
+  -p,--new-packages             prints upstream packages in system but not in package list
+  -r,--new-packages-aur         prints aur packages in system but not in aur package list
+  -l,--new-packages-list        same as above two combined with package descriptions
   -d,--duplicate-packages       prints duplicate packages in package lists, also referenced by groups
-  -l,--missing-packages-list    same as -p combined with -r with package descriptions
 "
 
 die() {
@@ -88,21 +88,46 @@ function not_installed_packages() {
 }
 
 # Missing packages from lists that are currently installed in system
-function missing_packages() {
+function new_packages() {
     comm -13 \
         <(printf "%s\n" ${pkglist[@]}) \
         <(printf "%s\n" ${installed_list[@]})
 }
 
-missing_pkgs=($(missing_packages))
-missing_official_pkgs=(); missing_aur_pkgs=();
-for p in ${missing_pkgs[@]}; do
+new_pkgs=($(new_packages))
+new_official_pkgs=(); new_aur_pkgs=();
+for p in ${new_pkgs[@]}; do
     if ! contains $p ${foreign_packages[@]}; then
         official_pkgs+=($p)
     else
         aur_pkgs+=($p)
     fi
 done
+
+function show_not_installed_packages() {
+    not_installed_pkgs=($(not_installed_packages))
+    if [ ! ${#not_installed_pkgs} -eq 0 ]; then
+        echo $(join_by ", " "${not_installed_pkgs[@]}")
+    fi
+}
+
+function show_new_packages() {
+    if [ ! ${#official_pkgs} -eq 0 ]; then
+        echo $(join_by ", " "${official_pkgs[@]}")
+    fi
+}
+
+function show_new_packages_aur() {
+    if [ ! ${#aur_pkgs} -eq 0 ]; then
+        echo $(join_by ", " "${aur_pkgs[@]}")
+    fi
+}
+
+function show_new_packages_detail() {
+    for f in `echo ${new_pkgs[@]} | sed 's/,//g'`; do
+        echo $f - $(pacman -Qi $f | sed -nr 's/Description\s+:\s+(.*).*/\1/p');
+    done
+}
 
 function show_duplicate_packages() {
     duplicate_pkgs=()
@@ -113,31 +138,6 @@ function show_duplicate_packages() {
     if [ ! ${#duplicate_pkgs[@]} -eq 0 ]; then
         echo $(join_by ", " "${duplicate_pkgs[@]}")
     fi
-}
-
-function show_not_installed_packages() {
-    not_installed_pkgs=($(not_installed_packages))
-    if [ ! ${#not_installed_pkgs} -eq 0 ]; then
-        echo $(join_by ", " "${not_installed_pkgs[@]}")
-    fi
-}
-
-function show_missing_packages() {
-    if [ ! ${#official_pkgs} -eq 0 ]; then
-        echo $(join_by ", " "${official_pkgs[@]}")
-    fi
-}
-
-function show_missing_aur_packages() {
-    if [ ! ${#aur_pkgs} -eq 0 ]; then
-        echo $(join_by ", " "${aur_pkgs[@]}")
-    fi
-}
-
-function show_missing_packages_detail() {
-    for f in `echo ${missing_pkgs[@]} | sed 's/,//g'`; do
-        echo $f - $(pacman -Qi $f | sed -nr 's/Description\s+:\s+(.*).*/\1/p');
-    done
 }
 
 #----------------------------------------------------------------------
@@ -162,14 +162,14 @@ case "$#" in
                 help ;;
             -i|--not-installed)
                 show_not_installed_packages ;;
-            -p|--missing-packages)
-                show_missing_packages ;;
-            -r|--missing-packages-aur)
-                show_missing_aur_packages ;;
+            -p|--new-packages)
+                show_new_packages ;;
+            -r|--new-packages-aur)
+                show_new_packages_aur ;;
+            -l|--new-packages-list)
+                show_new_packages_detail ;;
             -d|--duplicate-packages)
                 show_duplicate_packages ;;
-            -l|--missing-packages-list)
-                show_missing_packages_detail ;;
             *)
                 usage ;;
         esac
