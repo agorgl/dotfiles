@@ -1,6 +1,34 @@
 #!/bin/bash
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: pkgdiff [OPTIONS]"
+HELP="\
+pkgdiff [OPTIONS]
+Flags:
+  -i,--not-installed            prints packages not installed from the package list
+  -p,--missing-packages         prints packages installed in system, but missing in package list
+  -r,--missing-packages-aur     prints aur packages installed in system, but missing in aur package list
+  -d,--duplicate-packages       prints duplicate packages in package lists, also referenced by groups
+  -l,--missing-packages-list    same as -p combined with -r with package descriptions
+"
+
+die() {
+    echo >&2 "$*"
+    exit 1
+}
+
+#----------------------------------------------------------------------
+# Configuration
+#----------------------------------------------------------------------
+PACKAGE_FILES=($HOME/.misc/list.txt $HOME/.misc/list-aur.txt)
+
+#----------------------------------------------------------------------
+# Functions
+#----------------------------------------------------------------------
 # Create package list from text files
-inplist=$(cat ~/.misc/list.txt ~/.misc/list-aur.txt)
+inplist=$(cat ${PACKAGE_FILES[@]})
 pkglist=(); grplist=()
 for p in $inplist; do
     # Check if package is group
@@ -51,7 +79,7 @@ function duplicate_packages() {
 }
 
 # Not installed packages from package lists
-function not_installed_pkgs() {
+function not_installed_packages() {
     for p in ${pkglist[@]}; do
         if ! pacman -Qi $p &> /dev/null; then
             echo $p
@@ -60,52 +88,89 @@ function not_installed_pkgs() {
 }
 
 # Missing packages from lists that are currently installed in system
-function missing_pkgs() {
+function missing_packages() {
     comm -13 \
         <(printf "%s\n" ${pkglist[@]}) \
         <(printf "%s\n" ${installed_list[@]})
 }
 
+missing_pkgs=($(missing_packages))
+missing_official_pkgs=(); missing_aur_pkgs=();
+for p in ${missing_pkgs[@]}; do
+    if ! contains $p ${foreign_packages[@]}; then
+        official_pkgs+=($p)
+    else
+        aur_pkgs+=($p)
+    fi
+done
+
 function show_duplicate_packages() {
-    pkgs=()
+    duplicate_pkgs=()
     for p in $(duplicate_packages); do
         grp=$(pkggrp $p)
-        pkgs+=("$p ($grp)")
+        duplicate_pkgs+=("$p ($grp)")
     done
-    if [ ! ${#pkgs[@]} -eq 0 ]; then
-        echo "[+] Found duplicate package references!"
-        echo $(join_by ", " "${pkgs[@]}")
+    if [ ! ${#duplicate_pkgs[@]} -eq 0 ]; then
+        echo $(join_by ", " "${duplicate_pkgs[@]}")
     fi
 }
 
 function show_not_installed_packages() {
-    pkgs=($(not_installed_pkgs))
-    if [ ! ${#pkgs} -eq 0 ]; then
-        echo "[+] Found not installed package references!"
-        echo $(join_by ", " "${pkgs[@]}")
+    not_installed_pkgs=($(not_installed_packages))
+    if [ ! ${#not_installed_pkgs} -eq 0 ]; then
+        echo $(join_by ", " "${not_installed_pkgs[@]}")
     fi
 }
 
 function show_missing_packages() {
-    pkgs=($(missing_pkgs))
-    official_pkgs=(); aur_pkgs=();
-    for p in ${pkgs[@]}; do
-        if ! contains $p ${foreign_packages[@]}; then
-            official_pkgs+=($p)
-        else
-            aur_pkgs+=($p)
-        fi
-    done
     if [ ! ${#official_pkgs} -eq 0 ]; then
-        echo "[+] Found missing package references!"
         echo $(join_by ", " "${official_pkgs[@]}")
     fi
+}
+
+function show_missing_aur_packages() {
     if [ ! ${#aur_pkgs} -eq 0 ]; then
-        echo "[+] Found missing package references (AUR)!"
         echo $(join_by ", " "${aur_pkgs[@]}")
     fi
 }
 
-show_duplicate_packages
-show_not_installed_packages
-show_missing_packages
+function show_missing_packages_detail() {
+    for f in `echo ${missing_pkgs[@]} | sed 's/,//g'`; do
+        echo $f - $(pacman -Qi $f | sed -nr 's/Description\s+:\s+(.*).*/\1/p');
+    done
+}
+
+#----------------------------------------------------------------------
+# Command line interface
+#----------------------------------------------------------------------
+usage() {
+    die "$USAGE"
+}
+
+help() {
+    echo "$HELP"
+}
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        cmd="$1"
+        shift
+        case "$cmd" in
+            -h|--help)
+                help ;;
+            -i|--not-installed)
+                show_not_installed_packages ;;
+            -p|--missing-packages)
+                show_missing_packages ;;
+            -r|--missing-packages-aur)
+                show_missing_aur_packages ;;
+            -d|--duplicate-packages)
+                show_duplicate_packages ;;
+            -l|--missing-packages-list)
+                show_missing_packages_detail ;;
+            *)
+                usage ;;
+        esac
+esac
