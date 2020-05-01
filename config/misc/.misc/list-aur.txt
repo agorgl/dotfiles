@@ -4,16 +4,13 @@ cli-visualizer-git
 conky-lua-nv
 connman-gtk
 downgrade
-indent
 lemonbar-xft-git
 mirage
 paper-icon-theme-git
 powerline-fonts-git
-qt5-styleplugins
 rxvt-unicode-patched
 siji-git
 termsyn-font
-ttf-font-awesome
 ttf-monaco
 ttf-ms-fonts
 xtitle-git

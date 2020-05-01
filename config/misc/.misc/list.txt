@@ -63,6 +63,7 @@ gvfs-smb
 gvim
 htop
 imagemagick
+indent
 inetutils
 iw
 jack2
@@ -117,6 +118,7 @@ pulseaudio-bluetooth
 qbittorrent
 qemu
 qemu-arch-extra
+qt5-styleplugins
 rclone
 refind-efi
 reiserfsprogs
@@ -147,6 +149,7 @@ traceroute
 tree
 ttf-anonymous-pro
 ttf-dejavu
+ttf-font-awesome
 ttf-inconsolata
 ttf-ubuntu-font-family
 udiskie
