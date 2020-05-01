@@ -63,15 +63,23 @@ function show_all_packages() {
 # Prints all package groups from lists
 function show_package_groups() {
     if [ ! ${#aplist} -eq 0 ]; then
-        grplist=()
-        for p in ${aplist[@]}; do
-            # Check if package is group
-            grppkgs=$(pacman -Qqg $p 2>/dev/null)
-            if [ $? -ne 1 ] ; then
-                grplist+=($p)
-            fi
-        done
-        echo "${grplist[@]}"
+        # Find packages that are not groups with 1 query
+        local not_groups=($((pacman -Qqg ${aplist[@]} >/dev/null 2> >(grep -Po "(?<=').*(?=')" >&2)) 2>&1 | sort))
+        # Compare them to the original list and keep the ones missing
+        comm -23 \
+            <(printf "%s\n" ${aplist[@]}) \
+            <(printf "%s\n" ${not_groups[@]})
+        # Legacy but slower method:
+        # printf "%s\n" ${not_groups[@]}
+        # grplist=()
+        # for p in ${aplist[@]}; do
+        #     # Check if package is group
+        #     grppkgs=$(pacman -Qqg $p 2>/dev/null)
+        #     if [ $? -ne 1 ] ; then
+        #         grplist+=($p)
+        #     fi
+        # done
+        # echo "${grplist[@]}"
     fi
 }
 
