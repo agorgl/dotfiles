@@ -9,6 +9,7 @@ pkglist [OPTIONS]
 Flags:
   -h,--help                     prints current help message
   -a,--all                      prints all packages in package lists
+  -g,--groups                   prints package groups in lists
   -r,--repo-only                prints packages in official repositories
   -m,--foreign-only             prints foreign installed packages (AUR)
 "
@@ -59,6 +60,21 @@ function show_all_packages() {
     fi
 }
 
+# Prints all package groups from lists
+function show_package_groups() {
+    if [ ! ${#aplist} -eq 0 ]; then
+        grplist=()
+        for p in ${aplist[@]}; do
+            # Check if package is group
+            grppkgs=$(pacman -Qqg $p 2>/dev/null)
+            if [ $? -ne 1 ] ; then
+                grplist+=($p)
+            fi
+        done
+        echo "${grplist[@]}"
+    fi
+}
+
 #----------------------------------------------------------------------
 # Command line interface
 #----------------------------------------------------------------------
@@ -81,6 +97,8 @@ case "$#" in
                 help ;;
             -a|--all)
                 show_all_packages ;;
+            -g|--groups)
+                show_package_groups ;;
             -r|--repo-only)
                 show_repo_packages ;;
             -m|--foreign-only)
