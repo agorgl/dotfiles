@@ -4,6 +4,7 @@ acpid
 adobe-source-sans-pro-fonts
 alsa-firmware
 alsa-utils
+arandr
 arc-gtk-theme
 aspell
 base
@@ -11,6 +12,7 @@ base-devel
 bc
 bind-tools
 bison
+blueman
 bluez
 bluez-plugins
 bluez-tools
@@ -41,6 +43,7 @@ doxygen
 dunst
 dzen2
 e2fsprogs
+ethtool
 feh
 file-roller
 filelight
@@ -62,7 +65,7 @@ htop
 imagemagick
 inetutils
 iw
-jack2-dbus
+jack2
 jfsutils
 jq
 less
@@ -140,6 +143,7 @@ thunar
 thunar-archive-plugin
 thunar-volman
 tmux
+traceroute
 tree
 ttf-anonymous-pro
 ttf-dejavu
@@ -155,6 +159,7 @@ vorbis-tools
 weechat
 wget
 which
+wireguard-tools
 wmctrl
 wpa_supplicant
 xclip
@@ -180,3 +185,4 @@ youtube-dl
 zathura
 zathura-pdf-mupdf
 zenity
+zsh
