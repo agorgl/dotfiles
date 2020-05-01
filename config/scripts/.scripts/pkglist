@@ -1,0 +1,91 @@
+#!/bin/bash
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: pkglist [OPTIONS]"
+HELP="\
+pkglist [OPTIONS]
+Flags:
+  -h,--help                     prints current help message
+  -a,--all                      prints all packages in package lists
+  -r,--repo-only                prints packages in official repositories
+  -m,--foreign-only             prints foreign installed packages (AUR)
+"
+
+die() {
+    echo >&2 "$*"
+    exit 1
+}
+
+#----------------------------------------------------------------------
+# Configuration
+#----------------------------------------------------------------------
+REPO_PACKAGE_FILE=$HOME/.misc/list.txt
+FOREIGN_PACKAGE_FILE=$HOME/.misc/list-aur.txt
+
+#----------------------------------------------------------------------
+# Functions
+#----------------------------------------------------------------------
+# Extracts package list from given file
+function pkglist_from_files() {
+    local pkglist=$(cat $@)
+    printf "%s\n" ${pkglist[@]}
+}
+
+# Gather package lists
+rplist=($(pkglist_from_files $REPO_PACKAGE_FILE))
+mplist=($(pkglist_from_files $FOREIGN_PACKAGE_FILE))
+aplist=($(echo ${rplist[@]} ${mplist[@]} | sort))
+
+# Prints repository packages from lists
+function show_repo_packages() {
+    if [ ! ${#rplist} -eq 0 ]; then
+        echo "${rplist[@]}"
+    fi
+}
+
+# Prints foreign packages from lists
+function show_foreign_packages() {
+    if [ ! ${#mplist} -eq 0 ]; then
+        echo "${mplist[@]}"
+    fi
+}
+
+# Prints all packages from lists
+function show_all_packages() {
+    if [ ! ${#aplist} -eq 0 ]; then
+        echo "${aplist[@]}"
+    fi
+}
+
+#----------------------------------------------------------------------
+# Command line interface
+#----------------------------------------------------------------------
+usage() {
+    die "$USAGE"
+}
+
+help() {
+    echo "$HELP"
+}
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        cmd="$1"
+        shift
+        case "$cmd" in
+            -h|--help)
+                help ;;
+            -a|--all)
+                show_all_packages ;;
+            -r|--repo-only)
+                show_repo_packages ;;
+            -m|--foreign-only)
+                show_foreign_packages ;;
+            *)
+                usage ;;
+        esac
+esac
