@@ -1,6 +1,12 @@
 #!/bin/bash
 
 #----------------------------------------------------------------------
+# Configuration
+#----------------------------------------------------------------------
+REPO_PACKAGE_FILE=$HOME/.misc/list.txt
+FOREIGN_PACKAGE_FILE=$HOME/.misc/list-aur.txt
+
+#----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
 USAGE="Usage: pkglist [OPTIONS]"
@@ -9,21 +15,62 @@ pkglist [OPTIONS]
 Flags:
   -h,--help                     prints current help message
   -a,--all                      prints all packages in package lists
-  -g,--groups                   prints package groups in lists
   -r,--repo-only                prints packages in official repositories
   -m,--foreign-only             prints foreign installed packages (AUR)
+  -p,--packages                 prints package non-group packages in lists
+  -g,--groups                   prints package groups in lists
 "
 
-die() {
-    echo >&2 "$*"
-    exit 1
-}
+function die() { echo >&2 "$*"; exit 1; }
+function usage() { die "$USAGE"; }
+function help() { echo "$HELP"; }
 
 #----------------------------------------------------------------------
-# Configuration
+# Arguments
 #----------------------------------------------------------------------
-REPO_PACKAGE_FILE=$HOME/.misc/list.txt
-FOREIGN_PACKAGE_FILE=$HOME/.misc/list-aur.txt
+INCLUDE_REPO_PKGS=0
+INCLUDE_FOREIGN_PKGS=0
+SHOW_ONLY_PACKAGES=0
+SHOW_ONLY_GROUPS=0
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -a|--all)
+                    INCLUDE_REPO_PKGS=1
+                    INCLUDE_FOREIGN_PKGS=1
+                    ;;
+                -r|--repo-only)
+                    INCLUDE_REPO_PKGS=1
+                    ;;
+                -m|--foreign-only)
+                    INCLUDE_FOREIGN_PKGS=1
+                    ;;
+                -p|--packages)
+                    SHOW_ONLY_PACKAGES=1
+                    ;;
+                -g|--groups)
+                    SHOW_ONLY_GROUPS=1
+                    ;;
+                *)
+                    usage ;;
+            esac
+            shift
+        done
+esac
+
+# Default to showing packages from all sources
+if [ $INCLUDE_REPO_PKGS -eq 0 ] && [ $INCLUDE_FOREIGN_PKGS -eq 0 ]; then
+    INCLUDE_REPO_PKGS=1
+    INCLUDE_FOREIGN_PKGS=1
+fi
 
 #----------------------------------------------------------------------
 # Functions
@@ -37,81 +84,50 @@ function pkglist_from_files() {
 # Gather package lists
 rplist=($(pkglist_from_files $REPO_PACKAGE_FILE))
 mplist=($(pkglist_from_files $FOREIGN_PACKAGE_FILE))
-aplist=($(printf "%s\n" ${rplist[@]} ${mplist[@]} | sort))
 
-# Prints repository packages from lists
-function show_repo_packages() {
-    if [ ! ${#rplist} -eq 0 ]; then
-        echo "${rplist[@]}"
-    fi
-}
-
-# Prints foreign packages from lists
-function show_foreign_packages() {
-    if [ ! ${#mplist} -eq 0 ]; then
-        echo "${mplist[@]}"
-    fi
-}
-
-# Prints all packages from lists
-function show_all_packages() {
-    if [ ! ${#aplist} -eq 0 ]; then
-        echo "${aplist[@]}"
+function package_nongroups() {
+    local lst=$@
+    if [ ! ${#lst} -eq 0 ]; then
+        # Find packages that are not groups with 1 query
+        local not_groups=($((pacman -Qqg ${lst[@]} >/dev/null 2> >(grep -Po "(?<=').*(?=')" >&2)) 2>&1 | sort))
+        echo ${not_groups[@]}
     fi
 }
 
 # Prints all package groups from lists
-function show_package_groups() {
-    if [ ! ${#aplist} -eq 0 ]; then
-        # Find packages that are not groups with 1 query
-        local not_groups=($((pacman -Qqg ${aplist[@]} >/dev/null 2> >(grep -Po "(?<=').*(?=')" >&2)) 2>&1 | sort))
+function package_groups() {
+    local lst=$@ 
+    if [ ! ${#lst} -eq 0 ]; then
         # Compare them to the original list and keep the ones missing
+        local not_groups=$(package_nongroups ${lst[@]})
         comm -23 \
-            <(printf "%s\n" ${aplist[@]}) \
+            <(printf "%s\n" ${lst[@]}) \
             <(printf "%s\n" ${not_groups[@]})
-        # Legacy but slower method:
-        # printf "%s\n" ${not_groups[@]}
-        # grplist=()
-        # for p in ${aplist[@]}; do
-        #     # Check if package is group
-        #     grppkgs=$(pacman -Qqg $p 2>/dev/null)
-        #     if [ $? -ne 1 ] ; then
-        #         grplist+=($p)
-        #     fi
-        # done
-        # echo "${grplist[@]}"
     fi
 }
 
 #----------------------------------------------------------------------
-# Command line interface
+# Entrypoint
 #----------------------------------------------------------------------
-usage() {
-    die "$USAGE"
-}
+# Construct list
+plist=()
+if [ $INCLUDE_REPO_PKGS -eq 1 ]; then
+    plist+=(${rplist[@]})
+fi
+if [ $INCLUDE_FOREIGN_PKGS -eq 1 ]; then
+    plist+=(${mplist[@]})
+fi
+plist=($(printf "%s\n" ${plist[@]} | sort))
 
-help() {
-    echo "$HELP"
-}
+# Apply filters
+if [ $SHOW_ONLY_PACKAGES -eq 1 ]; then
+    plist=($(package_nongroups ${plist[@]}))
+fi
+if [ $SHOW_ONLY_GROUPS -eq 1 ]; then
+    plist=($(package_groups ${plist[@]}))
+fi
 
-case "$#" in
-    0)
-        usage ;;
-    *)
-        cmd="$1"
-        shift
-        case "$cmd" in
-            -h|--help)
-                help ;;
-            -a|--all)
-                show_all_packages ;;
-            -g|--groups)
-                show_package_groups ;;
-            -r|--repo-only)
-                show_repo_packages ;;
-            -m|--foreign-only)
-                show_foreign_packages ;;
-            *)
-                usage ;;
-        esac
-esac
+# Show
+if [ ! ${#plist} -eq 0 ]; then
+    echo "${plist[@]}"
+fi
