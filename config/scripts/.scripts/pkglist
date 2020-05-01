@@ -37,7 +37,7 @@ function pkglist_from_files() {
 # Gather package lists
 rplist=($(pkglist_from_files $REPO_PACKAGE_FILE))
 mplist=($(pkglist_from_files $FOREIGN_PACKAGE_FILE))
-aplist=($(echo ${rplist[@]} ${mplist[@]} | sort))
+aplist=($(printf "%s\n" ${rplist[@]} ${mplist[@]} | sort))
 
 # Prints repository packages from lists
 function show_repo_packages() {
