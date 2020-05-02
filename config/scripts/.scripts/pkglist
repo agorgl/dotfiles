@@ -14,7 +14,7 @@ pkglist [OPTIONS]
 Flags:
   -h,--help                     prints current help message
   -a,--all                      prints all packages in package lists
-  -r,--repo-only                prints packages in official repositories
+  -n,--native-only              prints packages in official repositories
   -m,--foreign-only             prints foreign installed packages (AUR)
   -d,--duplicates               prints duplicate packages
 "
@@ -26,7 +26,7 @@ function help() { echo "$HELP"; }
 #----------------------------------------------------------------------
 # Arguments
 #----------------------------------------------------------------------
-INCLUDE_REPO_PKGS=0
+INCLUDE_NATIVE_PKGS=0
 INCLUDE_FOREIGN_PKGS=0
 SHOW_DUPLICATES=0
 
@@ -41,11 +41,11 @@ case "$#" in
                     exit 0
                     ;;
                 -a|--all)
-                    INCLUDE_REPO_PKGS=1
+                    INCLUDE_NATIVE_PKGS=1
                     INCLUDE_FOREIGN_PKGS=1
                     ;;
-                -r|--repo-only)
-                    INCLUDE_REPO_PKGS=1
+                -n|--native-only)
+                    INCLUDE_NATIVE_PKGS=1
                     ;;
                 -m|--foreign-only)
                     INCLUDE_FOREIGN_PKGS=1
@@ -61,8 +61,8 @@ case "$#" in
 esac
 
 # Default to showing packages from all sources
-if [ $INCLUDE_REPO_PKGS -eq 0 ] && [ $INCLUDE_FOREIGN_PKGS -eq 0 ]; then
-    INCLUDE_REPO_PKGS=1
+if [ $INCLUDE_NATIVE_PKGS -eq 0 ] && [ $INCLUDE_FOREIGN_PKGS -eq 0 ]; then
+    INCLUDE_NATIVE_PKGS=1
     INCLUDE_FOREIGN_PKGS=1
 fi
 
@@ -109,16 +109,16 @@ fplist=($(pkglist_from_files ${PACKAGE_FILES[@]}))
 eplist=($(expand_packages ${fplist[@]}))
 dplist=($(printf "%s\n" ${eplist[@]} | sort | uniq -d))
 aplist=($(printf "%s\n" ${eplist[@]} | sort -u))
-rplist=($(comm -12 <(printf "%s\n" ${aplist[@]}) <(pacman -Ssq | sort) | sort))
-mplist=($(comm -23 <(printf "%s\n" ${aplist[@]}) <(printf "%s\n" ${rplist[@]}) | sort))
+nplist=($(comm -12 <(printf "%s\n" ${aplist[@]}) <(pacman -Ssq | sort) | sort))
+mplist=($(comm -23 <(printf "%s\n" ${aplist[@]}) <(printf "%s\n" ${nplist[@]}) | sort))
 
 #----------------------------------------------------------------------
 # Entrypoint
 #----------------------------------------------------------------------
 # Construct list
 plist=()
-if [ $INCLUDE_REPO_PKGS -eq 1 ]; then
-    plist+=(${rplist[@]})
+if [ $INCLUDE_NATIVE_PKGS -eq 1 ]; then
+    plist+=(${nplist[@]})
 fi
 if [ $INCLUDE_FOREIGN_PKGS -eq 1 ]; then
     plist+=(${mplist[@]})
