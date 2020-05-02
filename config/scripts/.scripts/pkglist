@@ -3,8 +3,7 @@
 #----------------------------------------------------------------------
 # Configuration
 #----------------------------------------------------------------------
-REPO_PACKAGE_FILE=$HOME/.misc/list.txt
-FOREIGN_PACKAGE_FILE=$HOME/.misc/list-aur.txt
+PACKAGE_FILES=($HOME/.misc/list.txt $HOME/.misc/list-aur.txt)
 
 #----------------------------------------------------------------------
 # Help
@@ -17,8 +16,7 @@ Flags:
   -a,--all                      prints all packages in package lists
   -r,--repo-only                prints packages in official repositories
   -m,--foreign-only             prints foreign installed packages (AUR)
-  -p,--packages                 prints package non-group packages in lists
-  -g,--groups                   prints package groups in lists
+  -d,--duplicates               prints duplicate packages
 "
 
 function die() { echo >&2 "$*"; exit 1; }
@@ -30,8 +28,7 @@ function help() { echo "$HELP"; }
 #----------------------------------------------------------------------
 INCLUDE_REPO_PKGS=0
 INCLUDE_FOREIGN_PKGS=0
-SHOW_ONLY_PACKAGES=0
-SHOW_ONLY_GROUPS=0
+SHOW_DUPLICATES=0
 
 case "$#" in
     0)
@@ -53,11 +50,8 @@ case "$#" in
                 -m|--foreign-only)
                     INCLUDE_FOREIGN_PKGS=1
                     ;;
-                -p|--packages)
-                    SHOW_ONLY_PACKAGES=1
-                    ;;
-                -g|--groups)
-                    SHOW_ONLY_GROUPS=1
+                -d|--duplicates)
+                    SHOW_DUPLICATES=1
                     ;;
                 *)
                     usage ;;
@@ -81,10 +75,7 @@ function pkglist_from_files() {
     printf "%s\n" ${pkglist[@]}
 }
 
-# Gather package lists
-rplist=($(pkglist_from_files $REPO_PACKAGE_FILE))
-mplist=($(pkglist_from_files $FOREIGN_PACKAGE_FILE))
-
+# Prints all non group packages from lists
 function package_nongroups() {
     local lst=$@
     if [ ! ${#lst} -eq 0 ]; then
@@ -96,7 +87,7 @@ function package_nongroups() {
 
 # Prints all package groups from lists
 function package_groups() {
-    local lst=$@ 
+    local lst=$@
     if [ ! ${#lst} -eq 0 ]; then
         # Compare them to the original list and keep the ones missing
         local not_groups=$(package_nongroups ${lst[@]})
@@ -105,6 +96,21 @@ function package_groups() {
             <(printf "%s\n" ${not_groups[@]})
     fi
 }
+
+# Expands groups in given package list
+function expand_packages() {
+    local lst=$@
+    printf "%s\n" $(package_nongroups ${lst[@]}) $(pacman -Qqg ${lst[@]} 2>/dev/null) | sort
+}
+
+
+# Gather package lists
+fplist=($(pkglist_from_files ${PACKAGE_FILES[@]}))
+eplist=($(expand_packages ${fplist[@]}))
+dplist=($(printf "%s\n" ${eplist[@]} | sort | uniq -d))
+aplist=($(printf "%s\n" ${eplist[@]} | sort -u))
+rplist=($(comm -12 <(printf "%s\n" ${aplist[@]}) <(pacman -Ssq | sort) | sort))
+mplist=($(comm -23 <(printf "%s\n" ${aplist[@]}) <(printf "%s\n" ${rplist[@]}) | sort))
 
 #----------------------------------------------------------------------
 # Entrypoint
@@ -119,15 +125,13 @@ if [ $INCLUDE_FOREIGN_PKGS -eq 1 ]; then
 fi
 plist=($(printf "%s\n" ${plist[@]} | sort))
 
-# Apply filters
-if [ $SHOW_ONLY_PACKAGES -eq 1 ]; then
-    plist=($(package_nongroups ${plist[@]}))
-fi
-if [ $SHOW_ONLY_GROUPS -eq 1 ]; then
-    plist=($(package_groups ${plist[@]}))
+# Show duplicates
+if [ $SHOW_DUPLICATES -eq 1 ]; then
+    echo ${dplist[@]}
+    exit
 fi
 
-# Show
+# Show packages
 if [ ! ${#plist} -eq 0 ]; then
     echo "${plist[@]}"
 fi
