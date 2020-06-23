@@ -13,6 +13,8 @@ require 'line'
 require 'ring'
 
 local CELSIUS_SYMBOL = 'C°'
+local HAS_NVIDIA = command_exec('lshw -C display 2>/dev/null | grep -i nvidia') == 0
+local AMD_TEMP_CMD = "sensors | grep -A 2 radeon | tail -n 1 | awk '{ print $2 }' | sed 's/[^0-9.]//g'"
 
 function table.copy(t)
     local u = {}
@@ -75,8 +77,13 @@ function temperature_widget(display, pos, sa, ea, label, value)
 end
 
 function temps_main(display)
-    local cpu_temp = conky_value('hwmon 1 temp 1', true)
-    local gpu_temp = conky_value('nvidia temp', true)
+    local cpu_temp = conky_value('hwmon 0 temp 1', true)
+    local gpu_temp = 0
+    if HAS_NVIDIA then
+        gpu_temp = conky_value('nvidia temp', true)
+    else
+        gpu_temp = tonumber(command(AMD_TEMP_CMD))
+    end
 
     temperature_widget(display, { x = 60,  y = 60 }, -160, 70, 'CPU', cpu_temp)
     temperature_widget(display, { x = 200, y = 60 }, -160, 70, 'GPU', gpu_temp)
