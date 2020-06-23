@@ -3,7 +3,7 @@ Description=Auto mount removable drives
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/udiskie -2 -s
+ExecStart=/usr/bin/udiskie -s
 
 [Install]
 WantedBy=default.target
