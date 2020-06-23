@@ -297,10 +297,19 @@ end
 conky_clock_text = clock_text
 
 function clock_main()
+    -- Guard
     if conky_window == nil then
         return
     end
 
+    -- Spawn with some delay
+    local updates = conky_parse('${updates}')
+    update_num = tonumber(updates)
+    if update_num <= 5 then
+        return
+    end
+
+    -- Init drawing context
     local cs = cairo_xlib_surface_create(
         conky_window.display,
         conky_window.drawable,
@@ -310,26 +319,25 @@ function clock_main()
     )
     local cr = cairo_create(cs)
 
-    -- Spawn with some delay
-    local updates = conky_parse('${updates}')
-    update_num = tonumber(updates)
-    if update_num > 3 then
-        -- Clock
-        for i in pairs(arc_settings_table) do
-            local pt = arc_settings_table[i]
-            local pct = calc_ring_pct(cr, pt)
-            draw_ring(cr, pct, pt)
-        end
-        draw_clock_hands(cr, CLOCK_X, CLOCK_Y)
-        -- Time
-        draw_time(cr)
-        -- Date
-        gx, gy = draw_graph_line(cr, CLOCK_X, CLOCK_Y)
-        draw_analytic_date(cr, gx, gy)
-        -- Store to use by clock_text()
-        cpugraph_x, cpugraph_y = gx, gy
+    -- Clock
+    for i in pairs(arc_settings_table) do
+        local pt = arc_settings_table[i]
+        local pct = calc_ring_pct(cr, pt)
+        draw_ring(cr, pct, pt)
     end
+    draw_clock_hands(cr, CLOCK_X, CLOCK_Y)
 
+    -- Time
+    draw_time(cr)
+
+    -- Date
+    gx, gy = draw_graph_line(cr, CLOCK_X, CLOCK_Y)
+    draw_analytic_date(cr, gx, gy)
+
+    -- Store to use by clock_text()
+    cpugraph_x, cpugraph_y = gx, gy
+
+    -- Destroy drawing context
     cairo_destroy(cr)
     cairo_surface_destroy(cs)
     cr = nil
