@@ -91,12 +91,9 @@ man-db
 man-pages
 mdadm
 mesa
-mpc
-mpd
-mplayer
+mpv
 mupdf
 nano
-ncmpcpp
 netctl
 nmap
 noto-fonts
@@ -120,7 +117,7 @@ qemu
 qemu-arch-extra
 qt5-styleplugins
 rclone
-refind-efi
+refind
 reiserfsprogs
 rofi
 rsync

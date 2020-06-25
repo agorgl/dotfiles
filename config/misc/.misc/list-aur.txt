@@ -8,7 +8,6 @@ lemonbar-xft-git
 mirage
 paper-icon-theme-git
 powerline-fonts-git
-rxvt-unicode-patched
 siji-git
 termsyn-font
 ttf-monaco
