@@ -1,11 +1,8 @@
 #!/usr/bin/bash
 
-#################################################################
-#-
+#================================================================
 #=- Configuration
-#-
-#################################################################
-
+#================================================================
 # Window manager integration
 PANEL_WM_NAME=lemonbar_panel
 
@@ -17,12 +14,9 @@ WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r 's/\s+Interface\s+(\W)*/\1/'
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
 
-#################################################################
-#-
+#================================================================
 #=- Customization
-#-
-#################################################################
-
+#================================================================
 # Dimensions
 PANEL_HEIGHT=24
 
@@ -74,50 +68,29 @@ COLOR_SIGNAL_HIGH=$COLOR_FOREGROUND_ALT
 #
 # Icons
 #
-USE_FA_ICONS=false
-if [ "$USE_FA_ICONS" = true ]; then
-    ICON_BATT_FULL='\uf240'
-    ICON_BATT_HIGH='\uf241'
-    ICON_BATT_MED='\uf242'
-    ICON_BATT_LOW='\uf243'
-    ICON_BATT_EMPTY='\uf244'
-    ICON_POWER_PLUG='\uf1e6'
-    ICON_PREV='\uf048'
-    ICON_PLAY='\uf04b'
-    ICON_NEXT='\uf051'
-    ICON_VOL_UP='\uf028'
-    ICON_VOL_DOWN='\uf027'
-    ICON_VOL_OFF='\uf026'
-    ICON_CHAT_CLEAR='\uf075'
-    ICON_CHAT_BUSY='\uf0e5'
-    ICON_WIFI='\uf1eb'
-else
-    ICON_BATT_FULL='\ue23a'
-    ICON_BATT_HIGH='\ue253'
-    ICON_BATT_MED='\ue251'
-    ICON_BATT_LOW='\ue24e'
-    ICON_BATT_EMPTY='\ue24c'
-    ICON_POWER_PLUG='\ue239'
-    ICON_PREV='\ue096'
-    ICON_PLAY='\ue09a'
-    ICON_NEXT='\ue09c'
-    ICON_VOL_UP='\ue203'
-    ICON_VOL_DOWN='\ue204'
-    ICON_VOL_OFF='\ue202'
-    ICON_CHAT_CLEAR='\uf075'
-    ICON_CHAT_BUSY='\uf0e5'
-    ICON_WIFI='\ue1af'
-    ICON_CALENDAR='\ue226'
-    ICON_TIME='\ue015'
-fi
+ICON_BATT_FULL='\ue23a'
+ICON_BATT_HIGH='\ue253'
+ICON_BATT_MED='\ue251'
+ICON_BATT_LOW='\ue24e'
+ICON_BATT_EMPTY='\ue24c'
+ICON_POWER_PLUG='\ue239'
+ICON_PREV='\ue096'
+ICON_PLAY='\ue09a'
+ICON_NEXT='\ue09c'
+ICON_VOL_UP='\ue203'
+ICON_VOL_DOWN='\ue204'
+ICON_VOL_OFF='\ue202'
+ICON_CHAT_CLEAR='\uf075'
+ICON_CHAT_BUSY='\uf0e5'
+ICON_WIFI='\ue1af'
+ICON_CALENDAR='\ue226'
+ICON_TIME='\ue015'
 
-#################################################################
-#-
+#================================================================
 #=- Setup
-#-
-#################################################################
+#================================================================
 # Used to log into system logs
-logmsg() {
+logmsg(){
     local msg=$1
     echo $msg | systemd-cat -t panel
 }
@@ -130,7 +103,7 @@ if xdo id -a "$PANEL_WM_NAME" > /dev/null; then
 fi
 
 # Kill child processes and reset global settings
-cleanup() {
+cleanup(){
     # Reset bspwm top_padding
     bspc config top_padding 0
     # Kill child processes
@@ -153,28 +126,25 @@ deinit(){
 }
 trap deinit TERM
 
-#################################################################
-#-
+#================================================================
 #=- Info collectors
-#-
-#################################################################
-
+#================================================================
 # Clock
 clock(){
-    echo -e "$ICON_TIME[$(date +"%H:%M")]"
+    echo -e "$ICON_TIME $(date +"%H:%M")"
 }
 
 # Date
 cal(){
-    echo -e "$ICON_CALENDAR[$(date +'%a,%b %d')]"
+    echo -e "$ICON_CALENDAR $(date +'%a,%b %d')"
 }
 
 # Battery
 battery(){
     if [ -d $POWERSUPPLY ]; then
         local batt_icon=""
-        local batt_level=$(acpi -b | grep -o '[[:digit:]]\+%' | sed 's/%//')
-        local batt_remain=$(acpi -b | cut -d " " -f 5 | cut -d ":" -f 1,2)
+        local batt_level=$(acpi -b | head -n 1 | grep -o '[[:digit:]]\+%' | sed 's/%//')
+        local batt_remain=$(acpi -b | head -n 1 | cut -d " " -f 5 | cut -d ":" -f 1,2)
         if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
             if [[ $batt_level -ge 80 ]]; then
                 batt_icon=$ICON_BATT_FULL
@@ -190,7 +160,11 @@ battery(){
         else
             batt_icon=$ICON_POWER_PLUG
         fi
-        echo -e $batt_icon[$batt_level%/$batt_remain]
+        if [ ! -z $batt_remain ]; then
+            echo -e $batt_icon $batt_level%/$batt_remain
+        else
+            echo -e $batt_icon $batt_level%
+        fi
     fi
 }
 
@@ -208,7 +182,7 @@ volume(){
         elif [[ $volume_value -eq 0 ]]; then
             volume_icon=$ICON_VOL_OFF
         fi
-        echo -e $volume_icon[$volume_value%]
+        echo -e $volume_icon $volume_value%
     else
         volume_icon=$ICON_VOL_OFF
         echo -e $volume_icon
@@ -221,7 +195,7 @@ weechat(){
         local weechat_icon=""
         local unreadmessages=$(wc -l < "$MSGFILE")
         if [[ $unreadmessages != 0 ]]; then
-            weechat_icon="$ICON_CHAT_BUSY[$unreadmessages]"
+            weechat_icon="$ICON_CHAT_BUSY $unreadmessages"
         else
             weechat_icon=$ICON_CHAT_CLEAR
         fi
@@ -245,7 +219,7 @@ wifi(){
                 elif [[ $wifi_signal -ge -80 && $wifi_signal -lt -70 ]]; then
                     wifi_color=$COLOR_SIGNAL_LOW
                 fi
-                echo -e "%{F$wifi_color}$wifi_icon%{F-}[$wifi_ssid]"
+                echo -e "%{F$wifi_color}$wifi_icon%{F-} $wifi_ssid"
             else
                 wifi_color=$COLOR_SIGNAL_NONE
                 echo -e "%{F$wifi_color}$wifi_icon%{F-}"
@@ -274,7 +248,7 @@ music(){
     fi
 }
 
-workspaces() {
+workspaces(){
     # Bspwm internal state
     IFS=':'
     local line=$1
@@ -344,7 +318,7 @@ workspaces() {
 }
 
 # Message loop
-panel_bar() {
+panel_bar(){
     while read -r line ; do
         case $line in
             UPDATE)
@@ -373,7 +347,7 @@ panel_bar() {
 }
 
 # Calculates and spawns a tray host matching the panel color and dimensions
-spawn_tray() {
+spawn_tray(){
     # Calculate icon size relative to panel size
     local icn_size=$(($PANEL_HEIGHT - 5))
 
