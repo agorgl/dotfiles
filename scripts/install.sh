@@ -3,7 +3,7 @@ set -e
 
 # Constants
 INSTALL_BASE=/mnt
-INSTALL_PKGS=(base linux linux-firmware sudo refind dhcpcd vi)
+INSTALL_PKGS=(base base-devel linux linux-firmware refind dhcpcd vi)
 
 # Helpers
 function trace { echo " -  $@"; }
