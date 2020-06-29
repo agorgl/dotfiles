@@ -31,7 +31,7 @@ msg "Bootstraping dotfiles..."
 cd
 rm -rf .bash*
 cd .dot/dotfiles/
-stow -t ../../.. *
+stow -t ../../.. */
 cd ..
 
 # Update path
