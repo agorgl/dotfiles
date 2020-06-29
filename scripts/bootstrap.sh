@@ -43,11 +43,11 @@ msg "Bootstraping packages..."
 sudo pacman -S --needed $(pkglist -n)
 
 # Install aur helper
-~/.dot/dotfiles/scripts/.scripts/yay.sh
+yay.sh
 
 # Install aur packages
 msg "Installing aur packages..."
-yay -S --needed --noconfirm $(pkglist -m)
+yay -S --needed $(pkglist -m)
 
 # Finish
 msg "Done."
