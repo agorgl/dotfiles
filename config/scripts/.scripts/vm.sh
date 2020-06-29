@@ -32,8 +32,8 @@ function elevate {
 function net_setup {
     trace "Enabling packet forwarding for TAP device"
     sysctl -q -w net.ipv4.ip_forward=1
-    iptables -F
-    iptables -F -t nat
+
+    trace "Adding Firewall rules"
     iptables -A FORWARD -i $TAP -o $NIC -j ACCEPT
     iptables -A FORWARD -i $NIC -o $TAP -j ACCEPT
     iptables -t nat -A POSTROUTING -o $NIC -j MASQUERADE
@@ -55,13 +55,19 @@ function net_setup {
 }
 
 function net_remove {
-    trace "Removing TAP interface"
-    ip tuntap del $TAP mode tap
     if [ ! -z "$dhcpd_pid" ]; then
         trace "Killing DHCP server"
         pkill dnsmasq
         wait $dhcpd_pid
     fi
+
+    trace "Destroying TAP interface"
+    iptables -D FORWARD -i $TAP -o $NIC -j ACCEPT
+    iptables -D FORWARD -i $NIC -o $TAP -j ACCEPT
+    iptables -t nat -D POSTROUTING -o $NIC -j MASQUERADE
+
+    trace "Removing Firewall rules"
+    ip tuntap del $TAP mode tap
 }
 
 function uefi_setup {
