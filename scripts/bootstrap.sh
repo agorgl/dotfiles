@@ -17,33 +17,41 @@ function msg { echo -e "$COL_TEXT$1$COL_RESET"; }
 msg "Updating system..."
 sudo pacman -Syyu
 
-# Install git
-msg "Installing git and stow..."
-sudo pacman -S --noconfirm git stow
+# Install git and stow
+if ! pacman -Qq git stow 2>&1 >/dev/null; then
+    msg "Installing git and stow..."
+    sudo pacman -S --noconfirm git stow
+fi
 
-# Clone my dots
-cd
-msg "Cloning dotfiles..."
-git clone https://github.com/ElArtista/dotfiles .dot/dotfiles
+# Setup dotfiles
+if [ ! -d .dot/files ]; then
+    # Clone my dots
+    cd
+    msg "Cloning dotfiles..."
+    git clone https://github.com/ElArtista/dotfiles .dot/files
 
-# Move the relevant dotfiles in their place
-msg "Bootstraping dotfiles..."
-cd
-rm -rf .bash*
-cd .dot/dotfiles/
-stow -t ../../.. */
-cd ..
+    # Move the relevant dotfiles in their place
+    msg "Bootstraping dotfiles..."
+    cd
+    rm -rf .bash*
+    cd .dot/files/
+    stow -t ../../.. */
+    cd ../../..
 
-# Update path
-msg "Updating path..."
-PATH=$PATH:$HOME/.scripts:$HOME/.bin
+    # Update path
+    msg "Updating path..."
+    PATH=$PATH:$HOME/.scripts:$HOME/.bin
+fi
 
 # Install official packages
 msg "Bootstraping packages..."
 sudo pacman -S --needed $(pkglist -n)
 
 # Install aur helper
-yay.sh
+if ! pacman -Qq yay 2>&1 >/dev/null; then
+    msg "Installing aur helper..."
+    yay.sh
+fi
 
 # Install aur packages
 msg "Installing aur packages..."
