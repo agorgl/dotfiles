@@ -10,7 +10,7 @@ Params:
 "
 
 TAP=tap0
-NIC=$(route | grep '^default' | grep -o '[^ ]*$')
+NIC=$(ip route | awk '/^default/{print $5}')
 NET=10.10.10
 UVR=uefi_vars.bin
 
