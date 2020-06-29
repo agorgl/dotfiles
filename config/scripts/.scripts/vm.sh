@@ -116,4 +116,4 @@ qemu-system-x86_64 \
   $uefi_params $disk_params $drive_params -usb -device usb-tablet \
   -m 4096 -enable-kvm -M q35 -cpu host -smp 4,sockets=1,cores=4,threads=1 \
   -vga virtio -display gtk,show-cursor=on,gl=off \
-  -netdev tap,id=net0,ifname=$TAP,script=no,downscript=no -device e1000,netdev=net0,mac=DE:AD:BE:EF:E0:01
+  -netdev tap,id=net0,ifname=$TAP,script=no,downscript=no -device virtio-net-pci,netdev=net0,mac=DE:AD:BE:EF:E0:01
