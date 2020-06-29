@@ -15,3 +15,4 @@ termsyn-font
 ttf-monaco
 ttf-ms-fonts
 xtitle-git
+yay
