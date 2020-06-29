@@ -3,7 +3,7 @@ set -e
 
 # Constants
 INSTALL_BASE=/mnt
-INSTALL_PKGS=(base linux linux-firmware sudo refind)
+INSTALL_PKGS=(base linux linux-firmware sudo refind dhcpcd)
 
 # Helpers
 function trace { echo " -  $@"; }
