@@ -71,7 +71,7 @@ fi
 #----------------------------------------------------------------------
 # Extracts package list from given file
 function pkglist_from_files() {
-    local pkglist=$(cat $@)
+    local pkglist=$(cat $@ | sed -e 's/#.*//g;/^\s*$/d')
     printf "%s\n" ${pkglist[@]}
 }
 
