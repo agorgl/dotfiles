@@ -168,22 +168,21 @@ battery(){
 
 # Alsa volume
 volume(){
-    local volume_value=$(pamixer --get-volume)
-    local volume_state=$(pamixer --get-mute)
-
-    if [[ $volume_state == "false" ]]; then
-        local volume_icon=""
-        if [[ $volume_value -ge 70 ]]; then
-            volume_icon=$ICON_VOL_UP
-        elif [[ $volume_value -gt 0 && $volume_value -lt 70 ]]; then
-            volume_icon=$ICON_VOL_DOWN
-        elif [[ $volume_value -eq 0 ]]; then
-            volume_icon=$ICON_VOL_OFF
+    local value=$(pamixer --get-volume)
+    local state=$(pamixer --get-mute)
+    local icon=""
+    if [[ $state == "false" ]]; then
+        if [[ $value -ge 70 ]]; then
+            icon=$ICON_VOL_UP
+        elif [[ $value -gt 0 && $value -lt 70 ]]; then
+            icon=$ICON_VOL_DOWN
+        elif [[ $value -eq 0 ]]; then
+            icon=$ICON_VOL_OFF
         fi
-        echo -e $volume_icon $volume_value%
+        echo -e $icon $value%
     else
-        volume_icon=$ICON_VOL_OFF
-        echo -e $volume_icon
+        icon=$ICON_VOL_OFF
+        echo -e $icon
     fi
 }
 
