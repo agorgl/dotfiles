@@ -6,9 +6,6 @@
 # Window manager integration
 PANEL_WM_NAME=lemonbar_panel
 
-# File locations
-MSGFILE=$HOME/.weechat/highlights.txt
-
 # Hardware
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
@@ -78,8 +75,7 @@ ICON_NEXT='\ue09c'
 ICON_VOL_UP='\ue203'
 ICON_VOL_DOWN='\ue204'
 ICON_VOL_OFF='\ue202'
-ICON_CHAT_CLEAR='\uf075'
-ICON_CHAT_BUSY='\uf0e5'
+ICON_MESSAGES='\ue1a7'
 ICON_WIFI='\ue1af'
 ICON_CALENDAR='\ue226'
 ICON_TIME='\ue015'
@@ -188,15 +184,11 @@ volume(){
 
 # Weechat (use hl2file weechat script)
 weechat(){
-    if [ -f "$MSGFILE" ]; then
+    local msgfile=$HOME/.weechat/highlights.txt
+    if [ -f "$msgfile" ]; then
         local weechat_icon=""
-        local unreadmessages=$(wc -l < "$MSGFILE")
-        if [[ $unreadmessages != 0 ]]; then
-            weechat_icon="$ICON_CHAT_BUSY $unreadmessages"
-        else
-            weechat_icon=$ICON_CHAT_CLEAR
-        fi
-        echo -e $weechat_icon
+        local unreadmessages=$(wc -l < "$msgfile")
+        echo -e $ICON_MESSAGES $unreadmessages
     fi
 }
 
