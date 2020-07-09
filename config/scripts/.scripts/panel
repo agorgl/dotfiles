@@ -140,28 +140,28 @@ cal(){
 # Battery
 battery(){
     if [ -d $POWERSUPPLY ]; then
-        local batt_icon=""
-        local batt_level=$(acpi -b | head -n 1 | grep -o '[[:digit:]]\+%' | sed 's/%//')
-        local batt_remain=$(acpi -b | head -n 1 | cut -d " " -f 5 | cut -d ":" -f 1,2)
+        local icon=""
+        local level=$(acpi -b | awk '{gsub(/[%,]/,""); print $4}')
+        local remain=$(acpi -b | awk '{print substr($5,0,5)}')
         if [[ $(cat $POWERSUPPLY/online) != 1 ]]; then
-            if [[ $batt_level -ge 80 ]]; then
-                batt_icon=$ICON_BATT_FULL
-            elif [[ $batt_level -ge 60 && $batt_level -lt 80 ]]; then
-                batt_icon=$ICON_BATT_HIGH
-            elif [[ $batt_level -ge 40 && $batt_level -lt 60 ]]; then
-                batt_icon=$ICON_BATT_MED
-            elif [[ $batt_level -ge 20 && $batt_level -lt 40 ]]; then
-                batt_icon=$ICON_BATT_LOW
-            elif [[ $batt_level -lt 20 ]]; then
-                batt_icon=$ICON_BATT_EMPTY
+            if [[ $level -ge 80 ]]; then
+                icon=$ICON_BATT_FULL
+            elif [[ $level -ge 60 && $level -lt 80 ]]; then
+                icon=$ICON_BATT_HIGH
+            elif [[ $level -ge 40 && $level -lt 60 ]]; then
+                icon=$ICON_BATT_MED
+            elif [[ $level -ge 20 && $level -lt 40 ]]; then
+                icon=$ICON_BATT_LOW
+            elif [[ $level -lt 20 ]]; then
+                icon=$ICON_BATT_EMPTY
             fi
         else
-            batt_icon=$ICON_POWER_PLUG
+            icon=$ICON_POWER_PLUG
         fi
-        if [ ! -z $batt_remain ]; then
-            echo -e $batt_icon $batt_level%/$batt_remain
+        if [ ! -z $remain ]; then
+            echo -e $icon $level%/$remain
         else
-            echo -e $batt_icon $batt_level%
+            echo -e $icon $level%
         fi
     fi
 }
