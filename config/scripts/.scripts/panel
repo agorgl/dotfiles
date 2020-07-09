@@ -10,7 +10,6 @@ PANEL_WM_NAME=lemonbar_panel
 MSGFILE=$HOME/.weechat/highlights.txt
 
 # Hardware
-WIFI_INTERFACE=$(iw dev | grep "Interface" | sed -r 's/\s+Interface\s+(\W)*/\1/' | tail -n 1)
 POWERSUPPLY="/sys/class/power_supply/AC0"
 BATTERY="/sys/class/power_supply/BAT0"
 
@@ -60,7 +59,6 @@ COLOR_URGENT_FG=$COLOR_BACKGROUND
 COLOR_URGENT_BG=$COLOR_ALERT
 
 # Wifi signal colors
-COLOR_SIGNAL_NONE=$COLOR_BACKGROUND
 COLOR_SIGNAL_LOW=$COLOR_FOREGROUND
 COLOR_SIGNAL_MEDIUM=$COLOR_FOREGROUND_ALT
 COLOR_SIGNAL_HIGH=$COLOR_FOREGROUND_ALT
@@ -205,26 +203,21 @@ weechat(){
 
 # Wifi
 wifi(){
-    if (command -v iw >/dev/null 2>&1) && (iw dev $WIFI_INTERFACE link >/dev/null 2>&1); then
-        local wifi_ssid=$(iw $WIFI_INTERFACE link | grep 'SSID' | sed 's/SSID: //' | sed 's/\t//')
-        local wifi_color=""
-        local wifi_signal=$(iw dev "$WIFI_INTERFACE" link | grep 'signal' | sed 's/signal: //' | sed 's/ dBm//' | sed 's/\t//')
-        local wifi_icon=$ICON_WIFI
-        if [ $? -eq 0 ]; then
-            if [[ $(iw dev "$WIFI_INTERFACE" link) != "Not connected." ]]; then
-                if [[ $wifi_signal -ge -67 ]]; then
-                    wifi_color=$COLOR_SIGNAL_HIGH
-                elif [[ $wifi_signal -ge -70 && $wifi_signal -lt -67 ]]; then
-                    wifi_color=$COLOR_SIGNAL_MEDIUM
-                elif [[ $wifi_signal -ge -80 && $wifi_signal -lt -70 ]]; then
-                    wifi_color=$COLOR_SIGNAL_LOW
-                fi
-                echo -e "%{F$wifi_color}$wifi_icon%{F-} $wifi_ssid"
-            else
-                wifi_color=$COLOR_SIGNAL_NONE
-                echo -e "%{F$wifi_color}$wifi_icon%{F-}"
-            fi
+    local nic=$(iw dev | grep -B 5 ssid | awk '/Interface/{print $2}' | head -n 1)
+    if [ ! -z $nic ]; then
+        local ssid=$(iw $nic link | awk '/SSID/{print $2}')
+        local signal=$(iw dev "$nic" link | awk '/signal/{print $2}')
+
+        local color=""
+        if [[ $signal -ge -67 ]]; then
+            color=$COLOR_SIGNAL_HIGH
+        elif [[ $signal -ge -70 && $signal -lt -67 ]]; then
+            color=$COLOR_SIGNAL_MEDIUM
+        elif [[ $signal -ge -80 && $signal -lt -70 ]]; then
+            color=$COLOR_SIGNAL_LOW
         fi
+
+        echo -e "%{F$color}$ICON_WIFI%{F-} $ssid"
     fi
 }
 
