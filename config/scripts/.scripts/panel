@@ -166,7 +166,7 @@ battery(){
     fi
 }
 
-# Alsa volume
+# Volume
 volume(){
     local value=$(pamixer --get-volume)
     local state=$(pamixer --get-mute)
@@ -328,9 +328,9 @@ panel_bar(){
                 local wifi=$(wifi)
                 local music=$(music)
                 ;;
-            AUDIO*)
+            AUDIO)
                 # Audio status
-                local volume="${line#?????}"
+                local volume=$(volume)
                 ;;
             TITLE*)
                 # Xtitle output
@@ -397,14 +397,14 @@ spawn_panel(){
         while read -r subscribe; do
             case "${subscribe}" in
                 *sink*)
-                    echo "AUDIO"$(volume)
+                    echo "AUDIO"
                     ;;
             esac
         done < <(echo sink && pactl subscribe) > "$panel_fifo" &
     else
         # Fallback to polling
         while true; do
-            echo "AUDIO"$(volume)
+            echo "AUDIO"
             sleep 1;
         done > "$panel_fifo" &
     fi
