@@ -240,6 +240,12 @@ music(){
     fi
 }
 
+# Title
+title(){
+    echo "$@" | fold -w 60 -s | awk 'BEGIN{ORS=""}; NR==1{print $0}; NR==2{print "..."}'
+}
+
+# Window manager
 workspaces(){
     # Bspwm internal state
     IFS=':'
@@ -328,7 +334,7 @@ panel_bar(){
                 ;;
             TITLE*)
                 # Xtitle output
-                local title="${line#?????}"
+                local title=$(title "${line#?????}")
                 ;;
             W*)
                 local wm_infos=$(workspaces ${line#?})
