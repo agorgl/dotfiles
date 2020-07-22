@@ -40,35 +40,3 @@ URxvt*dynamicColors: on
 URxvt.perl-ext-common: default,matcher
 URxvt.url-launcher: /usr/bin/xdg-open
 URxvt.matcher.button: 1
-
-! ------------------------------------------------------------------------------
-! Rofi
-! ------------------------------------------------------------------------------
-! Enabled modes
-rofi.modi: run
-! Window width
-rofi.width: 100%
-! Number of lines
-rofi.lines: 3
-! Font to use
-rofi.font: Monaco 18
-! Row colors       'bg',    'fg',    'bgalt', 'hlbg',  'hlfg'
-rofi.color-normal: #1b1d1e, #266c98, #1b1d1e, #1b1d1e, #ff0044
-! Window colors    'bg',    'border','separator'
-rofi.color-window: #1b1d1e, #1b1d1e, #266c98
-! Location
-! 1   2   3
-! 8   0   4
-! 7   6   5
-rofi.location: 1
-! Padding
-rofi.padding: 30
-! {X,Y}-offset relative to location
-rofi.xoffset: 0
-rofi.yoffset: 0
-! Margin between rows
-rofi.line-margin: 10
-! Padding within rows
-rofi.line-padding: 2
-! Separator style (none, dash, solid)
-rofi.separator-style: solid
