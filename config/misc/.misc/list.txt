@@ -155,6 +155,7 @@ ttf-inconsolata
 ttf-ubuntu-font-family
 
 # Programs
+alacritty
 arandr
 chromium
 d-feet
