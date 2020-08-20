@@ -2,9 +2,6 @@
 # ~/.xprofile
 #
 
-# If vmware tools exist we probably are in a WM, so run them
-command -v vmware-user-suid-wrapper >/dev/null 2>&1 && (vmware-user-suid-wrapper) &
-
 # Launch composite manager
 picom &
 
