@@ -16,6 +16,7 @@ Flags:
   -a,--all                      prints all packages in package lists
   -n,--native-only              prints packages in official repositories
   -m,--foreign-only             prints foreign installed packages (AUR)
+  -r,--raw                      prints unexpanded entries in package lists
   -d,--duplicates               prints duplicate packages
 "
 
@@ -29,6 +30,7 @@ function help() { echo "$HELP"; }
 INCLUDE_NATIVE_PKGS=0
 INCLUDE_FOREIGN_PKGS=0
 SHOW_DUPLICATES=0
+SHOW_RAW=0
 
 case "$#" in
     0)
@@ -49,6 +51,9 @@ case "$#" in
                     ;;
                 -m|--foreign-only)
                     INCLUDE_FOREIGN_PKGS=1
+                    ;;
+                -r|--raw)
+                    SHOW_RAW=1
                     ;;
                 -d|--duplicates)
                     SHOW_DUPLICATES=1
@@ -128,6 +133,13 @@ plist=($(printf "%s\n" ${plist[@]} | sort))
 # Show duplicates
 if [ $SHOW_DUPLICATES -eq 1 ]; then
     echo ${dplist[@]}
+    exit
+fi
+
+# Show raw
+if [ $SHOW_RAW -eq 1 ]; then
+    splist=($(printf "%s\n" ${fplist[@]} | sort))
+    echo ${splist[@]}
     exit
 fi
 
