@@ -92,7 +92,7 @@ super + {p,b,comma,period}
 
 # Focus the next/previous node
 super + {_,shift + }c
-    bspc node -f {next,prev}.local
+    bspc node -f {next,prev}.local.!hidden.window
 
 # Focus the next/prev desktop
 super + bracket{left,right}
