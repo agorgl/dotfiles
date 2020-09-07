@@ -1,0 +1,107 @@
+#!/bin/bash
+set -e
+
+USAGE="Usage: pxesrv <nic> <root>"
+HELP="\
+pxesrv <rootpath>
+Params:
+    nic               network interface to listen on
+    root              path to root tftp/http directory
+"
+
+NET=192.168.0
+
+function info { echo "[+] $@"; }
+function trace { echo " -  $@"; }
+
+function elevate {
+    if (($EUID != 0)); then
+        info "Elevating..."
+        if [[ -t 1 ]]; then
+            sudo "$0" "$@"
+        else
+            gksu "$0 $@"
+        fi
+        exit
+    fi
+}
+
+function net_setup {
+    trace "Setting up NIC"
+    ips=$(ip addr show $NIC | awk '/inet/{print $2}')
+    if [ ! -z "$ips" ]; then
+        trace "Warning: NIC $NIC has already another IP assigned"
+    fi
+    ip addr add $NET.1/24 dev $NIC
+    ip link set $NIC up
+}
+
+function srv_setup {
+    trace "Firing up DHCP server"
+    dnsmasq \
+        --port=0 \
+        --interface=$NIC \
+        --bind-interfaces \
+        --listen-address=$NET.1 \
+        --dhcp-range=$NET.2,$NET.100,12h \
+        --dhcp-option-force=66,$NET.1 \
+        --dhcp-userclass=set:ENH,iPXE \
+        --dhcp-boot=tag:!ENH,undionly.kpxe \
+        --dhcp-boot=tag:ENH,http://$NET.1/boot.ipxe \
+        --enable-tftp \
+        --tftp-root=$ROOTPATH \
+        --no-daemon &
+    dhcpd_pid=$!
+
+    trace "Firing up HTTP server"
+    darkhttpd $ROOTPATH --daemon --pidfile /var/run/darkhttpd.pid
+    httpd_pid=$(cat /var/run/darkhttpd.pid)
+}
+
+function srv_cleanup {
+    if [ ! -z "$httpd_pid" ]; then
+        trace "Killing HTTP server"
+        kill $httpd_pid
+    fi
+
+    if [ ! -z "$dhcpd_pid" ]; then
+        trace "Killing DHCP server"
+        kill $dhcpd_pid
+    fi
+}
+
+function net_cleanup {
+    trace "Resetting NIC"
+    ip link set $NIC down
+    ip addr del $NET.1/24 dev $NIC
+}
+
+function cleanup {
+    info "Cleaning up..."
+    srv_cleanup
+    net_cleanup
+}
+
+case "$#" in
+    0)
+        echo >&2 "$USAGE"; exit 1 ;;
+    *)
+        cmd="$1"
+        case "$cmd" in
+            -h|--help)
+                echo "$HELP"; exit 0 ;;
+            *)
+                NIC=$1; ROOTPATH=$2 ;;
+        esac
+esac
+
+elevate $@
+trap cleanup EXIT
+
+info "Setting up network..."
+net_setup
+
+info "Firing up Preboot Execution Environment server..."
+srv_setup
+
+read -r -d '' _ </dev/tty
