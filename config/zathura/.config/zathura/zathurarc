@@ -13,6 +13,9 @@ set smooth-scroll "true"
 set scroll-full-overlap 0.01
 set scroll-step 20
 
+# Copy to clipboard
+set selection-clipboard clipboard
+
 # Font
 set font "inconsolata 10"
 
