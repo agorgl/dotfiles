@@ -8,7 +8,6 @@ PANEL_WM_NAME=lemonbar_panel
 
 # Hardware
 POWERSUPPLY="/sys/class/power_supply/AC0"
-BATTERY="/sys/class/power_supply/BAT0"
 
 #================================================================
 #=- Customization
