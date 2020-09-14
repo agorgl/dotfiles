@@ -1,0 +1,72 @@
+#!/bin/bash
+set -e
+
+USAGE="Usage: smbserv <dir>"
+
+function info { echo "[+] $@"; }
+function trace { echo " -  $@"; }
+
+function elevate {
+    if (($EUID != 0)); then
+        info "Elevating..."
+        if [[ -t 1 ]]; then
+            sudo "$0" "$@"
+        else
+            gksu "$0 $@"
+        fi
+        exit
+    fi
+}
+
+function setup {
+    trace "Sharing directory $SHARE_DIR"
+    local smb_conf="
+    [global]
+      workgroup = WORKGROUP
+      map to guest = bad user
+      usershare allow guests = yes
+
+    [share]
+      browsable = true
+      read only = yes
+      guest ok = yes
+      path = $SHARE_DIR
+    "
+
+    echo "$smb_conf" > /tmp/smb-serv.conf
+    smbd -S -F -s /tmp/smb-serv.conf &
+    smbd_pid=$!
+}
+
+function cleanup {
+    info "Cleaning up..."
+    if [ ! -z "$smbd_pid" ]; then
+        trace "Killing Samba server"
+        kill $smbd_pid
+    fi
+}
+
+case "$#" in
+    *)
+        case "$1" in
+            -h|--help)
+                echo "$USAGE"
+                exit 0
+                ;;
+            *)
+                SHARE_DIR=${1:-`pwd`}
+                if [ ! -d $SHARE_DIR ]; then
+                    echo "Error: Directory $SHARE_DIR does not exist"
+                    exit 1
+                fi
+                ;;
+        esac
+esac
+
+elevate $@
+trap cleanup EXIT
+
+info "Firing up Samba server..."
+setup
+
+read -r -d '' _ </dev/tty
