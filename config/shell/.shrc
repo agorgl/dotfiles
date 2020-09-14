@@ -1,0 +1,12 @@
+#
+# ~/.shrc
+#
+
+# Common variables/aliases
+export HISTSIZE=3000
+export EDITOR=vim
+alias ls='ls --color=auto'
+PS1='[\u@\h \W]\$ '
+
+# Source .environment if exists
+[[ -f ~/.environment ]] && . ~/.environment
