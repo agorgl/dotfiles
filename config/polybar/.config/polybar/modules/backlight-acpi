@@ -1,9 +1,0 @@
-;-----------------------------------------------------
-; Backlight-ACPI
-;-----------------------------------------------------
-inherit = module/xbacklight
-type = internal/backlight
-;card = intel_backlight
-card = radeon_bl0
-
-; vim:ft=dosini
