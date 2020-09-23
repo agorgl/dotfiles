@@ -37,6 +37,7 @@ acpi
 aspell
 bc
 bind
+brightnessctl
 cdemu-client
 cdrtools
 cryptsetup
