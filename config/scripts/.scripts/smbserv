@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-USAGE="Usage: smbserv <dir>"
+USAGE="Usage: smbserv [<name:dir>]"
 
 function info { echo "[+] $@"; }
 function trace { echo " -  $@"; }
@@ -19,19 +19,27 @@ function elevate {
 }
 
 function setup {
-    trace "Sharing directory $SHARE_DIR"
     local smb_conf="
     [global]
       workgroup = WORKGROUP
       map to guest = bad user
       usershare allow guests = yes
-
-    [share]
-      browsable = true
-      read only = yes
-      guest ok = yes
-      path = $SHARE_DIR
     "
+
+    for ds in $SHARES; do
+        local share=(${ds//:/ })
+        local name=${share[0]}
+        local dir=${share[1]}
+        trace "Adding share \"$name\" for directory \"$dir\""
+
+        smb_conf+="
+        [$name]
+          browsable = true
+          read only = yes
+          guest ok = yes
+          path = $dir
+        "
+    done
 
     echo "$smb_conf" > /tmp/smb-serv.conf
     smbd -S -F -s /tmp/smb-serv.conf &
@@ -54,11 +62,7 @@ case "$#" in
                 exit 0
                 ;;
             *)
-                SHARE_DIR=${1:-`pwd`}
-                if [ ! -d $SHARE_DIR ]; then
-                    echo "Error: Directory $SHARE_DIR does not exist"
-                    exit 1
-                fi
+                SHARES=$@
                 ;;
         esac
 esac
