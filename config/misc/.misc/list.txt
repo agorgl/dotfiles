@@ -50,6 +50,7 @@ ebtables
 expac
 gnu-netcat
 htop
+inetutils
 imagemagick
 indent
 inetutils
@@ -80,6 +81,7 @@ socat
 stow
 strace
 sysfsutils
+sysstat
 tcpdump
 the_silver_searcher
 tmux
