@@ -1,0 +1,109 @@
+#!/bin/bash
+set -e
+
+USAGE="Usage: connsh <src_nic> <dst_nic>"
+HELP="\
+connsh <src_nic> <dst_nic>
+Params:
+    src_nic           network interface to share connection from
+    dst_nic           network interface to share connection to
+"
+
+NET=192.168.16
+
+function info { echo "[+] $@"; }
+function trace { echo " -  $@"; }
+
+function elevate {
+    if (($EUID != 0)); then
+        info "Elevating..."
+        if [[ -t 1 ]]; then
+            sudo "$0" "$@"
+        else
+            gksu "$0 $@"
+        fi
+        exit
+    fi
+}
+
+function net_setup {
+    trace "Enabling packet forwarding"
+    sysctl net.ipv4.ip_forward=1
+
+    trace "Setting up WAN interface"
+    ip addr add $NET.1/24 dev $SRC_NIC
+    ip link set up dev $SRC_NIC
+
+    trace "Adding forwarding rules"
+    iptables -t nat -A POSTROUTING -o $DST_NIC -j MASQUERADE
+    iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -A FORWARD -i $SRC_NIC -o $DST_NIC -j ACCEPT
+
+    trace "Adding DHCP forwarding rules"
+    iptables -I INPUT -p udp --dport 67 -i $SRC_NIC -j ACCEPT
+    iptables -I INPUT -p udp --dport 53 -s $NET.0/24 -j ACCEPT
+    iptables -I INPUT -p tcp --dport 53 -s $NET.0/24 -j ACCEPT
+}
+
+function srv_setup {
+    trace "Firing up DHCP server"
+    dnsmasq \
+        --strict-order \
+        --except-interface=lo \
+        --interface=$SRC_NIC \
+        --bind-interfaces \
+        --listen-address=$NET.1 \
+        --dhcp-range=$NET.2,$NET.100,12h \
+        --no-daemon &
+    dhcpd_pid=$!
+}
+
+function srv_cleanup {
+    if [ ! -z "$dhcpd_pid" ]; then
+        trace "Killing DHCP server"
+        kill $dhcpd_pid
+    fi
+}
+
+function net_cleanup {
+    trace "Adding DHCP forwarding rules"
+    iptables -D INPUT -p udp --dport 53 -s $NET.0/24 -j ACCEPT
+    iptables -D INPUT -p tcp --dport 53 -s $NET.0/24 -j ACCEPT
+    iptables -D INPUT -p udp --dport 67 -i $SRC_NIC -j ACCEPT
+
+    trace "Adding forwarding rules"
+    iptables -D FORWARD -i $SRC_NIC -o $DST_NIC -j ACCEPT
+    iptables -D FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    iptables -t nat -D POSTROUTING -o $DST_NIC -j MASQUERADE
+
+    trace "Resetting WAN interface"
+    ip addr del $NET.1/24 dev $SRC_NIC
+}
+
+function cleanup {
+    info "Cleaning up..."
+    srv_cleanup
+    net_cleanup
+}
+
+case "$#" in
+    0)
+        echo >&2 "$USAGE"; exit 1 ;;
+    *)
+        cmd="$1"
+        case "$cmd" in
+            -h|--help)
+                echo "$HELP"; exit 0 ;;
+            *)
+                SRC_NIC=$1; DST_NIC=$2 ;;
+        esac
+esac
+
+elevate $@
+trap cleanup EXIT
+
+info "Setting up connection sharing from $SRC_NIC to $DST_NIC..."
+net_setup
+srv_setup
+
+read -r -d '' _ </dev/tty
