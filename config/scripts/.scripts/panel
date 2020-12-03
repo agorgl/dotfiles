@@ -310,7 +310,7 @@ workspaces(){
                 # Urgent desktop
                 ((cur_dsk++))
                 local click_action="bspc desktop -f ^${cur_mon}\\:^${cur_dsk}"
-                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:${click_action}:}$pad${name}$pad%{B-}%{F-}"
+                wm_infos="${wm_infos}%{F$COLOR_URGENT_FG}%{B$COLOR_URGENT_BG}%{A:${click_action}:}$pad${name}$pad%{A}%{B-}%{F-}"
                 ;;
         esac
         shift
