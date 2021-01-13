@@ -246,7 +246,14 @@ music(){
 
 # Title
 title(){
-    echo "$@" | fold -w 60 -s | awk 'BEGIN{ORS=""}; NR==1{print $0}; NR==2{print "..."}'
+    local title=$(echo "$@" | fold -w 60 -s | awk 'BEGIN{ORS=""}; NR==1{print $0}; NR==2{print "..."}')
+    local total=$(bspc query -N -n .leaf.local | wc -l)
+    local curnt=$(bspc query -N -n .leaf.local | awk "/$(bspc query -N -n)/{print FNR}")
+    if [ $total -gt 1 ] && [ ! -z $curnt ]; then
+        printf "%s [%s/%s]\n" "$title" "$curnt" "$total"
+    else
+        printf "%s\n" "$title"
+    fi
 }
 
 # Window manager
