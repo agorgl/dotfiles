@@ -46,7 +46,7 @@ function srv_setup {
         --dhcp-range=$NET.2,$NET.100,12h \
         --dhcp-option-force=66,$NET.1 \
         --dhcp-userclass=set:ENH,iPXE \
-        --dhcp-boot=tag:!ENH,undionly.kpxe \
+        --dhcp-boot=tag:!ENH,ipxe.efi \
         --dhcp-boot=tag:ENH,http://$NET.1/boot.ipxe \
         --enable-tftp \
         --tftp-root=$ROOTPATH \
