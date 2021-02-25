@@ -1,0 +1,69 @@
+#!/bin/bash
+
+ROOT=$1
+[ ! -d "$ROOT" ] && (echo "Usage: $(basename $0) <root>"; exit)
+
+# Make directory structure
+echo [+] Making directory structure
+mkdir -p $ROOT/boot
+mkdir -p $ROOT/data/\$OEM\$/\$\$/Setup/Scripts
+mkdir -p $ROOT/sources
+
+# Add info stubs
+echo [+] Generating info stubs
+echo "Put bcd and boot.sdi files here" > $ROOT/boot/README
+echo "Put KMSpico_setup.exe file here" > $ROOT/data/\$OEM\$/\$\$/Setup/Scripts/README
+echo "Put boot.wim file here"          > $ROOT/sources/README
+
+# Fetch files
+echo [+] Fetching needed files
+wget -q -P $ROOT http://boot.ipxe.org/ipxe.efi
+wget -q -P $ROOT http://boot.ipxe.org/ipxe.lkrn
+wget -q -P $ROOT http://boot.ipxe.org/undionly.kpxe
+wget -q -P $ROOT https://github.com/ipxe/wimboot/releases/latest/download/wimboot
+
+# Write scripts/configuration
+echo [+] Writing configuration files
+cat > $ROOT/boot.ipxe <<- EOM
+#!ipxe
+
+kernel wimboot
+initrd install.bat      install.bat
+initrd winpeshl.ini     winpeshl.ini
+initrd boot/bcd         BCD
+initrd boot/boot.sdi    boot.sdi
+initrd sources/boot.wim boot.wim
+boot
+EOM
+
+cat > $ROOT/install.bat <<- EOM
+echo Wait for it...
+wpeinit.exe
+::wpeutil WaitForNetwork
+ipconfig
+pause
+net use Z: \\\\192.168.0.1\winiso
+net use Y: \\\\192.168.0.1\winoem
+Z:\setup.exe /m:Y:\\
+EOM
+
+cat > $ROOT/winpeshl.ini <<- EOM
+[LaunchApps]
+"install.bat"
+EOM
+
+cat > $ROOT/data/\$OEM\$/\$\$/Setup/Scripts/SetupComplete.cmd <<- EOM
+@echo OFF
+CD /D "%~dp0"
+REM Defender Exclusions...
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\KMSELDI.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\Service_KMS.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\Autopico.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%WinDir%\SECOH-QAD.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+
+"KMSpico_setup.exe" /VerySilent
+TIMEOUT /T 2 >nul
+DEL /F /Q "%0%" >nul
+EOM
+
+echo [+] Done.
