@@ -1,0 +1,100 @@
+#!/bin/bash
+
+#---------------------------------------------------------------
+# Utils
+#---------------------------------------------------------------
+# Notification
+message() {
+    notify-send -i info -t 2000 "$1"
+}
+
+# Audio interface detection
+external_audio_card_connected() {
+    cat /proc/asound/cards | sed -nr 's/.*\[(\w+).*/\1/p' | grep USB 2>&1 >/dev/null
+    return $?
+}
+
+#---------------------------------------------------------------
+# Adapters
+#---------------------------------------------------------------
+# PulseAudio <-> Jack
+setup_pulseaudio_bridge() {
+    pacmd set-default-sink jack_out
+    while read line; do
+        input=$(echo $line | cut -f2 -d' ')
+        echo "Moving input: $input to jack_out"
+        pacmd move-sink-input $input jack_out
+    done < <(pacmd list-sink-inputs | grep index)
+}
+
+# Onboard device <-> Jack
+setup_onboard_adapter() {
+    # Load onboard device
+    pasuspender -- sleep 1 &
+    jack_load -i "-d hw:PCH" onboard audioadapter
+
+    # Connect PulseAudio bridge to onboard outputs
+    jack_connect "PulseAudio JACK Sink:front-left" "onboard:playback_1"
+    jack_connect "PulseAudio JACK Sink:front-right" "onboard:playback_2"
+}
+
+# Alsa Midi <-> Jack Midi
+setup_alsa_midi_bridge() {
+    if [[ $(pgrep -cx a2jmidid) -eq 0 ]]; then
+        nohup a2jmidid -e >/dev/null 2>&1 &
+        message "Midi bridge started"
+    fi
+}
+
+#---------------------------------------------------------------
+# Setup
+#---------------------------------------------------------------
+start_jack() {
+    # Start JACK
+    jack_control start
+    jack_control ds alsa
+    jack_control dps device hw:USB
+    jack_control dps rate 44100
+    jack_control dps nperiods 3
+    jack_control dps period 256
+
+    # PulseAudio bridge
+    setup_pulseaudio_bridge
+
+    # Alsa midi bridge
+    setup_alsa_midi_bridge
+
+    # Onboard adapter
+    #setup_onboard_adapter
+}
+
+stop_jack() {
+    # Kill Alsa midi bridge
+    if [[ $(pgrep -cx a2jmidid) -ge 1 ]]; then
+        killall -e -9 a2jmidid
+        message "Midi bridge stopped"
+    fi
+
+    # Stop JACK
+    jack_control stop
+}
+
+toggle_jack() {
+    if ! jack_control status; then
+        start_jack
+        message "Audio mode enabled"
+    else
+        stop_jack
+        message "Audio mode disabled"
+    fi
+}
+
+#---------------------------------------------------------------
+# Entrypoint
+#---------------------------------------------------------------
+if ! external_audio_card_connected && ! jack_control status 2>&1 >/dev/null; then
+    message "No external audio card detected!"
+    exit 1
+fi
+
+toggle_jack
