@@ -13,6 +13,7 @@ gdb
 git
 git-lfs
 gvim
+lld
 lldb
 llvm
 llvm-libs
@@ -44,13 +45,15 @@ cryptsetup
 cups
 darkhttpd
 diffutils
+dmidecode
 dos2unix
 e2fsprogs
 ebtables
 expac
+fd
+fzf
 gnu-netcat
 htop
-inetutils
 imagemagick
 indent
 inetutils
@@ -89,6 +92,7 @@ traceroute
 tree
 unrar
 unzip
+usbutils
 vnstat
 vorbis-tools
 wget
@@ -129,6 +133,7 @@ xorg-xfd
 xorg-xfontsel
 xorg-xinit
 xorg-xinput
+xorg-xlsfonts
 xorg-xprop
 xorg-xrandr
 xorg-xrdb
@@ -148,7 +153,6 @@ pulseaudio-bluetooth
 # Themes
 arc-gtk-theme
 gtk-engine-murrine
-qt5-styleplugins
 
 # Fonts
 adobe-source-sans-pro-fonts
@@ -172,7 +176,6 @@ feh
 file-roller
 filelight
 galculator
-gksu
 guvcview
 gvfs
 gvfs-mtp
@@ -182,7 +185,6 @@ maim
 mpv
 mupdf
 pavucontrol
-qbittorrent
 qemu
 qemu-arch-extra
 rofi
