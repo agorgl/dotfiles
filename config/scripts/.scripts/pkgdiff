@@ -3,9 +3,9 @@
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: pkgdiff [OPTIONS]"
+USAGE="Usage: pkgdiff [OPTION]... [PKGFILE]..."
 HELP="\
-pkgdiff [OPTIONS]
+pkgdiff [OPTION]... [PKGFILE]...
 Flags:
   -h,--help                     prints current help message
   -a,--all                      prints packages from all sources
@@ -54,11 +54,21 @@ case "$#" in
                     SHOW_LIST_ONLY_PKGS=1
                     ;;
                 *)
-                    usage ;;
+                    break ;;
             esac
             shift
         done
 esac
+
+# Check provided package list files
+if [ $# -gt 0 ]; then
+    PACKAGE_FILES=($@)
+    for p in ${PACKAGE_FILES[@]}; do
+        if [ ! -f $p ]; then
+            die "Package file $p does not exist."
+        fi
+    done
+fi
 
 # Default to showing packages from all sources
 if [ $INCLUDE_NATIVE_PKGS -eq 0 ] && [ $INCLUDE_FOREIGN_PKGS -eq 0 ]; then
@@ -76,12 +86,15 @@ fi
 #----------------------------------------------------------------------
 # Construct lists
 plist=()
+pflags=()
 if [ $INCLUDE_NATIVE_PKGS -eq 1 ]; then
-    plist+=($(pkglist -n))
+    pflags+=("-n")
 fi
 if [ $INCLUDE_FOREIGN_PKGS -eq 1 ]; then
-    plist+=($(pkglist -m))
+    pflags+=("-m")
 fi
+pflags+=(${PACKAGE_FILES[@]})
+plist+=($(pkglist $(printf " %s" ${pflags[@]})))
 plist=($(printf "%s\n" ${plist[@]} | sort))
 
 # Apply filters
