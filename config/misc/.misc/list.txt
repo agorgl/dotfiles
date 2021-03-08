@@ -16,7 +16,6 @@ gvim
 lld
 lldb
 llvm
-llvm-libs
 perf
 valgrind
 
@@ -25,8 +24,10 @@ acpi_call
 acpid
 crda
 dkms
-light
-lm_sensors
+man-db
+man-pages
+nano
+ntfs-3g
 ntp
 polkit-gnome
 samba
@@ -41,7 +42,6 @@ bind
 brightnessctl
 cdemu-client
 cdrtools
-cryptsetup
 cups
 darkhttpd
 diffutils
@@ -62,16 +62,13 @@ iw
 jfsutils
 jq
 less
+light
 logrotate
 lshw
 lsof
 lvm2
 macchanger
-man-db
-man-pages
-nano
 nmap
-ntfs-3g
 openssh
 p7zip
 pamixer
