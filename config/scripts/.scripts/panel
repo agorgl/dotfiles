@@ -78,6 +78,7 @@ ICON_CALENDAR='\ue226'
 ICON_TIME='\ue015'
 ICON_CPU='\ue082'
 ICON_MEMORY='\ue0c4'
+ICON_TEMP='\ue01b'
 
 #================================================================
 #=- Setup
@@ -224,6 +225,12 @@ memory(){
     echo -e $ICON_MEMORY ${mem}MB
 }
 
+# Temperature
+temp(){
+    local temp=$(sensors | awk '/Package id/{print strtonum($4)}')
+    echo -e $ICON_TEMP ${temp}C
+}
+
 # Music controls
 music(){
     pgrep mpd >/dev/null # To populate last error
@@ -350,6 +357,7 @@ panel_bar(){
                 local wifi=$(wifi)
                 local music=$(music)
                 local memory=$(memory)
+                local temp=$(temp)
                 ;;
             AUDIO)
                 # Audio status
@@ -366,7 +374,7 @@ panel_bar(){
                 local wm_infos=$(workspaces ${line#?})
                 ;;
         esac
-        local components=("${messages}" "${wifi}" "${cpu}" "${memory}" "${battery}" "${volume}" "${date}" "${clock}")
+        local components=("${messages}" "${wifi}" "${cpu}" "${memory}" "${temp}" "${battery}" "${volume}" "${date}" "${clock}")
         printf "%s\n" "%{Sf}%{l}${wm_infos} ${music} %{c}${title} %{Sl}%{r}$(join_by " " "${components[@]}") "
     done
 }
