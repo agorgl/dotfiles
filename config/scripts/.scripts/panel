@@ -221,7 +221,7 @@ cpu(){
 
 # Memory usage
 memory(){
-    local mem=$(free -m | awk '/Mem/{print $3+$5}')
+    local mem=$(free -m | awk '/Mem/{print $3}')
     echo -e $ICON_MEMORY ${mem}MB
 }
 
