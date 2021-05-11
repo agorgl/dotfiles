@@ -76,8 +76,12 @@ function temperature_widget(display, pos, sa, ea, label, value)
     draw_text(display, l)
 end
 
+coremon = command([[
+    ls -d /sys/class/hwmon/*/name \
+  | awk '{ getline f < $1 } f == "coretemp" { split($1,a,"/"); sub(/hwmon/,"",a[5]); print a[5] }']])
+
 function temps_main(display)
-    local cpu_temp = conky_value('hwmon 0 temp 1', true)
+    local cpu_temp = conky_value('hwmon ' .. coremon .. ' temp 1', true)
     local gpu_temp = 0
     if HAS_NVIDIA then
         gpu_temp = conky_value('nvidia temp', true)
