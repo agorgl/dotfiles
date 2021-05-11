@@ -177,6 +177,7 @@ guvcview
 gvfs
 gvfs-mtp
 gvfs-smb
+jmtpfs
 libvirt
 maim
 mpv
@@ -188,6 +189,7 @@ rofi
 rxvt-unicode
 seahorse
 smplayer
+sshfs
 sxiv
 systemd-ui
 thunar
