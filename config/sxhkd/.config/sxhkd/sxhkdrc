@@ -18,7 +18,7 @@ super + e
 super + i
     chromium
 
-# Make sxhkd reload its configuration files:
+# Make sxhkd reload its configuration files
 super + Escape
     pkill -USR1 -x sxhkd
 
@@ -52,7 +52,7 @@ super + y
 
 # Swap the given window with the biggest one in the current desktop
 super + {_,shift + } g
-    bspc node -s {biggest,@brother}
+    bspc node -s {biggest,@brother}.local
 
 #
 # State/flags
