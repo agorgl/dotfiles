@@ -1,7 +1,6 @@
 conky-lua-nv
 connman-gtk
 downgrade
-gksu
 lemonbar-xft-git
 mirage
 paper-icon-theme-git
