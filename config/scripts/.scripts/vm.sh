@@ -76,7 +76,7 @@ function uefi_setup {
         trace "Found OVMF!"
         [ ! -f $UVR ] && cp $vars_file $UVR
         trace "Enabling UEFI support"
-        uefi_params="-drive if=pflash,format=raw,readonly,file=/usr/share/ovmf/x64/OVMF_CODE.fd -drive if=pflash,format=raw,file=$UVR"
+        uefi_params="-drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/x64/OVMF_CODE.fd -drive if=pflash,format=raw,file=$UVR"
     else
         trace "OVMF not found"
     fi
