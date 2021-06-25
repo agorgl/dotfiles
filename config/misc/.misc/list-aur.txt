@@ -9,6 +9,7 @@ plymouth-theme-colorful-loop-git
 powerline-fonts-git
 qt5-styleplugins
 siji-git
+tamzen-font-git
 termsyn-font
 ttf-monaco
 ttf-ms-fonts

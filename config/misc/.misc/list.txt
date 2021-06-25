@@ -90,8 +90,10 @@ tree
 unrar
 unzip
 usbutils
+vdpauinfo
 vnstat
 vorbis-tools
+vulkan-tools
 wget
 wireguard-tools
 youtube-dl
@@ -160,6 +162,7 @@ ttf-anonymous-pro
 ttf-dejavu
 ttf-font-awesome
 ttf-inconsolata
+ttf-opensans
 ttf-ubuntu-font-family
 
 # Programs
@@ -169,6 +172,7 @@ chromium
 d-feet
 dunst
 dzen2
+edk2-ovmf
 feh
 file-roller
 filelight

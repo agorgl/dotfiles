@@ -5,6 +5,7 @@ docker
 docker-compose
 docker-credential-secretservice-bin
 go
+gopls
 helm
 helmfile
 httpie
@@ -12,7 +13,7 @@ jdk11-openjdk
 jdk8-openjdk
 jdtls
 k3s-bin
-k9s-git
+k9s
 kubectl
 maven
 mitmproxy
