@@ -427,7 +427,7 @@ spawn_panel(){
     xtitle -sf 'TITLE%s\n' > "$panel_fifo" &
 
     # Audio changes
-    if systemctl --user is-active pulseaudio.socket; then
+    if systemctl --user is-active pulseaudio.socket || systemctl --user is-active pipewire-pulse.socket; then
         # Launch pulseaudio subscription channel
         while read -r subscribe; do
             case "${subscribe}" in
