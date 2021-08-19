@@ -144,7 +144,15 @@ xterm
 # Audio
 alsa-firmware
 alsa-utils
+gst-plugin-pipewire
 jack2
+libpipeline
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-jack-dropin
+pipewire-media-session
+pipewire-pulse
 pulseaudio
 pulseaudio-alsa
 pulseaudio-bluetooth
