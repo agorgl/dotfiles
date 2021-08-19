@@ -115,7 +115,11 @@ wpa_supplicant
 # Windowing
 bspwm
 dmenu
+libva-mesa-driver
+libva-utils
+libva-vdpau-driver
 mesa
+mesa-vdpau
 picom
 stalonetray
 sxhkd
