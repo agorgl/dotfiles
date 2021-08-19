@@ -1,11 +1,13 @@
 aj-snapshot
 cadence
 carla
+easyeffects
 guitarix
 jack-stdio
 jack_capture
 mod-utilities-lv2-git
 multimidicast
+noisetorch-bin
 oggfwd
 pulseaudio-jack
 qmidinet
