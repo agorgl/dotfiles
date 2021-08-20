@@ -24,17 +24,17 @@ if ! pacman -Qq git stow 2>&1 >/dev/null; then
 fi
 
 # Setup dotfiles
-if [ ! -d .dot/files ]; then
+if [ ! -d $HOME/.dot/files ]; then
     # Clone my dots
     cd
     msg "Cloning dotfiles..."
-    git clone https://github.com/ElArtista/dotfiles .dot/files
+    git clone https://github.com/ElArtista/dotfiles $HOME/.dot/files
 
     # Move the relevant dotfiles in their place
     msg "Bootstraping dotfiles..."
     cd
     rm -rf .bash*
-    cd .dot/files/
+    cd $HOME/.dot/files/config
     stow -t ../../.. */
     cd ../../..
 fi
