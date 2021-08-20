@@ -37,11 +37,11 @@ if [ ! -d .dot/files ]; then
     cd .dot/files/
     stow -t ../.. */
     cd ../..
-
-    # Update path
-    msg "Updating path..."
-    PATH=$PATH:$HOME/.scripts:$HOME/.bin
 fi
+
+# Update path
+msg "Updating path..."
+PATH=$PATH:$HOME/.scripts:$HOME/.bin
 
 # Install official packages
 msg "Bootstraping packages..."
