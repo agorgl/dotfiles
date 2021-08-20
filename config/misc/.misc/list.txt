@@ -166,7 +166,7 @@ arc-gtk-theme
 gtk-engine-murrine
 
 # Fonts
-adobe-source-sans-pro-fonts
+adobe-source-sans-fonts
 gtk2fontsel
 noto-fonts
 terminus-font
