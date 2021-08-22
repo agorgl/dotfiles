@@ -2,11 +2,11 @@ conky-lua-nv
 connman-gtk
 downgrade
 lemonbar-xft-git
-mirage
 paper-icon-theme-git
 plymouth
 plymouth-theme-colorful-loop-git
 powerline-fonts-git
+qimgv
 qt5-styleplugins
 siji-git
 tamzen-font-git
