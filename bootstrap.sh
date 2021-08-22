@@ -49,8 +49,14 @@ sudo pacman -S --needed $(pkglist -n)
 
 # Install aur helper
 if ! pacman -Qq yay 2>&1 >/dev/null; then
+    # Fetch PKGFILE
+    mkdir yay-tmp && cd yay-tmp/
+    curl https://aur.archlinux.org/cgit/aur.git/snapshot/yay.tar.gz | tar xzv
+
+    # Build package
     msg "Installing aur helper..."
-    yay.sh
+    cd yay && makepkg -s -i
+    cd ../.. &&  rm -rf yay-tmp/
 fi
 
 # Install aur packages
