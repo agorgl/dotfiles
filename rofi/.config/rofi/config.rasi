@@ -4,8 +4,6 @@
 
 configuration {
     modi: "run";
-    width: 60;
-    lines: 3;
     font: "Monaco 18";
 }
 
@@ -45,6 +43,7 @@ configuration {
 }
 
 window {
+    width:            60%;
     padding:          30;
     background-color: @background;
     border:           1;
@@ -77,6 +76,7 @@ textbox-prompt-colon {
 entry {
     spacing:    0;
     text-color: @normal-foreground;
+    placeholder: "";
 }
 
 message {
@@ -90,6 +90,7 @@ textbox {
 }
 
 listview {
+    lines:        3;
     padding:      2px 0px 0px;
     scrollbar:    true;
     border-color: @separatorcolor;
@@ -160,5 +161,10 @@ element alternate.urgent {
 element-text {
     background-color: rgba(0, 0, 0, 0%);
     highlight:        inherit;
+    text-color:       inherit;
+}
+
+element-text, element-icon {
+    background-color: inherit;
     text-color:       inherit;
 }
