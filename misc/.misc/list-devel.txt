@@ -13,11 +13,13 @@ httpie
 jdk11-openjdk
 jdk8-openjdk
 jdtls
+js-beautify
 k3s-bin
 k9s
 kubectl
 maven
 mitmproxy
+mold
 nodejs
 npm
 podman
@@ -26,6 +28,7 @@ rancher-k3d-bin
 renderdoc-git
 rust-analyzer
 rustup
+saxon-he
 skaffold
 typescript-language-server
 vagrant
