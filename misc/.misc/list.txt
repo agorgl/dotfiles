@@ -49,6 +49,7 @@ dmidecode
 dos2unix
 e2fsprogs
 ebtables
+evtest
 expac
 fd
 fzf
@@ -74,10 +75,12 @@ p7zip
 pamixer
 perl
 pkgfile
+qrencode
 rclone
 rsync
 s-nail
 socat
+sox
 stow
 strace
 sysfsutils
