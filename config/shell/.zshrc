@@ -32,17 +32,17 @@ fi
 source "$HOME/.zinit/bin/zinit.zsh"
 
 # Plugins
-zinit wait lucid light-mode for \
-  atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay" \
-      zdharma/fast-syntax-highlighting \
-  atload"_zsh_autosuggest_start" \
-      zsh-users/zsh-autosuggestions \
-  blockf atpull'zinit creinstall -q .' \
-      zsh-users/zsh-completions
+zinit ice lucid atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay"
+zinit light zdharma/fast-syntax-highlighting
 
-zinit wait lucid light-mode for \
-  atload"bindkey '^P' history-substring-search-up; bindkey '^N' history-substring-search-down" \
-      zsh-users/zsh-history-substring-search
+zinit ice lucid
+zinit light zsh-users/zsh-history-substring-search
+
+zinit ice wait lucid atload"_zsh_autosuggest_start"
+zinit light zsh-users/zsh-autosuggestions
+
+zinit ice wait lucid blockf atpull'zinit creinstall -q .'
+zinit light zsh-users/zsh-completions
 
 # Vi menu completion movement
 bindkey -M menuselect 'h' vi-backward-char
