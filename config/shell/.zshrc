@@ -44,6 +44,9 @@ zinit light zsh-users/zsh-autosuggestions
 zinit ice wait lucid blockf atpull'zinit creinstall -q .'
 zinit light zsh-users/zsh-completions
 
+zinit ice depth"1"
+zinit light romkatv/powerlevel10k
+
 # Vi menu completion movement
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
@@ -69,3 +72,6 @@ bindkey "^N" history-substring-search-down
 
 # Aliases
 alias ls="ls --color=auto"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
