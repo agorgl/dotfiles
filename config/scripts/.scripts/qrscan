@@ -1,0 +1,5 @@
+#!/bin/sh
+data=$(zbarimg -q --raw <(maim -q -s -u -B -c 0.1,0.1,0.1,0.6 -l -f png /dev/stdout) 2> /dev/null)
+if [ $? ]; then
+    notify-send "QR Code Result" "$data"
+fi
