@@ -24,12 +24,11 @@ nodejs
 npm
 podman
 python-language-server
-rancher-k3d-bin
 renderdoc-git
 rust-analyzer
 rustup
 saxon-he
-skaffold
+tilt-bin
 typescript-language-server
 vagrant
 vscode-css-languageserver-bin
