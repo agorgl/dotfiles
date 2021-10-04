@@ -53,6 +53,11 @@ bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 
+# Home, End and Delete keys
+bindkey "^[[H"  beginning-of-line
+bindkey "^[[F"  end-of-line
+bindkey "^[[3~" delete-char
+
 # Bash-like keys
 bindkey "^a"  beginning-of-line
 bindkey "^e"  end-of-line
