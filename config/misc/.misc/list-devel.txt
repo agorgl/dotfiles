@@ -1,3 +1,4 @@
+android-udev-git
 bat
 buildah
 ccls
@@ -32,7 +33,5 @@ saxon-he
 tilt-bin
 typescript-language-server
 vagrant
-vscode-css-languageserver-bin
-vscode-html-languageserver
 vue-cli
 vue-cli-service-global
