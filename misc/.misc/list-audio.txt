@@ -9,7 +9,6 @@ mod-utilities-lv2-git
 multimidicast
 noisetorch-bin
 oggfwd
-pulseaudio-jack
 qmidinet
 raysession-git
 realtime-privileges

@@ -162,9 +162,6 @@ pipewire-jack
 pipewire-jack-dropin
 pipewire-media-session
 pipewire-pulse
-pulseaudio
-pulseaudio-alsa
-pulseaudio-bluetooth
 
 # Themes
 arc-gtk-theme
