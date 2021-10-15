@@ -113,7 +113,7 @@ dhcp
 dhcpcd
 dnsmasq
 ethtool
-wpa_supplicant
+iwd
 
 # Windowing
 bspwm
