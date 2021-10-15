@@ -12,8 +12,10 @@ libappindicator-gtk3
 lightdm
 lightdm-webkit2-greeter
 lightdm-webkit2-theme-glorious
+losslesscut-bin
 mailspring
 mesa-demos
+mgba-sdl
 mtpfs
 mupdf-tools
 plymouth-theme-cuts-git
