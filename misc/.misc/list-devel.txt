@@ -24,6 +24,7 @@ nodejs
 npm
 podman
 python-language-server
+qemu-user-static-bin
 renderdoc-git
 rust-analyzer
 rustup

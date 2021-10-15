@@ -217,5 +217,6 @@ thunar-volman
 udiskie
 virt-manager
 weechat
+x11-ssh-askpass
 zathura
 zathura-pdf-mupdf
