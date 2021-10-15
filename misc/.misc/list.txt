@@ -70,6 +70,7 @@ lsof
 lvm2
 macchanger
 nmap
+openldap
 openssh
 p7zip
 pamixer
@@ -131,6 +132,7 @@ xclip
 xdo
 xdotool
 xf86-video-vesa
+xf86-input-synaptics
 xorg-server
 xorg-xbacklight
 xorg-xdpyinfo
