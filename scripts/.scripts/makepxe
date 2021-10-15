@@ -6,13 +6,11 @@ ROOT=$1
 # Make directory structure
 echo [+] Making directory structure
 mkdir -p $ROOT/boot
-mkdir -p $ROOT/data/\$OEM\$/\$\$/Setup/Scripts
 mkdir -p $ROOT/sources
 
 # Add info stubs
 echo [+] Generating info stubs
 echo "Put bcd and boot.sdi files here" > $ROOT/boot/README
-echo "Put KMSpico_setup.exe file here" > $ROOT/data/\$OEM\$/\$\$/Setup/Scripts/README
 echo "Put boot.wim file here"          > $ROOT/sources/README
 
 # Fetch files
@@ -43,27 +41,12 @@ wpeinit.exe
 ipconfig
 pause
 net use Z: \\\\192.168.0.1\winiso
-net use Y: \\\\192.168.0.1\winoem
-Z:\setup.exe /m:Y:\\
+Z:\setup.exe
 EOM
 
 cat > $ROOT/winpeshl.ini <<- EOM
 [LaunchApps]
 "install.bat"
-EOM
-
-cat > $ROOT/data/\$OEM\$/\$\$/Setup/Scripts/SetupComplete.cmd <<- EOM
-@echo OFF
-CD /D "%~dp0"
-REM Defender Exclusions...
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\KMSELDI.exe" /t REG_DWORD /d 0 /f >nul 2>&1
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\Service_KMS.exe" /t REG_DWORD /d 0 /f >nul 2>&1
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%ProgramFiles%\KMSpico\Autopico.exe" /t REG_DWORD /d 0 /f >nul 2>&1
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths" /v "%WinDir%\SECOH-QAD.exe" /t REG_DWORD /d 0 /f >nul 2>&1
-
-"KMSpico_setup.exe" /VerySilent
-TIMEOUT /T 2 >nul
-DEL /F /Q "%0%" >nul
 EOM
 
 echo [+] Done.
