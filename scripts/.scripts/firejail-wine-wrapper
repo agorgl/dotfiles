@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Print to stderr and exit with non-success error code
+die() { echo "$*" 1>&2; exit 1; }
+
+# If no WINEPREFIX specified, run unsandboxed
+if [ -z "$WINEPREFIX" ]; then
+    echo Warning: running outside sandbox, because no \$WINEPREFIX was specified >&2
+    $@
+    exit 0
+fi
+
+# Sandbox location
+SANDBOX="$WINEPREFIX/../"
+[ ! -d "$SANDBOX" ] && die "Invalid sandbox location" || echo Using sandbox in $SANDBOX >&2
+
+# Jail it
+firejail --profile=/etc/firejail/wine.profile \
+         --private="$SANDBOX" \
+         --env=WINEFSYNC=1 \
+         --env=WINEDLLOVERRIDES="libglesv2.dll=d" \
+         --env=MESA_GL_VERSION_OVERRIDE=4.5 \
+         --env=YABRIDGE_NO_WATCHDOG=1 \
+         "$@"
