@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#
+# Usage:
+# env WINELOADER="$(which firejail-wine)"
+#
+
+# Prevent this file from being called recursively
+unset WINELOADER
+
+# Jail it
+exec firejail-wine-wrapper wine "$@"
