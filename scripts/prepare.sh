@@ -71,7 +71,7 @@ format() {
 mountp() {
     # Mount root partition
     trace "Mounting root partition"
-    bp_opts=defaults,compress=$COMPRESS,ssd,noatime,nodiratime,space_cache=v2
+    bp_opts=defaults,compress=$COMPRESS,noatime,space_cache=v2,discard=async
     mount -o $bp_opts,subvol=@ /dev/mapper/cryptroot /mnt
 
     # Create mountpoints
