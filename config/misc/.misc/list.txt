@@ -131,8 +131,8 @@ wmctrl
 xclip
 xdo
 xdotool
+xf86-input-libinput
 xf86-video-vesa
-xf86-input-synaptics
 xorg-server
 xorg-xbacklight
 xorg-xdpyinfo
