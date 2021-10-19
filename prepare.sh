@@ -47,7 +47,11 @@ encrypt() {
 
     # Open encrypted partition
     trace "Opening root partition"
-    cryptsetup open /dev/disk/by-partlabel/cryptroot cryptroot
+    cryptsetup \
+        --allow-discards \
+        --perf-no_read_workqueue \
+        --perf-no_write_workqueue \
+        --persistent open /dev/disk/by-partlabel/cryptroot cryptroot
 }
 
 format() {
