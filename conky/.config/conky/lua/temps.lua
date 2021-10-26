@@ -14,7 +14,7 @@ require 'ring'
 
 local CELSIUS_SYMBOL = 'C°'
 local HAS_NVIDIA = command_exec('lshw -C display 2>/dev/null | grep -i nvidia') == 0
-local AMD_TEMP_CMD = "sensors | grep -A 2 radeon | tail -n 1 | awk '{ print $2 }' | sed 's/[^0-9.]//g'"
+local AMD_TEMP_CMD = "sensors | grep -P -A 4 '(radeon|amdgpu)' | awk '/temp/{ print $2 }' | sed 's/[^0-9.]//g'"
 
 function table.copy(t)
     local u = {}
