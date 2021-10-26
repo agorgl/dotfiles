@@ -131,6 +131,7 @@ function logwidget_main(title, cmd)
         conky_window.height
     )
     cr = cairo_create(cs)
+    hidpi_setup(cr)
 
     -- Strip surrounding brackets
     local title = title:sub(2, -2)
