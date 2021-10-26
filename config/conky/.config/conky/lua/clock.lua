@@ -318,6 +318,7 @@ function clock_main()
         conky_window.height
     )
     local cr = cairo_create(cs)
+    hidpi_setup(cr)
 
     -- Clock
     for i in pairs(arc_settings_table) do

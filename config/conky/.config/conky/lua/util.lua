@@ -107,6 +107,17 @@ function fill_defaults(tbl, defaults)
 end
 
 --
+-- Scale cairo output depending on the screen dpi
+--
+function hidpi_setup(display)
+    local cmd = "xdpyinfo | awk '/resolution/{ print $2 }'"
+    local dpi = command(cmd):split("x")
+    local sx = dpi[1] / 96
+    local sy = dpi[2] / 96
+    cairo_scale(display, sx, sy)
+end
+
+--
 -- Re-usable entrypoint function
 --
 function main_common(update_fn)
@@ -124,6 +135,7 @@ function main_common(update_fn)
         conky_window.height
     )
     local display = cairo_create(surface)
+    hidpi_setup(display)
 
     -- Update
     local updates = tonumber(conky_parse('${updates}'))
