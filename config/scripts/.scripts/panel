@@ -7,7 +7,7 @@
 PANEL_WM_NAME=lemonbar_panel
 
 # Hardware
-POWERSUPPLY="/sys/class/power_supply/AC0"
+POWERSUPPLY=`ls -d /sys/class/power_supply/* | grep "AC"`
 
 #================================================================
 #=- Customization
