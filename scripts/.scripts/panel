@@ -79,6 +79,7 @@ ICON_TIME='\ue015'
 ICON_CPU='\ue082'
 ICON_MEMORY='\ue0c4'
 ICON_TEMP='\ue01b'
+ICONS_WORKSPACES=('\ue174' '\ue175' '\ue176' '\ue177')
 
 #================================================================
 #=- Setup
@@ -275,7 +276,7 @@ workspaces(){
     set -- ${line}
     while [ $# -gt 0 ]; do
         item=$1
-        name=${item#?}
+        name=$(echo -e ${ICONS_WORKSPACES[((${item#?} - 1))]})
         case $item in
             M*)
                 # Active monitor
