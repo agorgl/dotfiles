@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Calculate params
+export POLYBAR_DPI=$(xrdb -query | grep Xft.dpi | cut -f 2)
+export POLYBAR_SCALE=$(($POLYBAR_DPI / 96))
+export POLYBAR_HEIGHT=$((25 * $POLYBAR_SCALE))
+
+# Gather the bars
+bars=($(grep -Proh "(?<=\[bar/).*(?=\])" $XDG_CONFIG_HOME/polybar/bar.d))
+
+# Launch the bars
+for b in ${bars[@]}; do
+    echo Launching bar $b
+    polybar -r $b &
+done
+
+# Wait for the bars to finish
+wait
