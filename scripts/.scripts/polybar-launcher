@@ -2,8 +2,8 @@
 
 # Calculate params
 export POLYBAR_DPI=$(xrdb -query | grep Xft.dpi | cut -f 2)
-export POLYBAR_SCALE=$(($POLYBAR_DPI / 96))
-export POLYBAR_HEIGHT=$((25 * $POLYBAR_SCALE))
+export POLYBAR_SCALE=$(bc -l <<< "$POLYBAR_DPI / 96")
+export POLYBAR_HEIGHT=$(bc -l <<< "25 * $POLYBAR_SCALE")
 
 # Gather the bars
 bars=($(grep -Proh "(?<=\[bar/).*(?=\])" $XDG_CONFIG_HOME/polybar/bar.d))
