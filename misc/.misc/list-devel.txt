@@ -3,9 +3,6 @@ bat
 buildah
 ccls
 ctags
-docker
-docker-compose
-docker-credential-secretservice-bin
 go
 gopls
 helm
@@ -15,7 +12,6 @@ jdk11-openjdk
 jdk8-openjdk
 jdtls
 js-beautify
-k3s-bin
 k9s
 kubectl
 maven
