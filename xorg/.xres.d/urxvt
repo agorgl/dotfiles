@@ -1,0 +1,18 @@
+! ------------------------------------------------------------------------------
+! URxvt settings
+! ------------------------------------------------------------------------------
+URxvt*depth: 32
+URxvt*scrollBar: false
+URxvt*font: termfont
+URxvt*boldFont: termfont
+URxvt*internalBorder: 25
+URxvt*colorBD: #ffffff
+URxvt*cursorColor: #ff8939
+URxvt*cursorColor2: #2b2b2b
+URxvt*cursorBlink: 1
+URxvt*dynamicColors: on
+! Clickable urls
+URxvt.perl-ext-common: default,matcher
+URxvt.url-launcher: /usr/bin/xdg-open
+URxvt.matcher.button: 1
+! vim:ft=xdefaults
