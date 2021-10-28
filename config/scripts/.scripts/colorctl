@@ -28,20 +28,6 @@ current() {
     echo $(basename $(readlink -f $HOME/.xcolor))
 }
 
-refresh() {
-    # Update color in all open terminals
-    termctl -a s $(current)
-
-    # Refresh X resource database
-    xrdb ~/.Xresources
-
-    # Reload panel
-    pgrep panel > /dev/null && pkill -USR1 -x panel || panel
-
-    # Reload conky widgets
-    killall -SIGUSR1 conky
-}
-
 switch() {
     local cs=$COLORSCHEMES/$1
     [ -f $HOME/.xcolor ] && rm $HOME/.xcolor

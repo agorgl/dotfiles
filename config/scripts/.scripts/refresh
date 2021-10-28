@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Refresh X resource database
+xrdb -merge ~/.Xresources
+
+# Update color in all open terminals
+termctl -a s $(basename $(readlink -f $HOME/.xcolor))
+
+# Reload polybar
+pgrep polybar > /dev/null && killall -SIGUSR1 polybar
+
+# Reload conky widgets
+killall -SIGUSR1 conky
