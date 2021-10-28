@@ -1,8 +1,5 @@
 ! ------------------------------------------------------------------------------
-! Xresources
+! Variables
 ! ------------------------------------------------------------------------------
-#include ".xcolor"
-#include ".xres.d/vars"
-#include ".xres.d/fonts"
-#include ".xres.d/urxvt"
+#define termfont xft:xos4 Terminess Powerline:pixelsize=14,xft:TerminessTTF Nerd Font Mono:pixelsize=14
 ! vim:ft=xdefaults

@@ -1,8 +1,10 @@
 ! ------------------------------------------------------------------------------
-! Xresources
+! Fonts
 ! ------------------------------------------------------------------------------
-#include ".xcolor"
-#include ".xres.d/vars"
-#include ".xres.d/fonts"
-#include ".xres.d/urxvt"
+Xft.antialias: true
+Xft.hinting: true
+Xft.rgba: rgb
+Xft.autohint: false
+Xft.hintstyle: hintslight
+Xft.lcdfilter: lcddefault
 ! vim:ft=xdefaults
