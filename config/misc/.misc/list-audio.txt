@@ -6,14 +6,11 @@ guitarix
 jack-stdio
 jack_capture
 mod-utilities-lv2-git
-multimidicast
 noisetorch-bin
 oggfwd
-qmidinet
 raysession-git
 realtime-privileges
 reaper-bin
-rtpmidid-git
 shntool
 v4l2loopback-dkms
 yabridge-bin
