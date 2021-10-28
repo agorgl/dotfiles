@@ -36,7 +36,7 @@ super + alt + Escape
 
 # Reload panel
 super + ctrl + Escape
-    pgrep panel && pkill -USR1 -x panel || panel
+    pgrep polybar && pkill -USR1 -x polybar || polybar-launcher
 
 # Close or kill window
 super + {_,shift + }w
