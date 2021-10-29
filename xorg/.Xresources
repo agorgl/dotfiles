@@ -5,4 +5,5 @@
 #include ".xres.d/vars"
 #include ".xres.d/fonts"
 #include ".xres.d/urxvt"
+#include ".cache/wal/colors.Xresources"
 ! vim:ft=xdefaults
