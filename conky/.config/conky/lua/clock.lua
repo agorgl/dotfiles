@@ -296,30 +296,7 @@ function clock_text()
 end
 conky_clock_text = clock_text
 
-function clock_main()
-    -- Guard
-    if conky_window == nil then
-        return
-    end
-
-    -- Spawn with some delay
-    local updates = conky_parse('${updates}')
-    update_num = tonumber(updates)
-    if update_num <= 5 then
-        return
-    end
-
-    -- Init drawing context
-    local cs = cairo_xlib_surface_create(
-        conky_window.display,
-        conky_window.drawable,
-        conky_window.visual,
-        conky_window.width,
-        conky_window.height
-    )
-    local cr = cairo_create(cs)
-    hidpi_setup(cr)
-
+function clock_main(cr)
     -- Clock
     for i in pairs(arc_settings_table) do
         local pt = arc_settings_table[i]
@@ -337,12 +314,9 @@ function clock_main()
 
     -- Store to use by clock_text()
     cpugraph_x, cpugraph_y = gx, gy
-
-    -- Destroy drawing context
-    cairo_destroy(cr)
-    cairo_surface_destroy(cs)
-    cr = nil
 end
 
 -- Alias for conky config to find it
-conky_clock_main = clock_main
+conky_clock_main = function()
+    main_common(clock_main)
+end

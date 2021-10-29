@@ -118,31 +118,15 @@ function logwidget(cr, title, content)
     end
 end
 
-function logwidget_main(title, cmd)
-    if conky_window == nil then
-        return
-    end
-
-    local cs = cairo_xlib_surface_create(
-        conky_window.display,
-        conky_window.drawable,
-        conky_window.visual,
-        conky_window.width,
-        conky_window.height
-    )
-    cr = cairo_create(cs)
-    hidpi_setup(cr)
-
+function logwidget_main(cr, title, cmd)
     -- Strip surrounding brackets
     local title = title:sub(2, -2)
     local cmd = cmd:sub(2, -2)
     local stdout = command(cmd)
     logwidget(cr, title, stdout)
-
-    cairo_destroy(cr)
-    cairo_surface_destroy(cs)
-    cr = nil
 end
 
 -- Alias for conky config to find it
-conky_logwidget_main = logwidget_main
+conky_logwidget_main = function(title, cmd)
+    main_common(logwidget_main, {title, cmd})
+end
