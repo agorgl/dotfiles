@@ -1,3 +1,6 @@
+import:
+  - ~/.config/alacritty/colors.yml
+
 env:
   TERM: xterm-256color
 
@@ -14,36 +17,6 @@ font:
   normal:
     family: monospace
   size: 11.0
-
-colors:
-  primary:
-    background: '#1b1d1e'
-    foreground: '#cccccc'
-  cursor:
-    text:   '#000000'
-    cursor: '#ffffff'
-  selection:
-    text:       '#eaeaea'
-    background: '#404040'
-  normal:
-    black:   '#000000'
-    red:     '#d54e53'
-    green:   '#b9ca4a'
-    yellow:  '#e6c547'
-    blue:    '#7aa6da'
-    magenta: '#c397d8'
-    cyan:    '#70c0ba'
-    white:   '#eaeaea'
-  bright:
-    black:   '#666666'
-    red:     '#ff3334'
-    green:   '#9ec400'
-    yellow:  '#e7c547'
-    blue:    '#7aa6da'
-    magenta: '#b77ee0'
-    cyan:    '#54ced6'
-    white:   '#ffffff'
-background_opacity: 1.0
 
 selection:
   save_to_clipboard: true
