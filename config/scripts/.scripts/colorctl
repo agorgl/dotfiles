@@ -29,10 +29,21 @@ current() {
 }
 
 switch() {
+    # Symlink new color
     local cs=$COLORSCHEMES/$1
     [ -f $HOME/.xcolor ] && rm $HOME/.xcolor
     ln -s $cs $HOME/.xcolor
+
+    # Refresh X resource database
+    xrdb -merge ~/.Xresources
+
+    # Update color in all open terminals
+    termctl -a s $(basename $(readlink -f $HOME/.xcolor))
+
+    # Reload other programs
     refresh
+
+    # Show notification
     notify-send -i info -t 2000 "Changed colorscheme to: " $(current)
 }
 
