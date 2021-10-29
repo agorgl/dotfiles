@@ -1,3 +1,7 @@
+!
+! One Dark theme
+!
+
 ! special
 *.foreground:   #ABB2BF
 *.background:   #282C34
@@ -34,4 +38,3 @@
 ! white
 *.color7:       #ABB2BF
 *.color15:      #3E4452
-
