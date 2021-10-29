@@ -8,7 +8,7 @@ super + {_,shift +} Return
 
 # Start launcher
 super + space
-    rofi -show run
+    rofi -dpi 0 -show run
 
 # Start file explorer
 super + e
