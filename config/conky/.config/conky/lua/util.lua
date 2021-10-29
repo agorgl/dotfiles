@@ -120,7 +120,7 @@ end
 --
 -- Re-usable entrypoint function
 --
-function main_common(update_fn)
+function main_common(update_fn, params)
     -- Check
     if conky_window == nil then
         return
@@ -140,7 +140,11 @@ function main_common(update_fn)
     -- Update
     local updates = tonumber(conky_parse('${updates}'))
     if updates > 3 then
-        update_fn(display)
+        if params == nil then
+            update_fn(display)
+        else
+            update_fn(display, table.unpack(params))
+        end
     end
 
     -- Destroy
