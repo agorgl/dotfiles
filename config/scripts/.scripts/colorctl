@@ -22,7 +22,7 @@ die() {
 #----------------------------------------------------------------------
 # Commands
 #----------------------------------------------------------------------
-COLORSCHEMES=~/.Xcolors
+COLORSCHEMES=~/.xcolors
 
 current() {
     echo $(basename $(readlink -f $HOME/.xcolor))
