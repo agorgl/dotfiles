@@ -5,6 +5,7 @@ export POLYBAR_DPI=$(xrdb -query | grep Xft.dpi | cut -f 2)
 export POLYBAR_SCALE=$(bc -l <<< "$POLYBAR_DPI / 96")
 export POLYBAR_HEIGHT=$(bc -l <<< "25 * $POLYBAR_SCALE")
 export POLYBAR_TRAY_SIZE=$(bc -l <<< "16 * $POLYBAR_SCALE")
+export POLYBAR_CPU_HWMON=$(for m in /sys/class/hwmon/*; do [[ -f $m/temp1_input ]] && paste <(cat $m/name) <(echo $m/temp1_input); done | awk '/(coretemp|k10temp)/{print $2}')
 
 # Gather the bars
 bars=($(grep -Proh "(?<=\[bar/).*(?=\])" $XDG_CONFIG_HOME/polybar/bar.d))
