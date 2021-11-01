@@ -5,6 +5,7 @@ lemonbar-xft-git
 paper-icon-theme-git
 plymouth
 plymouth-theme-colorful-loop-git
+polybar
 powerline-fonts-git
 qimgv
 qt5-styleplugins
