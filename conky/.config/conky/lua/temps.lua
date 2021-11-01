@@ -76,9 +76,9 @@ function temperature_widget(display, pos, sa, ea, label, value)
     draw_text(display, l)
 end
 
-coremon = command([[
-    ls -d /sys/class/hwmon/*/name \
-  | awk '{ getline f < $1 } f == "coretemp" { split($1,a,"/"); sub(/hwmon/,"",a[5]); print a[5] }']])
+coremon = command([=[
+    for m in /sys/class/hwmon/*; do [[ -f $m/temp1_input ]] && paste <(cat $m/name) <(echo $m/temp1_input); done \
+  | awk '/(coretemp|k10temp)/{print $2}' | grep -Po '(?<=hwmon)\d+']=])
 
 function temps_main(display)
     local cpu_temp = conky_value('hwmon ' .. coremon .. ' temp 1', true)
