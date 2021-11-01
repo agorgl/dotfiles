@@ -2,6 +2,7 @@ conky-lua-nv
 connman-gtk
 downgrade
 lemonbar-xft-git
+nerd-fonts-sf-mono
 paper-icon-theme-git
 plymouth
 plymouth-theme-colorful-loop-git
@@ -12,7 +13,9 @@ qt5-styleplugins
 siji-git
 tamzen-font-git
 termsyn-font
+ttf-icomoon-feather
 ttf-monaco
 ttf-ms-fonts
+ttf-unifont
 xtitle-git
 yay
