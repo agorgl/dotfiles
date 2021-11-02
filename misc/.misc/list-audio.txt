@@ -8,7 +8,6 @@ jack_capture
 mod-utilities-lv2-git
 noisetorch-bin
 oggfwd
-raysession-git
 realtime-privileges
 reaper-bin
 shntool

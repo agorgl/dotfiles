@@ -30,4 +30,3 @@ tilt-bin
 typescript-language-server
 vagrant
 vue-cli
-vue-cli-service-global

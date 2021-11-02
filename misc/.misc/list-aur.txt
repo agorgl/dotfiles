@@ -1,5 +1,6 @@
 conky-lua-nv
 connman-gtk
+cozette-otb
 downgrade
 lemonbar-xft-git
 nerd-fonts-sf-mono
