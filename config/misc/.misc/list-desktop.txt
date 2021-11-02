@@ -1,6 +1,7 @@
 awf-git
 blender
 caprine
+chisel-tunnel-bin
 cli-visualizer-git
 discord
 element-desktop
@@ -16,6 +17,7 @@ mgba-sdl
 mtpfs
 mupdf-tools
 plymouth-theme-cuts-git
+python-pywal
 qbittorrent
 slack-desktop
 wine
