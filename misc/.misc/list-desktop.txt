@@ -4,11 +4,13 @@ caprine
 chisel-tunnel-bin
 cli-visualizer-git
 discord
+downgrade
 element-desktop
 font-manager
 gimp
 gotop-bin
 jami-gnome
+lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
 mailspring
@@ -16,6 +18,8 @@ mesa-demos
 mgba-sdl
 mtpfs
 mupdf-tools
+plymouth
+plymouth-theme-colorful-loop-git
 plymouth-theme-cuts-git
 python-pywal
 qbittorrent
@@ -26,3 +30,4 @@ wine-mono
 wineasio
 winetricks
 wireshark-qt
+xtitle-git
