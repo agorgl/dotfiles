@@ -1,9 +1,15 @@
 ! ------------------------------------------------------------------------------
 ! Xresources
 ! ------------------------------------------------------------------------------
-#include ".xcolor"
 #include ".xres.d/vars"
 #include ".xres.d/fonts"
 #include ".xres.d/urxvt"
+
+#if __has_include(".xcolor")
+#include ".xcolor"
+#endif
+
+#if __has_include(".cache/wal/colors.Xresources")
 #include ".cache/wal/colors.Xresources"
+#endif
 ! vim:ft=xdefaults
