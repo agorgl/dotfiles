@@ -1,0 +1,10 @@
+cozette-otb
+nerd-fonts-sf-mono
+powerline-fonts-git
+siji-git
+tamzen-font-git
+termsyn-font
+ttf-icomoon-feather
+ttf-monaco
+ttf-ms-fonts
+ttf-unifont
