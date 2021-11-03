@@ -1,12 +1,7 @@
 conky-lua-nv
 connman-gtk
-downgrade
-lemonbar-xft-git
 paper-icon-theme-git
-plymouth
-plymouth-theme-colorful-loop-git
 polybar
 qimgv
 qt5-styleplugins
-xtitle-git
 yay
