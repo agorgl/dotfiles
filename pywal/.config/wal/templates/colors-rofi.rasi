@@ -1,0 +1,6 @@
+* {{
+    red:        {color1};
+    blue:       {color12};
+    background: {background};
+    foreground: {color4};
+}}
