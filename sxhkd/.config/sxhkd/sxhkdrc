@@ -32,11 +32,11 @@ super + Escape
 
 # Close bspwm
 super + alt + Escape
-    pkill -x panel; bspc quit
+    pkill -x polybar; bspc quit
 
 # Reload panel
 super + ctrl + Escape
-    pgrep polybar && pkill -USR1 -x polybar || polybar-launcher
+    pkill -f -USR1 polybar-launcher
 
 # Close or kill window
 super + {_,shift + }w

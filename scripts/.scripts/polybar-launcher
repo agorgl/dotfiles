@@ -7,6 +7,10 @@ export POLYBAR_HEIGHT=$(bc -l <<< "27 * $POLYBAR_SCALE")
 export POLYBAR_TRAY_SIZE=$(bc -l <<< "16 * $POLYBAR_SCALE")
 export POLYBAR_CPU_HWMON=$(for m in /sys/class/hwmon/*; do [[ -f $m/temp1_input ]] && paste <(cat $m/name) <(echo $m/temp1_input); done | awk '/(coretemp|k10temp)/{print $2}')
 
+# Self reload through signal
+rld(){ trap - USR1; pkill -P $$; exec $0; }
+trap rld USR1
+
 # Gather the bars
 bars=($(grep -Proh "(?<=\[bar/).*(?=\])" $XDG_CONFIG_HOME/polybar/bar.d))
 
