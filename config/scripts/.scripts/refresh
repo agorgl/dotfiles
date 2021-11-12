@@ -2,9 +2,10 @@
 
 # Reload polybar
 pgrep polybar > /dev/null && killall -SIGUSR1 polybar
+pkill -f -USR1 polybar-launcher
 
 # Reload conky widgets
-killall -SIGUSR1 conky
+pkill -x -USR1 conky
 
 # Reload bspwm colors
 bspc config focused_border_color  `xcolor color4`
