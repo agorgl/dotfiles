@@ -1,0 +1,125 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) [OPTION]... [THEME]"
+HELP="\
+$(basename $0) [OPTION]... [THEME]
+Flags:
+  -h,--help                     prints current help message
+  -l,--list                     prints available themes
+"
+
+function die() { echo >&2 "$*"; exit 1; }
+function usage() { die "$USAGE"; }
+function help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+THEMES_FILE=$HOME/.cache/$(basename $0)/themes.json
+
+#----------------------------------------------------------------------
+# Arguments
+#----------------------------------------------------------------------
+LIST_THEMES=0
+
+case "$#" in
+    0)
+        usage ;;
+    *)
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -l|--list)
+                    LIST_THEMES=1
+                    ;;
+                *)
+                    break ;;
+            esac
+            shift
+        done
+esac
+
+if [ $LIST_THEMES -eq 0 ]; then
+    if [ $# -ne 1 ]; then
+        die "Missing theme name argument"
+    fi
+    THEME_NAME=$1
+fi
+
+#----------------------------------------------------------------------
+# Functions
+#----------------------------------------------------------------------
+fetch() {
+    curl -s -O --create-dirs --output-dir $(dirname $THEMES_FILE) \
+        https://raw.githubusercontent.com/Mayccoll/Gogh/master/data/themes.json
+}
+
+list() {
+    jq -r '.themes[].name' $THEMES_FILE
+}
+
+apply() {
+    echo Setting theme to $1
+    jq ".themes
+        | map({key: .name, value: del(.name)})
+        | from_entries
+        | (.$1)
+        | {
+            special: {
+              background: .background,
+              foreground: .foreground,
+              cursor: .cursorColor,
+            },
+            colors: {
+              color0: .black,
+              color1: .red,
+              color2: .green,
+              color3: .yellow,
+              color4: .blue,
+              color5: .purple,
+              color6: .cyan,
+              color7: .white,
+              color8: .brightBlack,
+              color9: .brightRed,
+              color10: .brightGreen,
+              color11: .brightYellow,
+              color12: .brightBlue,
+              color13: .brightPurple,
+              color14: .brightCyan,
+              color15: .brightWhite,
+            }
+          }" $THEMES_FILE > /tmp/temp-wal.conf
+    wal -o refresh -f /tmp/temp-wal.conf
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+# Fetch themes file if not found
+if [ ! -f $THEMES_FILE ]; then
+    fetch
+fi
+
+# Gather theme names
+themelist=($(list))
+
+# List themes
+if [ $LIST_THEMES -eq 1 ]; then
+    echo ${themelist[@]} | tr " " "\n"
+    exit 0
+fi
+
+# Check if theme exists
+if [[ ! " ${themelist[*]} " =~ " ${THEME_NAME} " ]]; then
+    die "Theme \"$THEME_NAME\" does not exist"
+fi
+
+# Set the theme
+apply $THEME_NAME
