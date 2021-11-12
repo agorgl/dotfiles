@@ -1,0 +1,20 @@
+#!/bin/bash
+
+THEME_CONF=$XDG_CONFIG_HOME/theme.json
+read -r -d '' DEFAULTS << EOM
+{
+    "main": "color7",
+    "altn": "color8"
+}
+EOM
+
+fallback(){
+    jq -r ".$1 // empty" <(echo $DEFAULTS)
+}
+
+if [ ! -f $THEME_CONF ]; then
+    echo $(fallback $1)
+    exit 0
+fi
+
+jq -r ".colors | .$1 // \"$(fallback $1)\"" $THEME_CONF
