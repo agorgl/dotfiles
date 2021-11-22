@@ -54,6 +54,7 @@ bwrap \
     --bind $SANDBOX $SANDBOX \
     --bind $SANDBOX $HOME \
     --bind $HOME/.Xauthority $HOME/.Xauthority \
+    --setenv LANG $LANG \
     --setenv HOME $HOME \
     --setenv DISPLAY $DISPLAY \
     --setenv XDG_RUNTIME_DIR "/run/user/$UID" \
