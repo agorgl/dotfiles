@@ -36,6 +36,7 @@ bwrap \
     --dev /dev \
     --dev-bind /dev/dri /dev/dri \
     --dev-bind /dev/shm /dev/shm \
+    --dev-bind /dev/input /dev/input \
     --symlink usr/bin /bin \
     --symlink usr/lib /lib \
     --symlink usr/lib64 /lib64 \
@@ -48,6 +49,8 @@ bwrap \
     --ro-bind /etc/resolv.conf /etc/resolv.conf \
     --ro-bind /sys/dev/char /sys/dev/char \
     --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
+    --ro-bind /sys/class/input /sys/class/input \
+    --ro-bind /sys/class/hidraw /sys/class/hidraw \
     --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0 \
     --ro-bind $XDG_RUNTIME_DIR/pipewire-0 $XDG_RUNTIME_DIR/pipewire-0 \
     --ro-bind $XDG_RUNTIME_DIR/pulse $XDG_RUNTIME_DIR/pulse \
