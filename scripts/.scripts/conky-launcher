@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Setup traps
+trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+# For each config launch different conky subprocess in background
+for rc in .config/conky/conf.d/*.rc; do
+    conky -c $rc &
+done
+
+# Wait for all the children to finish
+wait
