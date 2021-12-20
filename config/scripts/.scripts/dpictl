@@ -1,0 +1,12 @@
+#!/bin/bash
+
+res=($(xrandr | awk '/primary/{sub(/+.*$/,"",$4); sub(/x/," ",$4); print $4}'))
+size=($(xdpyinfo | awk -F'[ ()]' '/dimensions/{sub(/x/," ",$10); print $10}'))
+
+rw=${res[0]}
+rh=${res[1]}
+sw=${size[0]}
+sh=${size[1]}
+
+dpi=$(bc -l <<< "scale=2; sqrt($rw ^ 2 + $rh^2) / (sqrt($sw ^ 2 + $sh ^ 2) / 25.4)")
+printf "%.0f\n" $dpi

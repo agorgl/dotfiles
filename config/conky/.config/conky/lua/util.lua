@@ -110,11 +110,9 @@ end
 -- Scale cairo output depending on the screen dpi
 --
 function hidpi_setup(display)
-    local cmd = "xdpyinfo | awk '/resolution/{ print $2 }'"
-    local dpi = command(cmd):split("x")
-    local sx = dpi[1] / 96
-    local sy = dpi[2] / 96
-    cairo_scale(display, sx, sy)
+    local dpi = command("dpictl")
+    local scl = dpi / 96
+    cairo_scale(display, scl, scl)
 end
 
 --
