@@ -17,9 +17,11 @@ trap rld USR1
 bars=($(grep -Proh "(?<=\[bar/).*(?=\])" $XDG_CONFIG_HOME/polybar/bar.d))
 
 # Launch the bars
-for b in ${bars[@]}; do
-    echo Launching bar $b
-    polybar -r $b &
+for m in $(polybar -m | cut -d":" -f1); do
+    for b in ${bars[@]}; do
+        echo Launching bar $b
+        MONITOR=$m polybar -r $b &
+    done
 done
 
 # Wait for the bars to finish
