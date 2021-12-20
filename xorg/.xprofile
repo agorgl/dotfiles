@@ -9,7 +9,7 @@ picom &
 xrdb -merge ~/.Xresources
 
 # Set dpi
-dpi=$(xdpyinfo | awk '/resolution/{ split($2,a,"x"); print a[1] }')
+dpi=$(dpictl)
 echo "Xft.dpi: $dpi" | xrdb -merge -
 
 # Set cursor to left ptr
