@@ -1,0 +1,5 @@
+bemenu
+foot
+kanshi
+river
+waybar
