@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Reload polybar
-pgrep polybar > /dev/null && killall -SIGUSR1 polybar
 pkill -f -USR1 polybar-launcher
 
 # Reload conky widgets
