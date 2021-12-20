@@ -1,7 +1,9 @@
 conky-lua-nv
 connman-gtk
+foot
 paper-icon-theme-git
 polybar
 qimgv
 qt5-styleplugins
+river
 yay
