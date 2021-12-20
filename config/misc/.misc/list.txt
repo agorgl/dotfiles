@@ -117,6 +117,7 @@ ethtool
 iwd
 
 # Windowing
+autorandr
 bspwm
 dmenu
 libva-mesa-driver
