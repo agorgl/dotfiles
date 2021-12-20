@@ -110,7 +110,7 @@ end
 -- Scale cairo output depending on the screen dpi
 --
 function hidpi_setup(display)
-    local dpi = command("dpictl")
+    local dpi = command("xrdb -query | grep Xft.dpi | cut -f 2")
     local scl = dpi / 96
     cairo_scale(display, scl, scl)
 end
