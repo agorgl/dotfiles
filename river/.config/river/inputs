@@ -1,0 +1,5 @@
+#!/bin/sh
+
+touchpad=$(riverctl list-inputs | grep -B1 pointer | grep -i touchpad)
+riverctl input $touchpad natural-scroll enabled
+riverctl input $touchpad tap enabled
