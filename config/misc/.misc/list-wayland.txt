@@ -1,5 +1,11 @@
 bemenu
 foot
 kanshi
+kile-wl
+lswt
+mako
 river
+swaybg
 waybar
+wev
+wlr-randr
