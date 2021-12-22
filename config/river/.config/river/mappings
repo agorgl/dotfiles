@@ -6,6 +6,9 @@ mod="Mod4"
 # Reload mappings
 riverctl map normal $mod Escape spawn $0
 
+# Reload waybar
+riverctl map normal $mod+Control Escape spawn "pkill waybar; waybar"
+
 # Launch Terminal
 riverctl map normal $mod Return spawn foot
 

@@ -27,6 +27,9 @@ riverctl csd-filter-add app-id "gedit"
 # Wallpaper
 riverctl spawn "swaybg -m fill -i $(awk '/feh/{print $4}' ~/.fehbg)"
 
+# Programs
+riverctl spawn waybar
+
 # Set and exec into the default layout generator, rivertile.
 # River will send the process group of the init executable SIGTERM on exit.
 riverctl default-layout rivertile
