@@ -9,6 +9,9 @@ source $(dirname $0)/inputs
 # Setup interoperability
 riverctl spawn $(dirname $0)/interop
 
+# Setup xorg settings for XWayland programs
+riverctl spawn $(dirname $0)/xsetup
+
 # Set background and border color
 riverctl background-color 0x002b36
 riverctl border-color-focused 0x93a1a1
