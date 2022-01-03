@@ -22,7 +22,7 @@ npm
 podman
 python-language-server
 qemu-user-static-bin
-renderdoc-git
+renderdoc
 rust-analyzer
 rustup
 saxon-he
