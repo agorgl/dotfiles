@@ -1,0 +1,7 @@
+! ------------------------------------------------------------------------------
+! XTerm settings
+! ------------------------------------------------------------------------------
+xterm*font: termfont
+xterm*boldFont: termfont
+xterm*internalBorder: 25
+! vim:ft=xdefaults

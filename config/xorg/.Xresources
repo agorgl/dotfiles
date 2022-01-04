@@ -4,6 +4,7 @@
 #include ".xres.d/vars"
 #include ".xres.d/fonts"
 #include ".xres.d/urxvt"
+#include ".xres.d/xterm"
 
 #if __has_include(".xcolor")
 #include ".xcolor"
