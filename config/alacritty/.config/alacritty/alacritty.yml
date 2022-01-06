@@ -30,7 +30,8 @@ cursor:
   unfocused_hollow: true
 
 key_bindings:
-  - { key: C,  mods: Control|Alt, action: Copy        }
-  - { key: V,  mods: Control|Alt, action: Paste       }
-  - { key: F5, mods: Control,     chars: "\x1b[15;5~" }
-  - { key: F5, mods: Shift,       chars: "\x1b[15;2~" }
+  - { key: C,   mods: Control|Alt, action: Copy        }
+  - { key: V,   mods: Control|Alt, action: Paste       }
+  - { key: F5,  mods: Control,     chars: "\x1b[15;5~" }
+  - { key: F5,  mods: Shift,       chars: "\x1b[15;2~" }
+  - { key: Tab, mods: Shift,       chars: "\x1b[9;2u"  }
