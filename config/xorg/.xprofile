@@ -33,3 +33,6 @@ export SSH_AUTH_SOCK
 
 # Launch conky HUD
 conky-launcher &
+
+# Source .xenvironment if exists
+[[ -f ~/.xenvironment ]] && . ~/.xenvironment
