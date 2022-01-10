@@ -1,0 +1,20 @@
+#!/bin/sh
+
+export WAYLAND_COMPOSITOR=river
+
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=$WAYLAND_COMPOSITOR
+export XDG_CURRENT_DESKTOP=$WAYLAND_COMPOSITOR
+
+export CHROMIUM_USER_FLAGS="--enable-features=UseOzonePlatform --ozone-platform=wayland"
+export MOZ_ENABLE_WAYLAND=1
+
+export SDL_VIDEODRIVER=wayland
+export CLUTTER_BACKEND=wayland
+export QT_QPA_PLATFORM=wayland-egl
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export ECORE_EVAS_ENGINE=wayland-egl
+export ELM_ENGINE=wayland_egl
+
+export _JAVA_AWT_WM_NONREPARENTING=1
+export NO_AT_BRIDGE=1
