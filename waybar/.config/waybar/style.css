@@ -1,10 +1,7 @@
 * {
-    border: none;
-    border-radius: 0;
     /* `otf-font-awesome` is required to be installed for icons */
     font-family: Roboto, Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    min-height: 0;
+    font-size: 12px;
 }
 
 window#waybar {
@@ -26,46 +23,15 @@ window#waybar.empty {
 window#waybar.solo {
     background-color: #FFFFFF;
 }
-*/
-
 window#waybar.termite {
     background-color: #3F3F3F;
 }
-
 window#waybar.chromium {
     background-color: #000000;
     border: none;
 }
+*/
 
-#workspaces button {
-    padding: 0 5px;
-    background-color: transparent;
-    color: #ffffff;
-    /* Use box-shadow instead of border so the text isn't offset */
-    box-shadow: inset 0 -3px transparent;
-}
-
-/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
-#workspaces button:hover {
-    background: rgba(0, 0, 0, 0.2);
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-#workspaces button.focused {
-    background-color: #64727D;
-    box-shadow: inset 0 -3px #ffffff;
-}
-
-#workspaces button.urgent {
-    background-color: #eb4d4b;
-}
-
-#mode {
-    background-color: #64727D;
-    border-bottom: 3px solid #ffffff;
-}
-
-#mode,
 #network,
 #cpu,
 #memory,
@@ -74,22 +40,22 @@ window#waybar.chromium {
 #pulseaudio,
 #clock,
 #tray {
-    padding: 0 10px;
+    padding: 0 4px;
     color: #ffffff;
 }
 
 #window,
-#workspaces {
+#tags {
     margin: 0 4px;
 }
 
-/* If workspaces is the leftmost module, omit left margin */
-.modules-left > widget:first-child > #workspaces {
+/* If tags is the leftmost module, omit left margin */
+.modules-left > widget:first-child > #tags {
     margin-left: 0;
 }
 
-/* If workspaces is the rightmost module, omit right margin */
-.modules-right > widget:last-child > #workspaces {
+/* If tags is the rightmost module, omit right margin */
+.modules-right > widget:last-child > #tags {
     margin-right: 0;
 }
 
@@ -97,39 +63,58 @@ label:focus {
     background-color: #000000;
 }
 
-#network {
-    background-color: #2980b9;
+#tags button {
+    padding: 0 3px;
+    background-color: transparent;
+    color: #888888;
+    /* Use box-shadow instead of border so the text isn't offset */
+    box-shadow: inset 0 -2px transparent;
+    /* Avoid rounded borders under each workspace name */
+    border: none;
+    border-radius: 0;
 }
 
-#network.disconnected {
-    background-color: #f53c3c;
+/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
+#tags button:hover {
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 -2px #ffffff;
 }
 
-#cpu {
-    background-color: #2ecc71;
-    color: #000000;
+#tags button.focused {
+    /*background-color: #64727D;*/
+    box-shadow: inset 0 -2px #ffffff;
 }
 
-#memory {
-    background-color: #9b59b6;
+#tags button.occupied {
+    color: #ffffff;
 }
 
-#temperature {
-    background-color: #f0932b;
-}
-
-#temperature.critical {
+#tags button.urgent {
     background-color: #eb4d4b;
 }
 
+#network {
+}
+
+#network.disconnected {
+}
+
+#cpu {
+}
+
+#memory {
+}
+
+#temperature {
+}
+
+#temperature.critical {
+}
+
 #battery {
-    background-color: #ffffff;
-    color: #000000;
 }
 
 #battery.charging, #battery.plugged {
-    color: #ffffff;
-    background-color: #26A65B;
 }
 
 @keyframes blink {
@@ -150,21 +135,13 @@ label:focus {
 }
 
 #pulseaudio {
-    background-color: #f1c40f;
-    color: #000000;
 }
 
 #pulseaudio.muted {
-    background-color: #90b1b1;
     color: #2a5c45;
 }
 
-#clock {
-    background-color: #64727D;
-}
-
 #tray {
-    background-color: #2980b9;
 }
 
 #tray > .passive {
@@ -173,5 +150,7 @@ label:focus {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #eb4d4b;
+}
+
+#clock {
 }
