@@ -17,7 +17,7 @@ export PATH=$PATH:$HOME/.scripts:$HOME/.bin
 
 # Misc
 export XDG_CONFIG_HOME=~/.config
-export QT_QPA_PLATFORMTHEME="gtk2"
+export QT_QPA_PLATFORMTHEME="qt6gtk2"
 
 # Source .environment if exists
 [[ -f ~/.environment ]] && . ~/.environment
