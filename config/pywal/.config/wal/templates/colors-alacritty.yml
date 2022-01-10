@@ -3,8 +3,8 @@ colors:
     background: '{background}'
     foreground: '{foreground}'
   cursor:
-    text: CellForeground
-    cursor: '{cursor}'
+    text:   '#000000'
+    cursor: '#ffffff'
   normal:
     black:   '{color0}'
     red:     '{color1}'
