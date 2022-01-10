@@ -1,5 +1,7 @@
 bemenu
 foot
+greetd
+greetd-tuigreet
 kanshi
 kile-wl
 lswt
