@@ -1,0 +1,141 @@
+;;
+;; Windows
+;;
+(defwindow panel
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :x "-8px"
+                      :y "0%"
+                      :width "360px"
+                      :height "0%"
+                      :anchor "center right")
+  :wm-ignore false
+  (panel))
+
+;;
+;; Widgets
+;;
+(defwidget panel []
+  (box :orientation "vertical"
+       :space-evenly false
+    (datetime)
+    (box :class "groups"
+         :orientation "vertical"
+         :space-evenly false
+      (controls)
+      (resources)
+      (toggles))))
+
+(defwidget datetime []
+  (box :class "datetime"
+       :orientation "vertical"
+       :space-evenly false
+    (label :class "time"
+           :text time)
+    (label :class "date"
+           :text date)))
+
+(defwidget innerbox []
+  (box :class "innerbox"
+    (children)))
+
+(defwidget controls []
+  (innerbox
+    (box :class "controls"
+         :orientation "vertical"
+         (volume)
+         (brightness))))
+
+(defwidget resources []
+  (box :class "resources"
+       :orientation "horizontal"
+    (innerbox
+      (cpu))
+    (innerbox
+      (memory))))
+
+(defwidget toggles []
+  (innerbox
+    (box :class "toggles"
+         :orientation "horizontal"
+      (toggle :class "a" :label "")
+      (toggle :class "b" :label "")
+      (toggle :class "c" :label "")
+      (toggle :class "d" :label ""))))
+
+(defwidget control [class label value onchange]
+  (box :class class
+       :space-evenly false
+       label
+    (scale :orientation "horizontal"
+           :hexpand true
+           :active true
+           :min 0.0
+           :max 101.0
+           :value value
+           :onchange onchange)))
+
+(defwidget volume []
+  (control :class "volume"
+           :label ""
+           :value volume
+           :onchange "pamixer --set-volume $(printf %0.f {})"))
+
+(defwidget brightness []
+  (control :class "brightness"
+           :label ""
+           :value brightness
+           :onchange "brightnessctl -q s {}%"))
+
+(defwidget resource [class label value]
+  (circular-progress
+    :class class
+    :start-at 25
+    :thickness 6
+    :value value
+    label))
+
+(defwidget cpu []
+  (resource :class "cpu"
+            :label ""
+            :value cpu))
+
+(defwidget memory []
+  (resource :class "memory"
+            :label ""
+            :value memory))
+
+(defwidget toggle [class label]
+  (checkbox :class class
+    label))
+
+;;
+;; Sources
+;;
+(defpoll time :interval "10s"
+  "date '+%H:%M'")
+
+(defpoll date :interval "10s"
+  "date '+%b %d, %Y'")
+
+(deflisten music :initial ""
+  "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
+
+(deflisten volume :initial "0.0"
+  "(echo sink && pactl subscribe) | grep --line-buffered sink | xargs -n1 pamixer --get-volume")
+
+(defpoll brightness :interval "1s" :initial "0.0"
+  "echo \"$(brightnessctl -q g)*100/255\" | bc")
+
+(defpoll cpu :interval "2s" :initial "0.0"
+  "mpstat 2 1 | awk 'END{print 100-$NF}'")
+
+(defpoll memory :interval "2s" :initial "0.0"
+  "free | grep Mem | awk '{print $3/$2 * 100.0}'")
+
+;; Alternatives:
+;;(defvar cpu
+;;  {round(EWW_CPU.avg, 0)})
+;;
+;;(defvar memory
+;;  {round(EWW_RAM.used_mem_perc, 0)})

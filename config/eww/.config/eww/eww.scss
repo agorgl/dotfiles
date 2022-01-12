@@ -1,0 +1,151 @@
+//
+// Variables
+//
+// Fonts
+$font: "JetBrains Mono";
+
+// Colors
+$bg: #161819;
+$bg-light: #1d2021;
+$bg-lighter: #4e4e4e;
+$fg: #b0b4bc;
+$fg-light: #cccccc;
+
+//
+// Defaults
+//
+* {
+  all: unset; // Unsets everything so you can style everything from scratch
+}
+
+scale trough {
+  background-color: $bg-lighter;
+  border-radius: 2px;
+  min-height: 0.5em;
+}
+
+scale trough highlight {
+  background-color: $fg-light;
+  border-radius: 2px;
+}
+
+//
+// Windows
+//
+.panel {
+  background-color: $bg;
+  padding: 2em;
+  border-radius: 1em;
+  color: $fg;
+  font-family: $font;
+}
+
+//
+// Utilities
+//
+.innerbox {
+  background-color: $bg-light;
+  border-radius: 0.75em;
+}
+
+//
+// Widgets
+//
+
+/* Datetime */
+.datetime {
+}
+
+.time {
+  font-size: 6em;
+}
+
+.date {
+  font-size: 1.75em;
+}
+
+/* Groups */
+.groups {
+  margin-top: 2em;
+}
+
+.groups > *:not(:first-child):not(:last-child) {
+  margin: 2em 0;
+}
+
+/* Controls */
+.controls {
+  padding: 1em;
+}
+
+.volume {
+  padding: 0.5em;
+  font-size: 1.75em;
+}
+
+.volume scale trough {
+  margin-left: 0.75em;
+}
+
+.brightness {
+  padding: 0.5em;
+  font-size: 1.75em;
+}
+
+.brightness scale trough {
+  margin-left: 0.75em;
+}
+
+/* Resources */
+.resources {
+  min-height: 14em;
+}
+
+.resources > *:not(:last-child) {
+  margin-right: 1em;
+}
+
+.resources > *:not(:first-child) {
+  margin-left: 1em;
+}
+
+.cpu {
+  margin: 0.75em;
+  font-size: 2.5em;
+  background-color: $bg-lighter;
+}
+
+.memory {
+  margin: 0.75em;
+  font-size: 2.5em;
+  background-color: $bg-lighter;
+}
+
+/* Toggles */
+.toggles {
+  min-height: 6em;
+  padding: 1em 2.5em;
+}
+
+.toggles > * {
+  margin: 0.25em;
+}
+
+.toggles > checkbutton {
+  color: $bg-light;
+  font-size: 2.5em;
+  border-radius: 0.85em;
+  background-color: $bg-lighter;
+}
+
+.toggles > checkbutton check {
+  margin-left: -2pt; // hack
+}
+
+.toggles > checkbutton:checked check {
+  color: $fg-light;
+}
+
+.toggles > checkbutton:checked {
+  background-color: $fg-light;
+}
