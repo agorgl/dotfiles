@@ -58,10 +58,22 @@
   (innerbox
     (box :class "toggles"
          :orientation "horizontal"
-      (toggle :class "a" :label "")
-      (toggle :class "b" :label "")
-      (toggle :class "c" :label "")
-      (toggle :class "d" :label ""))))
+      (toggle :class "wifi"
+              :state wifi
+              :onclick "rfkill toggle wlan"
+              :label "")
+      (toggle :class "bluetooth"
+              :state bluetooth
+              :onclick "rfkill toggle bluetooth"
+              :label "")
+      (toggle :class "c"
+              :state false
+              :onclick ""
+              :label "")
+      (toggle :class "d"
+              :state false
+              :onclick ""
+              :label ""))))
 
 (defwidget control [class label value onchange]
   (box :class class
@@ -105,8 +117,9 @@
             :label ""
             :value memory))
 
-(defwidget toggle [class label]
-  (checkbox :class class
+(defwidget toggle [state onclick label]
+  (button :class {state ? "active" : ""}
+          :onclick onclick
     label))
 
 ;;
@@ -132,6 +145,12 @@
 
 (defpoll memory :interval "2s" :initial "0.0"
   "free | grep Mem | awk '{print $3/$2 * 100.0}'")
+
+(defpoll wifi :interval "1s" :initial false
+  "rfkill -n -r | awk '/wlan/{print ($4 == \"unblocked\") ? \"true\" : \"false\"}' | head -n 1")
+
+(defpoll bluetooth :interval "1s" :initial false
+  "rfkill -n -r | awk '/bluetooth/{print ($4 == \"unblocked\") ? \"true\" : \"false\"}' | head -n 1")
 
 ;; Alternatives:
 ;;(defvar cpu
