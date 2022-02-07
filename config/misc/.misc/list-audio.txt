@@ -1,10 +1,10 @@
 aj-snapshot
-cadence
 carla
 easyeffects
 guitarix
 jack-stdio
 jack_capture
+lib32-pipewire-jack
 mod-utilities-lv2-git
 noisetorch-bin
 oggfwd
