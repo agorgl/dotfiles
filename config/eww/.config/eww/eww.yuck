@@ -66,14 +66,14 @@
               :state bluetooth
               :onclick "rfkill toggle bluetooth"
               :label "")
-      (toggle :class "c"
-              :state false
-              :onclick ""
-              :label "")
+      (toggle :class "noisetorch"
+              :state noisetorch
+              :onclick "(pw-cli dump short | grep -i torch >/dev/null) && noisetorch -u || noisetorch -i"
+              :label "")
       (toggle :class "d"
               :state false
               :onclick ""
-              :label ""))))
+              :label ""))))
 
 (defwidget control [class label value onchange]
   (box :class class
@@ -151,6 +151,9 @@
 
 (defpoll bluetooth :interval "1s" :initial false
   "rfkill -n -r | awk '/bluetooth/{print ($4 == \"unblocked\") ? \"true\" : \"false\"}' | head -n 1")
+
+(defpoll noisetorch :interval "1s" :initial false
+  "(pw-cli dump short | grep -i torch >/dev/null) && echo true || echo false")
 
 ;; Alternatives:
 ;;(defvar cpu
