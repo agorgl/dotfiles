@@ -3,11 +3,10 @@
 # Print to stderr and exit with non-success error code
 die() { echo "$*" 1>&2; exit 1; }
 
-# If no WINEPREFIX specified, run unsandboxed
+# If no WINEPREFIX specified, error
 if [ -z "$WINEPREFIX" ]; then
-    echo Warning: running outside sandbox, because no \$WINEPREFIX was specified >&2
-    $@
-    exit 0
+    echo Error \$WINEPREFIX was not specified >&2
+    exit 1
 fi
 
 # Sandbox location
