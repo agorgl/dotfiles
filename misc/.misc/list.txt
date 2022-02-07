@@ -157,7 +157,6 @@ xterm
 alsa-firmware
 alsa-utils
 gst-plugin-pipewire
-jack2
 libpipeline
 pipewire
 pipewire-alsa
