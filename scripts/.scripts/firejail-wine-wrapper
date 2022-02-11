@@ -35,6 +35,7 @@ bwrap \
     --dev /dev \
     --dev-bind /dev/dri /dev/dri \
     --dev-bind /dev/shm /dev/shm \
+    --dev-bind /dev/snd /dev/snd \
     --dev-bind /dev/input /dev/input \
     --symlink usr/bin /bin \
     --symlink usr/lib /lib \
