@@ -28,7 +28,7 @@ if [ ! -d $HOME/.dot/files ]; then
     # Clone my dots
     cd
     msg "Cloning dotfiles..."
-    git clone https://github.com/ElArtista/dotfiles $HOME/.dot/files
+    git clone https://github.com/agorgl/dotfiles $HOME/.dot/files
 
     # Move the relevant dotfiles in their place
     msg "Bootstraping dotfiles..."
