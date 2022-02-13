@@ -51,6 +51,7 @@ bwrap \
     --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
     --ro-bind /sys/class/input /sys/class/input \
     --ro-bind /sys/class/hidraw /sys/class/hidraw \
+    --ro-bind /sys/devices/system/cpu /sys/devices/system/cpu \
     --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0 \
     --ro-bind $XDG_RUNTIME_DIR/pipewire-0 $XDG_RUNTIME_DIR/pipewire-0 \
     --ro-bind $XDG_RUNTIME_DIR/pulse $XDG_RUNTIME_DIR/pulse \
