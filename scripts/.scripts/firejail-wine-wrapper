@@ -3,6 +3,12 @@
 # Print to stderr and exit with non-success error code
 die() { echo "$*" 1>&2; exit 1; }
 
+# If used with version flag skip sandboxing
+if (( $# == 2 )) && [[ "$1" = "wine" && "$2" = "--version" ]]; then
+    wine --version
+    exit 0
+fi
+
 # No WINEPREFIX specified
 if [ -z "$WINEPREFIX" ]; then
     # Try detect it
