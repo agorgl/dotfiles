@@ -3,11 +3,22 @@
 # Print to stderr and exit with non-success error code
 die() { echo "$*" 1>&2; exit 1; }
 
-# If no WINEPREFIX specified, error
+# No WINEPREFIX specified
 if [ -z "$WINEPREFIX" ]; then
-    echo Error \$WINEPREFIX was not specified >&2
-    exit 1
+    # Try detect it
+    echo Warning: \$WINEPREFIX was not specified, trying to autodetect it >&2
+    path=$(pwd)
+    while [[ "$path" != "" && ! -e "$path/.wine" ]]; do
+        path=${path%/*}
+    done
+    # Exit if detection failed
+    if [ -z "$path" ]; then
+        echo Error: \$WINEPREFIX could not be detected >&2
+        exit 1
+    fi
+    export WINEPREFIX=$path/.wine
 fi
+echo Using \$WINEPREFIX in $WINEPREFIX
 
 # Sandbox location
 SANDBOX="$WINEPREFIX/../"
