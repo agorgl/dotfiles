@@ -25,6 +25,7 @@ acpi_call
 acpid
 crda
 dkms
+iptables-nft
 man-db
 man-pages
 nano
@@ -49,7 +50,6 @@ diffutils
 dmidecode
 dos2unix
 e2fsprogs
-ebtables
 evtest
 expac
 fd
