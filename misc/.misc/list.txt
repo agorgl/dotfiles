@@ -79,6 +79,7 @@ perl
 pkgfile
 qrencode
 rclone
+ripgrep
 rsync
 s-nail
 socat
@@ -88,7 +89,6 @@ strace
 sysfsutils
 sysstat
 tcpdump
-the_silver_searcher
 tmux
 traceroute
 tree
