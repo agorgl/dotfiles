@@ -26,7 +26,5 @@ renderdoc
 rust-analyzer
 rustup
 saxon-he
-tilt-bin
 typescript-language-server
 vagrant
-vue-cli

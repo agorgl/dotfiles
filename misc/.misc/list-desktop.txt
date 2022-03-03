@@ -8,7 +8,6 @@ downgrade
 element-desktop
 font-manager
 gimp
-gotop-bin
 jami-gnome
 lemonbar-xft-git
 libappindicator-gtk3
