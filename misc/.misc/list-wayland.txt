@@ -6,7 +6,9 @@ kanshi
 kile-wl
 lswt
 mako
+qt6-wayland
 river
+sway
 swaybg
 waybar
 wev
