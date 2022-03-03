@@ -161,8 +161,8 @@ libpipeline
 pipewire
 pipewire-alsa
 pipewire-jack
-pipewire-media-session
 pipewire-pulse
+wireplumber
 
 # Themes
 arc-gtk-theme
