@@ -16,6 +16,7 @@ gvim
 lld
 lldb
 llvm
+neovim
 perf
 valgrind
 
