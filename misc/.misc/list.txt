@@ -23,7 +23,6 @@ valgrind
 # System
 acpi_call
 acpid
-crda
 dkms
 iptables-nft
 man-db
@@ -34,6 +33,7 @@ ntp
 polkit-gnome
 samba
 vi
+wireless-regdb
 zsh
 
 # Shell utilities
