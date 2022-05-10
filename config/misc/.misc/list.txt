@@ -203,8 +203,7 @@ maim
 mpv
 mupdf
 pavucontrol
-qemu
-qemu-arch-extra
+qemu-full
 rofi
 rxvt-unicode
 seahorse
