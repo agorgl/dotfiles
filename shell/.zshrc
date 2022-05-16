@@ -17,8 +17,8 @@ setopt correct no_glob_complete c_bases octal_zeroes
 autoload -Uz promptinit; promptinit
 prompt redhat
 
-# Vi mode
-bindkey -v
+# Key mode
+bindkey -e
 export KEYTIMEOUT=1
 
 # Plugin manager
