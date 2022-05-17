@@ -39,7 +39,7 @@ function net_setup {
     iptables -t nat -A POSTROUTING -o $NIC -j MASQUERADE
 
     trace "Creating TAP interface"
-    ip tuntap add dev $TAP mode tap group netdev
+    ip tuntap add dev $TAP mode tap
     ip addr flush dev $TAP
     ip addr add $NET.1/24 dev $TAP
     ip link set $TAP up
