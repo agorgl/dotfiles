@@ -35,7 +35,7 @@ if [ ! -d $HOME/.dot/files ]; then
     cd
     rm -rf .bash*
     cd $HOME/.dot/files/
-    stow -t ../.. */
+    stow -t ../.. -d config/ $(ls config/)
     cd ../..
 fi
 
