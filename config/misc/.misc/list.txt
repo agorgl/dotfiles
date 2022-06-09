@@ -12,6 +12,7 @@ cmake
 gdb
 git
 git-lfs
+git-filter-repo
 gvim
 lld
 lldb
