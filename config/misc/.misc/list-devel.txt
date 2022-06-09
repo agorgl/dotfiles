@@ -8,8 +8,8 @@ gopls
 helm
 helmfile
 httpie
+jdk-openjdk
 jdk11-openjdk
-jdk8-openjdk
 jdtls
 js-beautify
 k9s
