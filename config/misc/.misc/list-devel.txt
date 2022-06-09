@@ -20,7 +20,6 @@ mold
 nodejs
 npm
 podman
-python-language-server
 qemu-user-static-bin
 renderdoc
 rust-analyzer
