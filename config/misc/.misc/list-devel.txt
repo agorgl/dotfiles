@@ -25,5 +25,7 @@ renderdoc
 rust-analyzer
 rustup
 saxon-he
+terraform
+terraform-ls
 typescript-language-server
 vagrant
