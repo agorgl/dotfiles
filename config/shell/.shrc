@@ -4,7 +4,7 @@
 
 # Common variables/aliases
 export HISTSIZE=3000
-export EDITOR=vim
+export EDITOR=nvim
 alias ls='ls --color=auto'
 PS1='[\u@\h \W]\$ '
 

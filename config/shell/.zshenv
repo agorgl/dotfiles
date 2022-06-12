@@ -4,8 +4,8 @@
 export TERM=xterm-256color
 
 # Editor
-export EDITOR="vim"
-export VISUAL="vim"
+export EDITOR="nvim"
+export VISUAL="nvim"
 
 # History
 export HISTFILE=~/.zhistory
