@@ -200,11 +200,14 @@ guvcview
 gvfs
 gvfs-mtp
 gvfs-smb
+isync
 jmtpfs
 libvirt
 maim
 mpv
+msmtp
 mupdf
+neomutt
 pass
 pavucontrol
 qemu-full
