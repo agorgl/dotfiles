@@ -18,6 +18,7 @@ export PATH=$PATH:$HOME/.scripts:$HOME/.bin:$HOME/.cargo/bin
 # Misc
 export XDG_CONFIG_HOME=~/.config
 export QT_QPA_PLATFORMTHEME="qt6gtk2"
+export GPG_TTY=$(tty)
 
 # Source .environment if exists
 [[ -f ~/.environment ]] && . ~/.environment
