@@ -208,6 +208,7 @@ mpv
 msmtp
 mupdf
 neomutt
+notmuch
 pass
 pavucontrol
 qemu-full
