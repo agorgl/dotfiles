@@ -9,7 +9,7 @@ mod-utilities-lv2-git
 noisetorch-bin
 oggfwd
 realtime-privileges
-reaper-bin
+reaper
 shntool
 v4l2loopback-dkms
 yabridge-bin
