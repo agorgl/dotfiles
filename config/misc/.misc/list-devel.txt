@@ -22,7 +22,6 @@ mold
 nodejs
 npm
 podman
-qemu-user-static-bin
 renderdoc
 rust-analyzer
 rustup

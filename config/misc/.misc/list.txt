@@ -212,6 +212,7 @@ notmuch
 pass
 pavucontrol
 qemu-full
+qemu-user-static
 rofi
 rxvt-unicode
 seahorse
