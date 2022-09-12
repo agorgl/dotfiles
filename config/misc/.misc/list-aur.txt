@@ -2,7 +2,6 @@ conky-lua-nv
 connman-gtk
 cyrus-sasl-xoauth2-git
 paper-icon-theme-git
-polybar
 qimgv
 qt5-styleplugins
 qt6gtk2

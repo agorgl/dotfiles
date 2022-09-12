@@ -128,6 +128,7 @@ libva-vdpau-driver
 mesa
 mesa-vdpau
 picom
+polybar
 stalonetray
 sxhkd
 weston
