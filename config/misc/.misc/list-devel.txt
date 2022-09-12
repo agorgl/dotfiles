@@ -2,6 +2,8 @@ android-udev-git
 bat
 buildah
 ccls
+clojure
+clojure-lsp-bin
 ctags
 go
 gopls
