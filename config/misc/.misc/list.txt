@@ -202,7 +202,6 @@ gvfs
 gvfs-mtp
 gvfs-smb
 isync
-jmtpfs
 libvirt
 maim
 mpv
