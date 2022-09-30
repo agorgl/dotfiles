@@ -25,5 +25,7 @@ if [ ! -z "$BSPWM_PERSIST_WND_STATE" ]; then
     bspc config external_rules_command $(dirname $0)/bspwm_rules_fetcher
 fi
 
+source $(dirname $0)/bspwm_rules
+
 sxhkd &
 polybar-launcher &
