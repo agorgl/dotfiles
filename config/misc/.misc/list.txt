@@ -160,6 +160,8 @@ xterm
 alsa-firmware
 alsa-utils
 gst-plugin-pipewire
+lib32-alsa-plugins
+lib32-libpulse
 libpipeline
 pipewire
 pipewire-alsa
