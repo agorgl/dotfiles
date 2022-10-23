@@ -81,6 +81,7 @@ bwrap \
     --setenv DISPLAY $DISPLAY \
     --setenv XDG_RUNTIME_DIR "/run/user/$UID" \
     --setenv WINEDLLOVERRIDES "libglesv2.dll=d" \
+    --setenv DXVK_HUD 1 \
     --setenv YABRIDGE_NO_WATCHDOG 1 \
     "${yabridge_flags[@]}" \
     "$@"
