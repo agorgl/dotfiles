@@ -75,6 +75,7 @@ bwrap \
     --bind $SANDBOX $SANDBOX \
     --bind $SANDBOX $HOME \
     --bind $HOME/.Xauthority $HOME/.Xauthority \
+    --setenv PATH /usr/local/sbin:/usr/local/bin:/usr/bin \
     --setenv LANG $LANG \
     --setenv HOME $HOME \
     --setenv DISPLAY $DISPLAY \
