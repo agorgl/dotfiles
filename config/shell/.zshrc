@@ -59,6 +59,8 @@ bindkey "^[d" kill-word
 bindkey "^w"  backward-kill-word
 bindkey "^k"  kill-line
 bindkey "^u"  backward-kill-line
+bindkey "^[[1;5D" backward-word
+bindkey "^[[1;5C" forward-word
 
 # History keys
 bindkey '^R' history-incremental-search-backward
