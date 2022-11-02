@@ -2,3 +2,4 @@
 
 bspc rule -a Zathura state=tiled
 bspc rule -a Steam border=off
+bspc rule -a baresip state=floating
