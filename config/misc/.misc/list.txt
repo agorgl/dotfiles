@@ -197,6 +197,7 @@ edk2-ovmf
 feh
 file-roller
 filelight
+fuse-overlayfs
 galculator
 gnupg
 guvcview
@@ -219,6 +220,7 @@ qemu-user-static-binfmt
 rofi
 rxvt-unicode
 seahorse
+slirp4netns
 smplayer
 sshfs
 sxiv
