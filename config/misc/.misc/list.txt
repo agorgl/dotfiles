@@ -215,6 +215,7 @@ pass
 pavucontrol
 qemu-full
 qemu-user-static
+qemu-user-static-binfmt
 rofi
 rxvt-unicode
 seahorse
