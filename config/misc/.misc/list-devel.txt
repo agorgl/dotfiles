@@ -23,6 +23,7 @@ mold
 nodejs
 npm
 podman
+pyright
 renderdoc
 rust-analyzer
 rustup
