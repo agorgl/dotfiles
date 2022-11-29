@@ -1,4 +1,5 @@
 android-udev-git
+babashka-bin
 bat
 buildah
 ccls
