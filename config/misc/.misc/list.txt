@@ -204,6 +204,7 @@ guvcview
 gvfs
 gvfs-mtp
 gvfs-smb
+gvfs-nfs
 isync
 libvirt
 maim
