@@ -141,7 +141,7 @@ end
 
 -- DISK
 disk_text = [[
-${color2}${diskiograph 40,0 10000}${color}
+${color2}${diskiograph 40,0 10000000}${color}
 ${color2}${voffset -17}${hr}${color}
 DISK${alignr}${diskio}
 ]]
