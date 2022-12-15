@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Reset wallpaper
+[ -f ~/.fehbg ] && ~/.fehbg &
+
 # Restart window manager
 bspc wm -r
 
