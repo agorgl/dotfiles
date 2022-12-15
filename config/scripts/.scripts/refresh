@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Restart window manager
+bspc wm -r
+
 # Reload polybar
 pkill -f -USR1 polybar-launcher
 
