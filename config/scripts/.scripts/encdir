@@ -1,0 +1,187 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [<args>]"
+HELP="\
+$(basename $0) <command> [<args>]
+
+Commands:
+  init   <dir>               Init encrypted directory
+  expose <dirs...> -- <cmd>  Expose encrypted directories to command
+  remove <dirs...>           Remove encrypted directories
+
+Options:
+  -h,--help      Print current help message
+"
+
+function die() { echo >&2 "$*"; exit 1; }
+function usage() { die "$USAGE"; }
+function help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+ENCDIR_DATA_DIR=${XDG_DATA_HOME:-$HOME/.local/share}/encdir
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+encdir() {
+    local dir="$1"
+    local absdir=$(realpath "$dir")
+    local dirhash=$(echo -n "$absdir" | sha256sum | awk '{ print $1 }')
+    local encdir=$ENCDIR_DATA_DIR/${dirhash}
+    echo $encdir
+}
+
+chipherdir() {
+    local dir="$1"
+    local encdir=$(encdir "$dir")
+    local chipherdir=$encdir/storage
+    echo $chipherdir
+}
+
+passfile() {
+    local dir="$1"
+    local encdir=$(encdir "$dir")
+    local passfile=$encdir/key
+    echo $passfile
+}
+
+randompass() {
+    openssl rand -hex 16
+}
+
+reltohome() {
+    echo $1 | sed "s|$HOME|~|"
+}
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+init_encdir() {
+    local dir="$1"
+    local chipherdir=$(chipherdir "$dir")
+
+    if [ -d $chipherdir ] && [ ! -z "$(ls -A $chipherdir)" ]; then
+        die "init: encrypted directory for \"$dir\" already exists, aborting"
+    fi
+
+    echo "Initializing encrypted directory for \"$dir\" in \"$chipherdir\""
+    mkdir -p $chipherdir
+
+    local passfile=$(passfile "$dir")
+    echo $(randompass) | gpg --quiet --encrypt --armor --default-recipient-self > "$passfile"
+    cat $passfile | gpg --quiet --decrypt | gocryptfs -q -init "$chipherdir"
+}
+
+expose_encdirs() {
+    local cmd="$1"; shift
+    local dirs=($@)
+
+    # TODO: Multiple dirs
+    echo "Exposing access to ${dirs[@]} for command \"$cmd\""
+    local dir=${dirs[0]}
+    local chipherdir=$(chipherdir "$dir")
+    local passfile=$(passfile "$dir")
+
+    unshare -Umrfp --mount-proc \
+        /bin/bash -c "cat $passfile | gpg --quiet --decrypt | gocryptfs -q $chipherdir $dir; exec $cmd"
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+init() {
+    local dir="$1"
+    if [ -d "$dir" ] && [ ! -z "$(ls -A $dir)" ]; then
+        echo "init: directory \"$dir\" is not empty, aborting"
+    fi
+    init_encdir "$dir"
+}
+
+expose() {
+    local cmd="$1"; shift
+    local dirs=($@)
+
+    for dir in ${dirs[@]}; do
+        local chipherdir=$(chipherdir "$dir")
+        if [ ! -d "$chipherdir" ] || [ -z "$(ls -A $chipherdir)" ]; then
+            die "expose: encrypted directory for \"$dir\" is not initialized, aborting"
+        fi
+    done
+
+    expose_encdirs "$cmd" "${dirs[@]}"
+}
+
+remove() {
+    local dirs=($@)
+    for dir in ${dirs[@]}; do
+        local chipherdir=$(chipherdir "$dir")
+        if [ ! -d "$chipherdir" ] || [ -z "$(ls -A $chipherdir)" ]; then
+            echo "remove: encrypted directory for \"$dir\" is does not exist, skipping"
+        fi
+        local encdir=$(encdir "$dir")
+        rm -rf "$encdir"
+    done
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        past_sep=0
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                --)
+                    past_sep=1
+                    ;;
+                -*)
+                    if [ $past_sep -eq 0 ]; then
+                        echo "Unexpected option $arg" >&2
+                        die "See '$(basename $0) --help' for more information"
+                    fi
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    init)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) init <dir>"
+        init "$1"
+        ;;
+    expose)
+        dirs=()
+        while [ $# -ne 0 ] && [ "$1" != "--" ]; do
+            dirs+=("$1")
+            shift
+        done
+
+        [ $# -ne 0 ] && shift
+        cmd="$@"
+
+        [ ${#dirs[@]} -eq 0 ] || [ -z "$cmd" ] && die "Usage: $(basename $0) expose <dirs...> -- <cmd>"
+        expose "$cmd" "${dirs[@]}"
+        ;;
+    remove)
+        [ $# -lt 1 ] && die "Usage: $(basename $0) remove <dirs...>"
+        remove "$@"
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
