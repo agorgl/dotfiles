@@ -2,7 +2,6 @@ awf-git
 blender
 caprine
 chisel-tunnel-bin
-cli-visualizer-git
 discord
 downgrade
 element-desktop
