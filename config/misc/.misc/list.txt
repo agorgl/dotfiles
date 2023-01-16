@@ -198,7 +198,6 @@ edk2-ovmf
 feh
 file-roller
 filelight
-fuse-overlayfs
 galculator
 gnupg
 guvcview
