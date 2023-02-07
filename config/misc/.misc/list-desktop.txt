@@ -6,7 +6,6 @@ downgrade
 element-desktop
 font-manager
 gimp
-jami-qt
 lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
