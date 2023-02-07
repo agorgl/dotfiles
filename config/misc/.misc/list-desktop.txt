@@ -14,9 +14,6 @@ mesa-demos
 mgba-sdl
 mtpfs
 mupdf-tools
-plymouth
-plymouth-theme-colorful-loop-git
-plymouth-theme-cuts-git
 python-pywal
 qbittorrent
 slack-desktop
