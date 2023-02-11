@@ -98,7 +98,7 @@ expose_encdirs() {
 init() {
     local dir="$1"
     if [ -d "$dir" ] && [ ! -z "$(ls -A $dir)" ]; then
-        echo "init: directory \"$dir\" is not empty, aborting"
+        die "init: directory \"$dir\" is not empty, aborting"
     fi
     init_encdir "$dir"
 }
