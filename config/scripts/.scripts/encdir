@@ -89,7 +89,7 @@ expose_encdirs() {
     local passfile=$(passfile "$dir")
 
     unshare -Umrfp --mount-proc \
-        /bin/bash -c "cat $passfile | gpg --quiet --decrypt | gocryptfs -q $chipherdir $dir; exec $cmd"
+        /bin/bash -c "cat $passfile | gpg --quiet --decrypt | gocryptfs -q $chipherdir $dir; exec unshare --map-user=$USER --map-group=$USER $cmd"
 }
 
 #----------------------------------------------------------------------
