@@ -82,14 +82,22 @@ expose_encdirs() {
     local cmd="$1"; shift
     local dirs=($@)
 
-    # TODO: Multiple dirs
     echo "Exposing access to ${dirs[@]} for command \"$cmd\""
-    local dir=${dirs[0]}
-    local chipherdir=$(chipherdir "$dir")
-    local passfile=$(passfile "$dir")
+    local pipe=$(mktemp -u)
+    mkfifo -m600 $pipe
+    exec 3<>"$pipe" 4<"$pipe"
+    rm "$pipe"
+
+    for dir in ${dirs[@]}; do
+        local chipherdir=$(chipherdir "$dir")
+        local passfile=$(passfile "$dir")
+        local mntdesc="$dir:$chipherdir:$passfile"
+        echo "$mntdesc" >&3
+    done
+    exec 3>&-
 
     unshare -Umrfp --mount-proc \
-        /bin/bash -c "set -e; cat $passfile | gpg --quiet --decrypt | gocryptfs -q $chipherdir $dir && unshare --map-user=$USER --map-group=$USER $cmd"
+        /bin/bash -c "set -e; while IFS=: read -r dir chipherdir passfile <&4; do gpg --quiet --decrypt < \$passfile | gocryptfs -q \$chipherdir \$dir; done && unshare --map-user=$USER --map-group=$USER $cmd"
 }
 
 #----------------------------------------------------------------------
