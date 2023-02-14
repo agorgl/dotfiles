@@ -1,0 +1,162 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [<args>]"
+HELP="\
+$(basename $0) <command> [<args>]
+
+Commands:
+  add  <email>   Add email account
+  show <email>   Show token for email account
+  rm   <email>   Remove token for email account
+
+Options:
+  -h, --help     Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+# Script cache and data directories
+TOKEN_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/oauth2mail
+
+# Mutt oauth2 script source and target location
+MUTT_OAUTH2_SCRIPT_SOURCE=/usr/share/doc/neomutt/oauth2/mutt_oauth2.py
+MUTT_OAUTH2_SCRIPT_PATH=/tmp/$(basename $MUTT_OAUTH2_SCRIPT_SOURCE)
+
+# Client credentials to replace in mutt_oauth2.py script
+# Source: https://hg.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.jsm
+GOOGLE_CLIENT_ID='406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com'
+GOOGLE_CLIENT_SECRET='kSmqreRr0qwBWJgbf5Y-PjSU'
+MICROSOFT_CLIENT_ID='08162f7c-0fd2-4200-a84a-f25a4db0b584'
+MICROSOFT_CLIENT_SECRET='TxRBilcHdC6WGBee]fs?QR:SJ8nI[g82'
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+tokenfile() {
+    local mail="$1"
+    local mailhash=$(echo -n "$mail" | sha256sum | awk '{ print $1 }')
+    local tokenfile=$TOKEN_CACHE_DIR/${mailhash}
+    echo $tokenfile
+}
+
+encrypt() {
+    gpg --quiet --encrypt --armor --default-recipient-self
+}
+
+decrypt() {
+    gpg --quiet --decrypt
+}
+
+mutt_oauth2() {
+    local gpg_identity=$(gpg --list-secret-keys --with-colons | awk -F: '/uid/{match($10,/<(.*)>/,m); print m[1]}')
+    sed -e "0,/'client_id': ''/{s/\('client_id': \)''/\1'$GOOGLE_CLIENT_ID'/}" \
+        -e "0,/'client_secret': ''/{s/\('client_secret': \)''/\1'$GOOGLE_CLIENT_SECRET'/}" \
+        -e "0,/'client_id': ''/{s/\('client_id': \)''/\1'$MICROSOFT_CLIENT_ID'/}" \
+        -e "0,/'client_secret': ''/{s/\('client_secret': \)''/\1'$MICROSOFT_CLIENT_SECRET'/}" \
+        -e "s/YOUR_GPG_IDENTITY/$gpg_identity/" \
+        -e "s|import sys|\0;sys.argv[0]='$0'|" \
+      $MUTT_OAUTH2_SCRIPT_SOURCE > $MUTT_OAUTH2_SCRIPT_PATH
+    python $MUTT_OAUTH2_SCRIPT_PATH $@
+    rm $MUTT_OAUTH2_SCRIPT_PATH
+}
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+fetch_token() {
+    local email="$1"
+    local tokenfile=$(tokenfile "$email")
+
+    echo "Fetching token for email \"$email\""
+    mkdir -p $(dirname "$tokenfile")
+
+    mutt_oauth2 -a "$tokenfile"
+}
+
+show_token() {
+    local email="$1"
+    local tokenfile=$(tokenfile "$email")
+
+    mutt_oauth2 "$tokenfile"
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+add() {
+    local email="$1"
+    local tokenfile=$(tokenfile "$email")
+    if [ -f "$tokenfile" ]; then
+        die "add: token for \"$email\" already exists"
+    fi
+    fetch_token "$email"
+}
+
+show() {
+    local email="$1"
+    local tokenfile=$(tokenfile "$email")
+    if [ ! -f "$tokenfile" ]; then
+        die "show: token for \"$email\" does not exist"
+    fi
+    show_token "$email"
+}
+
+remove() {
+    local email="$1"
+    local tokenfile=$(tokenfile "$email")
+    if [ ! -f "$tokenfile" ]; then
+        die "rm: token for \"$email\" does not exist"
+    fi
+    rm "$tokenfile"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    add)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) add <email>"
+        add "$1"
+        ;;
+    show)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) show <email>"
+        show "$1"
+        ;;
+    rm)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
+        remove "$1"
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
