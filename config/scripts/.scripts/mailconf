@@ -1,0 +1,242 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [<args>]"
+HELP="\
+$(basename $0) <command> [<args>]
+
+Commands:
+  add  <email>   Add new mail configuration
+  sync <email>   Sync maildir folder
+  rm   <email>   Remove existing mail configuration
+  ls             List all mail configurations
+
+Options:
+  -h, --help     Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+MAIL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/mailconf
+MAIL_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/mail
+MUTT_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/mutt
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+mailconfdir() {
+    local mail="$1"
+    local mailconfdir=$MAIL_CONF_DIR/$mail
+    echo $mailconfdir
+}
+
+mailcachedir() {
+    local mail="$1"
+    local mailcachedir=$MAIL_CACHE_DIR/$mail
+    echo $mailcachedir
+}
+
+reltohome() {
+    echo $1 | sed "s|$HOME|~|"
+}
+
+populate() {
+    local template=$1
+    echo "$template" | sed \
+        -e "s/{host}/$2/" \
+        -e "s/{mail}/$3/"
+}
+
+#----------------------------------------------------------------------
+# Templates
+#----------------------------------------------------------------------
+read -r -d '' MBSYNCRC << EOM || :
+IMAPAccount mail-account
+Host {host}
+Port 993
+User {mail}
+AuthMechs XOAUTH2
+PassCmd "oauth2mail show {mail}"
+TLSType IMAPS
+TLSVersions TLSv1.3
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore mail-remote
+Account mail-account
+
+MaildirStore mail-local
+SubFolders Verbatim
+Path $(reltohome $MAIL_CACHE_DIR)/{mail}/
+Inbox $(reltohome $MAIL_CACHE_DIR)/{mail}/Inbox
+
+Channel mail
+Far :mail-remote:
+Near :mail-local:
+Patterns *
+Create Both
+Expunge Both
+SyncState *
+CopyArrivalDate yes
+EOM
+
+read -r -d '' IMAPNOTIFYRC << EOM || :
+{
+  "host": "{host}",
+  "port": 993,
+  "tls": true,
+  "tlsOptions": {
+    "rejectUnauthorized": false
+  },
+  "username": "{mail}",
+  "password": "",
+  "passwordCmd": "oauth2mail show {mail}",
+  "xoauth2": true,
+  "onNewMail": "mbsync -Va -c $(reltohome $MAIL_CONF_DIR)/{mail}/mbsyncrc",
+  "onNewMailPost": "",
+  "boxes": ["Inbox"]
+}
+EOM
+
+read -r -d '' MSMTPRC << EOM || :
+defaults
+auth           on
+tls            on
+tls_starttls   off
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+auth           oauthbearer
+
+account        mail
+host           {host}
+port           465
+from           {mail}
+user           {mail}
+passwordeval   "oauth2mail show {mail}"
+EOM
+
+read -r -d '' MUTTRC << EOM || :
+set my_mail = "{mail}"
+set my_conf = "$(reltohome $MAIL_CONF_DIR)/{mail}"
+set header_cache = "$(reltohome $MUTT_CACHE_DIR)/{mail}"
+set message_cachedir = "$(reltohome $MUTT_CACHE_DIR)/{mail}"
+
+set mbox_type = Maildir
+set folder = "$(reltohome $MAIL_CACHE_DIR)/{mail}"
+
+set spoolfile = +Inbox
+set postponed = +Drafts
+set record = +Sent
+set trash = +Trash
+
+set from = {mail}
+set realname = '{mail}'
+set sendmail = "msmtp -C $MAIL_CONF_DIR/{mail}/msmtprc -a mail"
+
+mailboxes =Inbox =Drafts =Sent =Trash
+EOM
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+generate() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    local imap_host="imap.sample.com"
+    local smtp_host="smtp.sample.com"
+    populate "$MBSYNCRC"     "$imap_host" "$mail" > "$mailconfdir/mbsyncrc"
+    populate "$IMAPNOTIFYRC" "$imap_host" "$mail" > "$mailconfdir/imapnotifyrc"
+    populate "$MSMTPRC"      "$smtp_host" "$mail" > "$mailconfdir/msmtprc"
+    populate "$MUTTRC"       ""           "$mail" > "$mailconfdir/muttrc"
+    find "$mailconfdir" -type d -exec chmod 700 {} \;
+    find "$mailconfdir" -type f -exec chmod 600 {} \;
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+add() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    if [ -d "$mailconfdir" ]; then
+        die "add: mailconf dir for email \"$mail\" already exists"
+    fi
+    mkdir -p "$mailconfdir"
+    generate "$mail"
+}
+
+sync() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    local mailcachedir=$(mailcachedir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "sync: mailconf dir for email \"$mail\" does not exist"
+    fi
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+    mbsync -Va -c "$mailconfdir/mbsyncrc"
+}
+
+remove() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "rm: mailconf dir for email \"$mail\" does not exist"
+    fi
+    rm -rf $mailconfdir
+}
+
+list() {
+    find $MAIL_CONF_DIR -mindepth 1 -type d -printf "%f\n"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    add)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) add <email>"
+        add "$1"
+        ;;
+    sync)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) sync <email>"
+        sync "$1"
+        ;;
+    rm)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
+        remove "$1"
+        ;;
+    ls)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) ls"
+        list
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
