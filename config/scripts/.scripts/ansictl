@@ -1,0 +1,223 @@
+#!/bin/bash
+#set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [<args>]"
+HELP="\
+$(basename $0) <command> [<args>]
+
+Commands:
+  list                   List supported attributes
+  query <attr>           Query attribute value
+  set   <attr> <value>   Set attribute to value
+  reset <attr>           Reset attribute to default value
+
+Options:
+  -h, --help             Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+ESC="\033"
+BEL="\007"
+DSC="${ESC}P"
+OSC="${ESC}]"
+SUPPORTED_ATTRS=("color*" "foreground" "background" "cursor" "border")
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+send_escape_sequence() {
+    local escape_sequence="$1"
+    # Wrap escape sequence when within a TMUX session
+    [ ! -z "$TMUX" ] && escape_sequence="${DSC}tmux;${ESC}${escape_sequence}${ESC}\\"
+    printf "${escape_sequence}"
+}
+
+send_osc() {
+    local Ps=$1
+    local Pt=$2
+    local command="$OSC$Ps;$Pt$BEL"
+    send_escape_sequence "$command" >/dev/tty
+}
+
+send_color_osc() {
+    case $1 in
+        color*)
+            send_osc 4 "${1#color};$2" ;;
+        foreground)
+            send_osc 10 "$2" ;;
+        background)
+            send_osc 11 "$2" ;;
+        cursor)
+            send_osc 12 "$2" ;;
+        border)
+            send_osc 708 "$2" ;;
+    esac
+}
+
+send_reset_osc() {
+    case $1 in
+        color*)
+            send_osc 104 "${1#color};$2" ;;
+        foreground)
+            send_osc 110 "$2" ;;
+        background)
+            send_osc 111 "$2" ;;
+        cursor)
+            send_osc 112 "$2" ;;
+    esac
+}
+
+uint16_to_uint8() {
+    local n=0x$1
+    printf "%X" $((n * 0xFF / 0xFFFF))
+}
+
+uint8_to_uint16() {
+    local n=0x$1
+    printf "%04x" $((n * 0xFFFF / 0xFF))
+}
+
+xparse_to_hex() {
+    # rgba:2aff/2aff/2aff/e666 -> #2A2A2AE5
+    local num=$(echo $1 | sed -r 's/rgba?://')
+    local c=(${num//\// })
+    local oc=""
+    for cc in "${c[@]}"; do
+        oc+=$(uint16_to_uint8 $cc)
+    done
+    echo \#$oc
+}
+
+hex_to_xparse() {
+    # #2A2A2AE5 -> rgba:2aff/2aff/2aff/e666
+    local num=$(echo ${1:1})
+    local out=""
+    [ "${#num}" -eq "8" ] && out="rgba:" || out="rgb:"
+    while [ ! -z $num ]; do
+        out+=$(uint8_to_uint16 ${num:0:2})
+        out+="/"
+        num=${num:2}
+    done
+    out=${out:0:${#num}-1}
+    echo $out
+}
+
+osc_query_result_to_xparse() {
+    echo "$1" | sed -r 's/^.*rgba?:(([0-9a-f]{4}\/){2,3}[0-9a-f]{4}).*$/\1/'
+}
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+query_color() {
+    local attr="$1"
+
+    # Store old tty opts and set tty in no echo and raw mode, with minimum zero input chars
+    local oldstty=$(stty -g)
+    stty raw -echo min 0 time 0
+    # Send osc query command
+    send_color_osc "$attr" "?"
+    # xterm needs the sleep (or "time 1" in stty opts, but that is 1/10th second).
+    sleep 0.1
+    read -r answer
+    # Restore tty opts
+    stty $oldstty
+
+    local result=${answer#*}
+    local color=$(osc_query_result_to_xparse "$result")
+    echo $(xparse_to_hex $color)
+}
+
+set_color() {
+    local attr="$1"
+    local value="$2"
+    if [[ ! $value = \#* ]] && [[ ! $value = rgb:* ]]; then
+        # Not a hex or xparse color, query the terminal
+        value="$(query_color $value)"
+    fi
+    send_color_osc "$attr" "$value"
+}
+
+reset_color() {
+    local attr="$1"
+    local value="$2"
+    send_reset_osc "$attr" "$value"
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+list() {
+    printf "%s\n" "${SUPPORTED_ATTRS[@]}"
+}
+
+query() {
+    local attr="$1"
+    query_color "$attr"
+}
+
+set() {
+    local attr="$1"
+    local value="$2"
+    set_color "$attr" "$value"
+}
+
+reset() {
+    local attr="$1"
+    reset_color "$attr"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    list)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) list"
+        list
+        ;;
+    query)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) query <attr>"
+        query "$1"
+        ;;
+    set)
+        [ $# -ne 2 ] && die "Usage: $(basename $0) set <attr> <value>"
+        set "$1" "$2"
+        ;;
+    reset)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) reset <attr>"
+        reset "$1"
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
