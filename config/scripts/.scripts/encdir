@@ -91,13 +91,14 @@ expose_encdirs() {
     for dir in ${dirs[@]}; do
         local chipherdir=$(chipherdir "$dir")
         local passfile=$(passfile "$dir")
-        local mntdesc="$dir:$chipherdir:$passfile"
+        local password=$(gpg --quiet --decrypt < $passfile)
+        local mntdesc="$dir:$chipherdir:$password"
         echo "$mntdesc" >&3
     done
     exec 3>&-
 
     unshare -Umrfp --mount-proc \
-        /bin/bash -c "set -e; while IFS=: read -r dir chipherdir passfile <&4; do gpg --quiet --decrypt < \$passfile | gocryptfs -q \$chipherdir \$dir; done && unshare --map-user=$USER --map-group=$USER $cmd"
+        /bin/bash -c "set -e; while IFS=: read -r dir chipherdir password <&4; do echo \$password | gocryptfs -q \$chipherdir \$dir; done && unshare --map-user=$USER --map-group=$USER $cmd"
 }
 
 #----------------------------------------------------------------------
