@@ -9,13 +9,14 @@ HELP="\
 $(basename $0) <command> [<args>]
 
 Commands:
-  add  <email>   Add new mail configuration
-  sync <email>   Sync maildir folder
-  rm   <email>   Remove existing mail configuration
-  ls             List all mail configurations
+  add   <email>   Add new mail configuration
+  sync  <email>   Sync maildir folder
+  watch <email>   Watch for new mails
+  rm    <email>   Remove existing mail configuration
+  ls              List all mail configurations
 
 Options:
-  -h, --help     Print current help message
+  -h, --help      Print current help message
 "
 
 die() { echo >&2 "$*"; exit 1; }
@@ -182,6 +183,17 @@ sync() {
     mbsync -Va -c "$mailconfdir/mbsyncrc"
 }
 
+watch() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    local mailcachedir=$(mailcachedir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "sync: mailconf dir for email \"$mail\" does not exist"
+    fi
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+    goimapnotify -conf "$mailconfdir/imapnotifyrc"
+}
+
 remove() {
     local mail="$1"
     local mailconfdir=$(mailconfdir "$mail")
@@ -227,6 +239,10 @@ case "$cmd" in
     sync)
         [ $# -ne 1 ] && die "Usage: $(basename $0) sync <email>"
         sync "$1"
+        ;;
+    watch)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) watch <email>"
+        watch "$1"
         ;;
     rm)
         [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
