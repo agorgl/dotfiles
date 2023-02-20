@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+# Setup cleanup trap
+cleanup() {
+    # Remove SIGTERM trap
+    trap - SIGTERM
+
+    # Reset background color
+    ansictl reset background
+
+    # Sends a SIGTERM to the whole process group, killing also descendants
+    [ ! -z "$(jobs -p)" ] && kill -- -$$
+}
+trap cleanup SIGINT SIGTERM EXIT
+
+# Set background color to match mutt theme
+ansictl set background color234
+
+# Launch mutt along with its companions, exposing the encrypted mail directory
+encdir expose $HOME/.cache/mail -- /bin/bash << 'EOF'
+{
+    exec < /dev/tty
+    (
+        mailconf sync $(mailconf ls | head -n 1) &>/dev/null
+        mailconf watch $(mailconf ls | head -n 1) &>/dev/null
+    ) &
+    neomutt
+    exit
+}
+EOF
