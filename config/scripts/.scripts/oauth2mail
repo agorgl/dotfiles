@@ -29,7 +29,7 @@ TOKEN_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/oauth2mail
 
 # Mutt oauth2 script source and target location
 MUTT_OAUTH2_SCRIPT_SOURCE=/usr/share/doc/neomutt/oauth2/mutt_oauth2.py
-MUTT_OAUTH2_SCRIPT_PATH=/tmp/$(basename $MUTT_OAUTH2_SCRIPT_SOURCE)
+MUTT_OAUTH2_SCRIPT_PATH=$(mktemp)
 
 # Client credentials to replace in mutt_oauth2.py script
 # Source: https://hg.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.jsm
