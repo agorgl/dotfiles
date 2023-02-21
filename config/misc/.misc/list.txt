@@ -25,6 +25,7 @@ valgrind
 acpi_call
 acpid
 dkms
+gocryptfs
 iptables-nft
 man-db
 man-pages
