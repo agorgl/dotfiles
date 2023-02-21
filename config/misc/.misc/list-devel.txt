@@ -30,6 +30,7 @@ rlwrap
 rust-analyzer
 rustup
 saxon-he
+tailwindcss-language-server
 terraform
 terraform-ls
 typescript-language-server
