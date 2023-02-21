@@ -201,6 +201,7 @@ file-roller
 filelight
 galculator
 gnupg
+goimapnotify
 guvcview
 gvfs
 gvfs-mtp
