@@ -18,7 +18,7 @@ trap cleanup SIGINT SIGTERM EXIT
 ansictl set background color234
 
 # Launch mutt along with its companions, exposing the encrypted mail directory
-encdir expose $HOME/.cache/mail -- /bin/bash << 'EOF'
+encdir expose $HOME/.cache/mail $HOME/.cache/mutt -- /bin/bash << 'EOF'
 {
     exec < /dev/tty
     (
