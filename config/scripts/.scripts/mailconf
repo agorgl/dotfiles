@@ -125,8 +125,8 @@ EOM
 read -r -d '' MUTTRC << EOM || :
 set my_mail = "{mail}"
 set my_conf = "$(reltohome $MAIL_CONF_DIR)/{mail}"
-set header_cache = "$(reltohome $MUTT_CACHE_DIR)/{mail}"
-set message_cachedir = "$(reltohome $MUTT_CACHE_DIR)/{mail}"
+set header_cache = "$(reltohome $MUTT_CACHE_DIR)/{mail}/"
+set message_cachedir = "$(reltohome $MUTT_CACHE_DIR)/{mail}/"
 
 set mbox_type = Maildir
 set folder = "$(reltohome $MAIL_CACHE_DIR)/{mail}"
