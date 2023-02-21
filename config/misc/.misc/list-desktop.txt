@@ -1,4 +1,5 @@
 awf-git
+baresip
 blender
 caprine
 discord
