@@ -26,6 +26,7 @@ npm
 podman
 pyright
 renderdoc
+rlwrap
 rust-analyzer
 rustup
 saxon-he
