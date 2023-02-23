@@ -1,2 +1,5 @@
 # Manually sync mail
 macro index S "<shell-escape>mailconf sync $my_mail &>/dev/null &<enter>"
+
+# Reload configuration
+macro index ,r "<enter-command>echo 'Reloading configuration'<enter><enter-command>source ~/.config/mutt/muttrc<enter>"
