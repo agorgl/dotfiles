@@ -1,0 +1,2 @@
+# Manually sync mail
+macro index S "<shell-escape>mailconf sync $my_mail &>/dev/null &<enter>"

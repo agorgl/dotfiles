@@ -1,3 +1,4 @@
 source `echo $XDG_CONFIG_HOME/mailconf/$(mailconf ls | head -n 1)/muttrc`
 source options
+source mappings
 source theme
