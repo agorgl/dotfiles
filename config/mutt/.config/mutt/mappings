@@ -1,3 +1,9 @@
+# Vim like navigation
+bind generic,index j next-entry
+bind generic,index k previous-entry
+bind pager j next-line
+bind pager k previous-line
+
 # Manually sync mail
 macro index S "<shell-escape>mailconf sync $my_mail &>/dev/null &<enter>"
 
