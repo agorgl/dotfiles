@@ -11,3 +11,5 @@ set use_threads = yes
 #
 # Do not move to the next message when you are at the end of a message
 set pager_stop = yes
+# Do not display '+' markers in the beggining of wrapped lines
+set markers = no
