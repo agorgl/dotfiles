@@ -15,3 +15,9 @@ set mail_check_stats = yes
 set pager_stop = yes
 # Do not display '+' markers in the beggining of wrapped lines
 set markers = no
+
+#
+# Sidebar
+#
+# Shorten the mailbox names relative to the previous name
+set sidebar_short_path = yes
