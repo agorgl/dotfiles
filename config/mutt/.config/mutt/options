@@ -5,6 +5,8 @@
 set sort = "reverse-date"
 # Enable threaded view where roots appear above children
 set use_threads = yes
+# Calculate message statistics of a mailbox
+set mail_check_stats = yes
 
 #
 # Pager
