@@ -1,0 +1,7 @@
+#
+# Index
+#
+# How to sort messages in the “index” menu
+set sort = "reverse-date"
+# Enable threaded view where roots appear above children
+set use_threads = yes
