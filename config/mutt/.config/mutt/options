@@ -21,3 +21,5 @@ set markers = no
 #
 # Shorten the mailbox names relative to the previous name
 set sidebar_short_path = yes
+# Indent the mailbox path if it is abbreviated
+set sidebar_folder_indent = yes
