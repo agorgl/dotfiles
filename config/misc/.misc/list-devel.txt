@@ -1,3 +1,4 @@
+aardvark-dns
 android-udev-git
 babashka-bin
 bat
