@@ -31,6 +31,13 @@ SANDBOX="$WINEPREFIX/../"
 [ ! -d "$SANDBOX" ] && die "Invalid sandbox location" || echo Using sandbox in $SANDBOX >&2
 
 # Jail it
+java_flags=()
+if compgen -G /etc/java*-openjdk > /dev/null; then
+    for d in /etc/java*-openjdk; do
+        java_flags+=("--ro-bind" "$d" "$d");
+    done
+fi
+
 yabridge_flags=()
 if compgen -G $XDG_RUNTIME_DIR/yabridge-*/ > /dev/null; then
     for d in $XDG_RUNTIME_DIR/yabridge-*/; do
@@ -84,5 +91,6 @@ bwrap \
     --setenv WINEDLLOVERRIDES "libglesv2.dll=d" \
     --setenv DXVK_HUD 1 \
     --setenv YABRIDGE_NO_WATCHDOG 1 \
+    "${java_flags[@]}" \
     "${yabridge_flags[@]}" \
     "$@"
