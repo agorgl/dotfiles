@@ -1,8 +1,8 @@
 cozette-otb
 nerd-fonts-sf-mono
+otb-tamzen-font-git
 powerline-fonts-git
 siji-git
-tamzen-font-git
 termsyn-font
 ttf-icomoon-feather
 ttf-monaco
