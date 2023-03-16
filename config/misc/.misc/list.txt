@@ -189,8 +189,10 @@ ttf-opensans
 ttf-ubuntu-font-family
 
 # Programs
+acsccid
 alacritty
 arandr
+ccid
 chromium
 d-feet
 dunst
@@ -208,6 +210,8 @@ gvfs-mtp
 gvfs-smb
 gvfs-nfs
 isync
+libfido2
+libnfc
 libvirt
 maim
 mpv
@@ -217,6 +221,8 @@ neomutt
 notmuch
 pass
 pavucontrol
+pcsc-tools
+pcsclite
 qemu-full
 qemu-user-static
 qemu-user-static-binfmt

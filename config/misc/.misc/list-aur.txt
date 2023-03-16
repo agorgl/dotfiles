@@ -1,6 +1,7 @@
 conky-lua-nv
 connman-gtk
 cyrus-sasl-xoauth2-git
+ifdnfc-git
 jmtpfs
 paper-icon-theme-git
 qimgv
