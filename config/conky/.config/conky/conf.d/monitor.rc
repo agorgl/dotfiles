@@ -117,14 +117,14 @@ netdev = command('ip link show | grep -P -o -m1 "(?<=\\d:\\s)\\S+(?=:.*state\\s+
 
 -- CPU
 cpu_text = [[
-${color2}${cpugraph 40}${color}
+${color2}${cpugraph 40,0}${color}
 ${color2}${voffset -17}${hr}${color}
 CPU${alignr}${cpu}%
 ]]
 
 -- RAM
 ram_text = [[
-${color2}${memgraph 40}${color}
+${color2}${memgraph 40,0}${color}
 ${color2}${voffset -17}${hr}${color}
 RAM${alignr}(${mem} / ${memmax}) - ${memperc}%
 ]]
