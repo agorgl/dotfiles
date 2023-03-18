@@ -1,7 +1,10 @@
 #!/bin/bash
 
 res=($(xrandr | awk '/primary/{sub(/+.*$/,"",$4); sub(/x/," ",$4); print $4}'))
-size=($(xdpyinfo | awk -F'[ ()]' '/dimensions/{sub(/x/," ",$10); print $10}'))
+size=($(awk '/\s+DisplaySize/{print $2, $3}' /etc/X11/xorg.conf.d/*-monitor.conf))
+if [ ${#size[@]} -eq 0 ]; then
+    size=($(xrandr | awk '/primary/{sub(/\(.*\)/,"",$0); sub(/mm/,"",$5); sub(/mm/,"",$7); print $5, $7}'))
+fi
 
 rw=${res[0]}
 rh=${res[1]}
