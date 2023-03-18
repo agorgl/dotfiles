@@ -30,6 +30,10 @@ super + Escape
 {_,ctrl +} Print
     maim { ,-s} -u --format png /dev/stdout | xclip -selection clipboard -t image/png -i
 
+# Lock session
+super + l
+    i3lock -u -c 000000
+
 #
 # Bspwm hotkeys
 #
