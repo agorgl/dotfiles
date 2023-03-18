@@ -137,7 +137,7 @@ function main_common(update_fn, params)
 
     -- Update
     local updates = tonumber(conky_parse('${updates}'))
-    if updates > 3 then
+    if updates > 0 then
         if params == nil then
             update_fn(display)
         else
