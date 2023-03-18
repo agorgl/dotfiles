@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Setup traps
+# Cleanup children on exit
 trap "trap - SIGTERM && kill -- -$$" SIGINT SIGTERM EXIT
+
+# Self reload through signal
+rld(){ trap - USR1; pkill -P $$; exec $0; }
+trap rld USR1
 
 # For each config launch different conky subprocess in background
 for rc in .config/conky/conf.d/*.rc; do
