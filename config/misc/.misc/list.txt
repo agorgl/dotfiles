@@ -242,5 +242,6 @@ udiskie
 virt-manager
 weechat
 x11-ssh-askpass
+xss-lock
 zathura
 zathura-pdf-mupdf
