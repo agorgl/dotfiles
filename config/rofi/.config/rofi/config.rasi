@@ -6,7 +6,6 @@ configuration {
     font: "Monaco 18";
     modi: "run,window,ssh";
     monitor: -4;
-    dpi: 0;
 }
 
 * {
