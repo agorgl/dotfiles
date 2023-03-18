@@ -30,6 +30,9 @@ xsettingsd &
 # Launch notification daemon
 dunst &
 
+# Launch locker daemon
+xss-lock -- i3lock -u -c 000000 &
+
 # Launch policy kit auth agent
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 
