@@ -31,7 +31,7 @@ super + Escape
     maim { ,-s} -u --format png /dev/stdout | xclip -selection clipboard -t image/png -i
 
 # Lock session
-super + l
+super + alt + l
     loginctl lock-session
 
 #
