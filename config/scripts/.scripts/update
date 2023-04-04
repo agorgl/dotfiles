@@ -1,2 +1,2 @@
 #!/bin/bash
-yay -Syu --nodiffmenu --nocleanmenu --cleanafter --devel && (yes | yay -Scc)
+paru -Syu --skipreview --noupgrademenu --removemake --cleanafter --devel && (yes | paru -Scc)

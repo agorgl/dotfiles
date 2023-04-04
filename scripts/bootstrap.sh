@@ -48,16 +48,17 @@ msg "Bootstraping packages..."
 sudo pacman -S --needed $(pkglist -n)
 
 # Install aur helper
-if ! pacman -Qq yay 2>&1 >/dev/null; then
+AUR_HELPER=paru
+if ! pacman -Qq $AUR_HELPER 2>&1 >/dev/null; then
     msg "Installing aur helper..."
-    git clone https://aur.archlinux.org/yay
-    cd yay && makepkg -s -i
-    cd .. && rm -rf yay/
+    git clone https://aur.archlinux.org/$AUR_HELPER
+    cd $AUR_HELPER && makepkg -s -i
+    cd .. && rm -rf $AUR_HELPER/
 fi
 
 # Install aur packages
 msg "Installing aur packages..."
-yay -S --needed $(pkglist -m)
+$AUR_HELPER -S --needed $(pkglist -m)
 
 # Finish
 msg "Done."

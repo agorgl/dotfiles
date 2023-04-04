@@ -4,7 +4,7 @@ cyrus-sasl-xoauth2-git
 ifdnfc-git
 jmtpfs
 paper-icon-theme-git
+paru
 qimgv
 qt5-styleplugins
 qt6gtk2
-yay
