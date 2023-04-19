@@ -1,15 +1,160 @@
 #!/bin/bash
+set -e
 
-res=($(xrandr | awk '/primary/{sub(/+.*$/,"",$4); sub(/x/," ",$4); print $4}'))
-size=($(awk '/\s+DisplaySize/{print $2, $3}' /etc/X11/xorg.conf.d/*-monitor.conf))
-if [ ${#size[@]} -eq 0 ]; then
-    size=($(xrandr | awk '/primary/{sub(/\(.*\)/,"",$0); sub(/mm/,"",$5); sub(/mm/,"",$7); print $5, $7}'))
-fi
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [args]"
+HELP="\
+$(basename $0) <command> [args]
 
-rw=${res[0]}
-rh=${res[1]}
-sw=${size[0]}
-sh=${size[1]}
+Commands:
+  scale [value]          Show or set scale value
+  dpi   [value]          Show or set dpi value
+  autodetect             Try to autodetect scale value
 
-dpi=$(bc -l <<< "scale=2; sqrt($rw ^ 2 + $rh^2) / (sqrt($sw ^ 2 + $sh ^ 2) / 25.4)")
-printf "%.0f\n" $dpi
+Options:
+  -h, --help             Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+DPICTL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/dpictl
+XORG_MONITOR_CONF=/etc/X11/xorg.conf.d/*-monitor.conf
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+valuefile() {
+    local valuename="$1"
+    local valuefile=$DPICTL_CONF_DIR/$valuename
+    echo $valuefile
+}
+
+scale2dpi() {
+    local scale="$1"
+    local dpi=$(bc -l <<< "scale=2; 96.0 * $scale / 100.0")
+    printf "%.0f\n" $dpi
+}
+
+dpi2scale() {
+    local dpi="$1"
+    local scale=$(bc -l <<< "scale=2; ($dpi / 96.0) * 100.0")
+    printf "%.0f\n" $scale
+}
+
+resolution() {
+    xrandr | awk '/primary/{sub(/+.*$/,"",$4); sub(/x/," ",$4); print $4}'
+}
+
+display_size() {
+    local size=($(awk '/\s+DisplaySize/{print $2, $3}' $XORG_MONITOR_CONF))
+    if [ ${#size[@]} -eq 0 ]; then
+        size=($(xrandr | awk '/primary/{sub(/\(.*\)/,"",$0); sub(/mm/,"",$5); sub(/mm/,"",$7); print $5, $7}'))
+    fi
+    echo "${size[@]}"
+}
+
+autodetect_dpi() {
+    local res=($(resolution))
+    local size=($(display_size))
+
+    local rw=${res[0]}
+    local rh=${res[1]}
+    local sw=${size[0]}
+    local sh=${size[1]}
+
+    local dpi=$(bc -l <<< "scale=2; sqrt($rw ^ 2 + $rh^2) / (sqrt($sw ^ 2 + $sh ^ 2) / 25.4)")
+    printf "%.0f\n" $dpi
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+scale() {
+    local scale="$1"
+
+    local scalefile=$(valuefile "scale")
+    mkdir -p $(dirname "$scalefile")
+
+    if [ -z $scale ]; then
+        if [ ! -f "$scalefile" ]; then
+            autodetect > "$scalefile"
+        fi
+        scale=$(cat "$scalefile")
+        echo $scale
+    else
+        echo $scale > "$scalefile"
+    fi
+}
+
+dpi() {
+    local dpi="$1"
+
+    local scalefile=$(valuefile "scale")
+    mkdir -p $(dirname "$scalefile")
+
+    if [ -z $dpi ]; then
+        if [ ! -f "$scalefile" ]; then
+            autodetect > "$scalefile"
+        fi
+        local scale=$(cat "$scalefile")
+        local dpi=$(scale2dpi "$scale")
+        echo $dpi
+    else
+        local scale=$(dpi2scale "$dpi")
+        echo $scale > "$scalefile"
+    fi
+}
+
+autodetect() {
+    local dpi=$(autodetect_dpi)
+    dpi2scale "$dpi"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    scale)
+        [ $# -gt 1 ] && die "Usage: $(basename $0) scale [value]"
+        scale "$1"
+        ;;
+    dpi)
+        [ $# -gt 1 ] && die "Usage: $(basename $0) dpi [value]"
+        dpi "$1"
+        ;;
+    autodetect)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) autodetect"
+        autodetect
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
