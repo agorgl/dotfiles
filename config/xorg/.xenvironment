@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Parse user session environment variables.
+# This file is shared with the systemd user instance.
+set -a
+[ -r ~/.config/environment.d/user.conf ] && . ~/.config/environment.d/user.conf
+set +a
