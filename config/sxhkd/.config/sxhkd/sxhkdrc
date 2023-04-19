@@ -172,5 +172,8 @@ XF86Audio{Lower,Raise}Volume
 XF86AudioMute
     wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
+XF86AudioMicMute
+    wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+
 XF86MonBrightness{Down,Up}
     brightnessctl s 5%{-,+}
