@@ -165,10 +165,10 @@ battery(){
 
 # Volume
 volume(){
-    local value=$(pamixer --get-volume)
-    local state=$(pamixer --get-mute)
+    local value=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}')
+    local state=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -i mute >/dev/null; echo $?)
     local icon=""
-    if [[ $state == "false" ]]; then
+    if [[ $state == "1" ]]; then
         if [[ $value -ge 70 ]]; then
             icon=$ICON_VOL_UP
         elif [[ $value -gt 0 && $value -lt 70 ]]; then

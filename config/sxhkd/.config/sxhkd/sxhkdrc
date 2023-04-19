@@ -167,10 +167,10 @@ super + ctrl + {Left,Down,Up,Right}
 # Media
 #
 XF86Audio{Lower,Raise}Volume
-    pamixer {-d,-i} 1
+    wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 1%{-,+}
 
 XF86AudioMute
-    pamixer -t
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 
 XF86MonBrightness{Down,Up}
     brightnessctl s 5%{-,+}

@@ -76,7 +76,6 @@ nmap
 openldap
 openssh
 p7zip
-pamixer
 perl
 pkgfile
 qrencode
