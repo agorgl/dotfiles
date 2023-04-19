@@ -25,7 +25,22 @@ help() { echo "$HELP"; }
 # Constants
 #----------------------------------------------------------------------
 DPICTL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/dpictl
+ENVD_HIDPI_CONF=${XDG_CONFIG_HOME:-$HOME/.config}/environment.d/hidpi.conf
 XORG_MONITOR_CONF=/etc/X11/xorg.conf.d/*-monitor.conf
+
+#----------------------------------------------------------------------
+# Templates
+#----------------------------------------------------------------------
+read -r -d '' ENVD_HIDPI_FILE << EOM || :
+# HiDPI settings for GTK3+
+GDK_SCALE={gtk_scale}
+GDK_DPI_SCALE={gtk_dpi_scale}
+
+# HiDPI settings for QT
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+QT_ENABLE_HIGHDPI_SCALING=1
+PLASMA_USE_QT_SCALING=1
+EOM
 
 #----------------------------------------------------------------------
 # Helpers
@@ -73,6 +88,41 @@ autodetect_dpi() {
     printf "%.0f\n" $dpi
 }
 
+gtk_scale() {
+    local scale="$1"
+
+    local gtk_scale="1"
+    local gtk_dpi_scale="1.0"
+
+    if [ $scale -ge 250 ]; then
+        gtk_scale="3"
+        gtk_dpi_scale="0.34"
+    elif [ $scale -ge 125 ]; then
+        gtk_scale="2"
+        gtk_dpi_scale="0.5"
+    else
+        gtk_scale="1"
+        gtk_dpi_scale="1.0"
+    fi
+
+    echo $gtk_scale $gtk_dpi_scale
+}
+
+update_env_file () {
+    local scale="$1"
+    local gtk_scales=($(gtk_scale "$scale"))
+    echo "$ENVD_HIDPI_FILE" | sed \
+        -e "s/{gtk_scale}/${gtk_scales[0]}/g" \
+        -e "s/{gtk_dpi_scale}/${gtk_scales[1]}/g" \
+      > "$ENVD_HIDPI_CONF"
+}
+
+update_scale() {
+    local scale="$1"
+    update_env_file $scale
+    echo $scale > "$scalefile"
+}
+
 #----------------------------------------------------------------------
 # Commands
 #----------------------------------------------------------------------
@@ -84,12 +134,12 @@ scale() {
 
     if [ -z $scale ]; then
         if [ ! -f "$scalefile" ]; then
-            autodetect > "$scalefile"
+            update_scale "$(autodetect)"
         fi
         scale=$(cat "$scalefile")
         echo $scale
     else
-        echo $scale > "$scalefile"
+        update_scale "$scale"
     fi
 }
 
@@ -101,14 +151,14 @@ dpi() {
 
     if [ -z $dpi ]; then
         if [ ! -f "$scalefile" ]; then
-            autodetect > "$scalefile"
+            update_scale "$(autodetect)"
         fi
         local scale=$(cat "$scalefile")
         local dpi=$(scale2dpi "$scale")
         echo $dpi
     else
         local scale=$(dpi2scale "$dpi")
-        echo $scale > "$scalefile"
+        update_scale "$scale"
     fi
 }
 
