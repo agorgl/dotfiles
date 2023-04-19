@@ -50,7 +50,7 @@ if [ $LIST_THEMES -eq 0 ]; then
     if [ $# -ne 1 ]; then
         die "Missing theme name argument"
     fi
-    THEME_NAME=$1
+    THEME_NAME="$1"
 fi
 
 #----------------------------------------------------------------------
@@ -66,11 +66,12 @@ list() {
 }
 
 apply() {
-    echo Setting theme to $1
+    local theme="$1"
+    echo Setting theme to "$theme"
     jq ".themes
         | map({key: .name, value: del(.name)})
         | from_entries
-        | (.$1)
+        | (.\"$theme\")
         | {
             special: {
               background: .background,
@@ -108,11 +109,11 @@ if [ ! -f $THEMES_FILE ]; then
 fi
 
 # Gather theme names
-themelist=($(list))
+readarray -t themelist < <(list)
 
 # List themes
 if [ $LIST_THEMES -eq 1 ]; then
-    echo ${themelist[@]} | tr " " "\n"
+    printf '%s\n' "${themelist[@]}"
     exit 0
 fi
 
@@ -122,4 +123,4 @@ if [[ ! " ${themelist[*]} " =~ " ${THEME_NAME} " ]]; then
 fi
 
 # Set the theme
-apply $THEME_NAME
+apply "$THEME_NAME"
