@@ -114,6 +114,7 @@ gtk_scale() {
 update_env_file () {
     local scale="$1"
     local gtk_scales=($(gtk_scale "$scale"))
+    mkdir -p $(dirname "$ENVD_HIDPI_CONF")
     echo "$ENVD_HIDPI_FILE" | sed \
         -e "s/{gtk_scale}/${gtk_scales[0]}/g" \
         -e "s/{gtk_dpi_scale}/${gtk_scales[1]}/g" \
