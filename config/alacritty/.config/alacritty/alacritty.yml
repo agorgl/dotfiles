@@ -1,5 +1,6 @@
 import:
   - ~/.config/alacritty/colors.yml
+  - ~/.cache/themectl/colors-alacritty.yml
   - ~/.cache/wal/colors-alacritty.yml
 
 env:
