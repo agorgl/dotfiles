@@ -4,123 +4,124 @@ set -e
 #----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
-USAGE="Usage: $(basename $0) [OPTION]... [THEME]"
+USAGE="Usage: $(basename $0) <command> [args]"
 HELP="\
-$(basename $0) [OPTION]... [THEME]
-Flags:
-  -h,--help                     prints current help message
-  -l,--list                     prints available themes
+$(basename $0) <command> [args]
+
+Commands:
+  status                    Show theme info
+  colorscheme [-l] [name]   Show or set colorscheme
+
+Options:
+  -h, --help                Print current help message
 "
 
-function die() { echo >&2 "$*"; exit 1; }
-function usage() { die "$USAGE"; }
-function help() { echo "$HELP"; }
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
 
 #----------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------
-THEMES_FILE=$HOME/.cache/$(basename $0)/themes.json
+THEMECTL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/themectl
+COLORSCHEME_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/colorscheme
 
 #----------------------------------------------------------------------
-# Arguments
+# Helpers
 #----------------------------------------------------------------------
-LIST_THEMES=0
+colorscheme_dirs() {
+    local search_dirs=("$COLORSCHEME_CACHE_DIR")
+    echo "${search_dirs[@]}"
+}
 
-case "$#" in
-    0)
-        usage ;;
-    *)
-        while [ $# -gt 0 ]; do
-            case "$1" in
-                -h|--help)
-                    help
-                    exit 0
-                    ;;
-                -l|--list)
-                    LIST_THEMES=1
-                    ;;
-                *)
-                    break ;;
-            esac
-            shift
-        done
-esac
+colorscheme_list() {
+    local colorscheme_dirs="$(colorscheme_dirs)"
+    find $colorscheme_dirs -maxdepth 1 -type f -printf "%f\n" | sort | uniq
+}
 
-if [ $LIST_THEMES -eq 0 ]; then
-    if [ $# -ne 1 ]; then
-        die "Missing theme name argument"
+colorscheme_current() {
+    local current_file="$THEMECTL_CONF_DIR/colorscheme"
+    if [ -f "$current_file" ]; then
+        echo $(basename $(readlink -f "$current_file"))
     fi
-    THEME_NAME="$1"
-fi
-
-#----------------------------------------------------------------------
-# Functions
-#----------------------------------------------------------------------
-fetch() {
-    curl -s -O --create-dirs --output-dir $(dirname $THEMES_FILE) \
-        https://raw.githubusercontent.com/Mayccoll/Gogh/master/data/themes.json
 }
 
-list() {
-    jq -r '.themes[].name' $THEMES_FILE
+colorscheme_find() {
+    local colorscheme="$1"
+    local colorscheme_dirs="$(colorscheme_dirs)"
+    find $colorscheme_dirs -maxdepth 1 -type f -name "$colorscheme" | head -n 1
 }
 
-apply() {
-    local theme="$1"
-    echo Setting theme to "$theme"
-    jq ".themes
-        | map({key: .name, value: del(.name)})
-        | from_entries
-        | (.\"$theme\")
-        | {
-            special: {
-              background: .background,
-              foreground: .foreground,
-              cursor: .cursor,
-            },
-            colors: {
-              color0: .color_01,
-              color1: .color_02,
-              color2: .color_03,
-              color3: .color_04,
-              color4: .color_05,
-              color5: .color_06,
-              color6: .color_07,
-              color7: .color_08,
-              color8: .color_09,
-              color9: .color_10,
-              color10: .color_11,
-              color11: .color_12,
-              color12: .color_13,
-              color13: .color_14,
-              color14: .color_15,
-              color15: .color_16,
-            }
-          }" $THEMES_FILE > /tmp/temp-wal.conf
-    wal -o refresh -f /tmp/temp-wal.conf
+colorscheme_set() {
+    local filepath="$1"
+    local current_file="$THEMECTL_CONF_DIR/colorscheme"
+    mkdir -p $(dirname "$current_file")
+    [ -f "$current_file" ] && rm "$current_file"
+    ln -s "$filepath" "$current_file"
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+status() {
+    local colorscheme=$(colorscheme_current)
+    echo colorscheme: ${colorscheme:-"<unset>"}
+}
+
+colorscheme() {
+    local arg="$1"
+    if [ "$arg" = "-l" ]; then
+        colorscheme_list
+    elif [ -z "$arg" ]; then
+        local current=$(colorscheme_current)
+        [ ! -z "$current" ] && echo "$current"
+    else
+        local filepath=$(colorscheme_find "$arg")
+        if [ ! -f "$filepath" ]; then
+            die "error: colorscheme \"$arg\" does not exist"
+        fi
+        echo Applying colorscheme "$arg" from "$filepath"
+        colorscheme_set "$filepath"
+    fi
 }
 
 #----------------------------------------------------------------------
 # Entrypoint
 #----------------------------------------------------------------------
-# Fetch themes file if not found
-if [ ! -f $THEMES_FILE ]; then
-    fetch
-fi
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+        done
+esac
 
-# Gather theme names
-readarray -t themelist < <(list)
+cmd="$1"
+shift
 
-# List themes
-if [ $LIST_THEMES -eq 1 ]; then
-    printf '%s\n' "${themelist[@]}"
-    exit 0
-fi
-
-# Check if theme exists
-if [[ ! " ${themelist[*]} " =~ " ${THEME_NAME} " ]]; then
-    die "Theme \"$THEME_NAME\" does not exist"
-fi
-
-# Set the theme
-apply "$THEME_NAME"
+case "$cmd" in
+    status)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) status"
+        status
+        ;;
+    colorscheme)
+        [ $# -gt 1 ] && die "Usage: $(basename $0) colorscheme [-l] [name]"
+        colorscheme "$1"
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
