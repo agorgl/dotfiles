@@ -1,3 +1,2 @@
 #!/bin/bash
-qname=$1
-xrdb -query | sed -nr "s/\*\.?$qname\s*:\s*(.*)\s*/\L\1/p" | head -n 1
+themectl color $1
