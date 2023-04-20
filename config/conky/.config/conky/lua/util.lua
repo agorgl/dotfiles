@@ -51,10 +51,10 @@ function hexa_to_rgb(color, alpha)
 end
 
 --
--- Fetch color value using xcolor script
+-- Fetch color value using themectl script
 --
 function xcolor(name)
-    local cmd = "xcolor" .. " " .. name
+    local cmd = "themectl color" .. " " .. name
     local stdout = command(cmd)
     local colstr = "0x" .. stdout:sub(2)
     return tonumber(colstr)
