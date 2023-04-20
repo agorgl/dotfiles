@@ -185,9 +185,27 @@ color_reference() {
         if [ "$alias" = "$ref" ]; then
             local name=${pair[1]}
             color_query "$name"
-            break
+            return
         fi
     done
+    color_query "$ref"
+}
+
+color_alias() {
+    local alias="$1"
+    local aliases="$THEMECTL_CONF_DIR/colrefs"
+    if [ -f "$aliases" ]; then
+        local name=$(jq -r ".[\"$alias\"]" "$aliases")
+        color_reference "$name"
+    fi
+}
+
+color_set_alias() {
+    local alias="$1"
+    local name="$2"
+    local aliases="$THEMECTL_CONF_DIR/colrefs"
+    mkdir -p $(dirname "$aliases")
+    jq ".$alias = \"$name\"" "$aliases" > "$aliases".tmp && mv "$aliases".tmp "$aliases"
 }
 
 bricks() {
@@ -229,12 +247,19 @@ colorscheme() {
 }
 
 color() {
-    local color="$1"
-    local value=$(color_query "$color")
-    if [ -z "$value" ]; then
-        value=$(color_reference "$color")
+    if [ -z "$2" ]; then
+        local color="$1"
+        local value=$(color_query "$color")
+        if [ -z "$value" ]; then
+            value=$(color_reference "$color")
+        fi
+        if [ -z "$value" ]; then
+            value=$(color_alias "$color")
+        fi
+        [ ! -z "$value" ] && echo "$value"
+    else
+        color_set_alias "$1" "$2"
     fi
-    [ ! -z "$value" ] && echo "$value"
 }
 
 #----------------------------------------------------------------------
@@ -274,8 +299,8 @@ case "$cmd" in
         colorscheme "$1"
         ;;
     color)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) color <name>"
-        color "$1"
+        ([ $# -ne 1 ] && [ $# -ne 2 ]) && die "Usage: $(basename $0) color <name>"
+        color "$1" "$2"
         ;;
     *)
         echo "Unexpected command $cmd" >&2
