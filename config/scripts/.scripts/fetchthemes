@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+COLORSCHEMES_URL='https://raw.githubusercontent.com/Gogh-Co/Gogh/master/data/themes.json'
+COLORSCHEMES_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/colorscheme
+
+dataset() {
+    curl -s "$COLORSCHEMES_URL"
+}
+
+process() {
+    local dataset="$1"
+    mkdir -p "$COLORSCHEMES_DIR"
+    jq -c ".themes[]
+           | {
+               name: .name,
+               special: {
+                 background: .background,
+                 foreground: .foreground,
+                 cursor: .cursor,
+               },
+               colors: {
+                 color0: .color_01,
+                 color1: .color_02,
+                 color2: .color_03,
+                 color3: .color_04,
+                 color4: .color_05,
+                 color5: .color_06,
+                 color6: .color_07,
+                 color7: .color_08,
+                 color8: .color_09,
+                 color9: .color_10,
+                 color10: .color_11,
+                 color11: .color_12,
+                 color12: .color_13,
+                 color13: .color_14,
+                 color14: .color_15,
+                 color15: .color_16,
+               }
+             }" <<<"$dataset" | \
+    while read -r theme; do
+        local name=$(echo "$theme" | jq -r '.name')
+        local filename=$(echo "$name" | sed -r -e 's/\s+/-/g' -e 's/(.*)/\L\1/' -e 's/\+/-plus/g')
+        local filepath="$COLORSCHEMES_DIR/$filename"
+
+        echo Saving colorscheme "$name" to "$filepath"
+        echo "$theme" | jq . > "$filepath"
+    done
+}
+
+process "$(dataset)"
