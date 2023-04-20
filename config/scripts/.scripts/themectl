@@ -109,7 +109,11 @@ colorscheme_set() {
 }
 
 colorscheme_mappings() {
-    local mappings=("background=.special.background" "foreground=.special.foreground" "cursor=.special.cursor")
+    local mappings=(
+        "background=.special.background" \
+        "foreground=.special.foreground" \
+        "cursor=.special.cursor"
+    )
     for i in `seq 0 15`; do
         mappings+=("color$i=.colors.color$i")
     done
@@ -152,6 +156,37 @@ color_query() {
     done
 }
 
+color_reference() {
+    local ref="$1"
+    local mappings=( \
+        "black=color0" \
+        "red=color1" \
+        "green=color2" \
+        "yellow=color3" \
+        "blue=color4" \
+        "magenta=color5" \
+        "cyan=color6" \
+        "white=color7" \
+        "bright-black=color8" \
+        "bright-red=color9" \
+        "bright-green=color10" \
+        "bright-yellow=color11" \
+        "bright-blue=color12" \
+        "bright-magenta=color13" \
+        "bright-cyan=color14" \
+        "bright-white=color15" \
+    )
+    for m in ${mappings[@]}; do
+        local pair=(${m//=/ })
+        local alias=${pair[0]}
+        if [ "$alias" = "$ref" ]; then
+            local name=${pair[1]}
+            color_query "$name"
+            break
+        fi
+    done
+}
+
 #----------------------------------------------------------------------
 # Commands
 #----------------------------------------------------------------------
@@ -180,7 +215,11 @@ colorscheme() {
 
 color() {
     local color="$1"
-    color_query "$color"
+    local value=$(color_query "$color")
+    if [ -z "$value" ]; then
+        value=$(color_reference "$color")
+    fi
+    [ ! -z "$value" ] && echo "$value"
 }
 
 #----------------------------------------------------------------------
