@@ -10,19 +10,12 @@ local color_table = {
 }
 
 --
--- Read color reference for given alias
---
-function color_ref(r)
-    return command('colref ' .. r)
-end
-
---
 -- Read colors from environment to local variables
 --
 function config_load_colors()
-    local u = { main = color_ref('main'), altn = color_ref('altn') }
-    for k, v in pairs(u) do
-        color_table[k] = xcolor(v)
+    local u = { 'main', 'altn' }
+    for _, v in ipairs(u) do
+        color_table[v] = xcolor(v)
     end
 end
 

@@ -6,8 +6,8 @@ export POLYBAR_SCALE=$(bc -l <<< "$POLYBAR_DPI / 96")
 export POLYBAR_HEIGHT=$(bc -l <<< "27 * $POLYBAR_SCALE")
 export POLYBAR_TRAY_SIZE=$(bc -l <<< "16 * $POLYBAR_SCALE")
 export POLYBAR_CPU_HWMON=$(for m in /sys/class/hwmon/*; do [[ -f $m/temp1_input ]] && paste <(cat $m/name) <(echo $m/temp1_input); done | awk '/(coretemp|k10temp)/{print $2}')
-export POLYBAR_COLOR_MAIN=$(themectl color `colref main`)
-export POLYBAR_COLOR_ALTN=$(themectl color `colref altn`)
+export POLYBAR_COLOR_MAIN=$(themectl color main)
+export POLYBAR_COLOR_ALTN=$(themectl color altn)
 
 # Self reload through signal
 rld(){ trap - USR1; pkill -P $$; exec $0; }
