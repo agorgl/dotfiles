@@ -6,8 +6,8 @@
 #include ".xres.d/urxvt"
 #include ".xres.d/xterm"
 
-#if __has_include(".xcolor")
-#include ".xcolor"
+#if __has_include(".cache/themectl/colors.Xresources")
+#include ".cache/themectl/colors.Xresources"
 #endif
 
 #if __has_include(".cache/wal/colors.Xresources")
