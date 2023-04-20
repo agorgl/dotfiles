@@ -84,7 +84,7 @@ colorscheme_dirs() {
 
 colorscheme_list() {
     local colorscheme_dirs="$(colorscheme_dirs)"
-    find $colorscheme_dirs -maxdepth 1 -type f -printf "%f\n" | sort | uniq
+    find $colorscheme_dirs -maxdepth 1 -type f -printf "%f\n" 2>/dev/null | sort | uniq
 }
 
 colorscheme_current() {
@@ -97,7 +97,7 @@ colorscheme_current() {
 colorscheme_find() {
     local colorscheme="$1"
     local colorscheme_dirs="$(colorscheme_dirs)"
-    find $colorscheme_dirs -maxdepth 1 -type f -name "$colorscheme" | head -n 1
+    find $colorscheme_dirs -maxdepth 1 -type f -name "$colorscheme" 2>/dev/null | head -n 1
 }
 
 colorscheme_set() {
@@ -143,6 +143,9 @@ colorscheme_generate_templates() {
 color_query() {
     local color="$1"
     local current_file="$THEMECTL_CONF_DIR/colorscheme"
+    if [ ! -f "$current_file" ]; then
+        return
+    fi
 
     local mappings="$(colorscheme_mappings)"
     for m in ${mappings[@]}; do
