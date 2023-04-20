@@ -11,6 +11,7 @@ $(basename $0) <command> [args]
 Commands:
   status                    Show theme info
   colorscheme [-l] [name]   Show or set colorscheme
+  color            <name>   Show color from current colorscheme
 
 Options:
   -h, --help                Print current help message
@@ -107,13 +108,18 @@ colorscheme_set() {
     ln -s "$filepath" "$current_file"
 }
 
-colorscheme_xres() {
-    local current_file="$THEMECTL_CONF_DIR/colorscheme"
-
-    local mappings=("name=.name" "background=.special.background" "foreground=.special.foreground" "cursor=.special.cursor")
+colorscheme_mappings() {
+    local mappings=("background=.special.background" "foreground=.special.foreground" "cursor=.special.cursor")
     for i in `seq 0 15`; do
         mappings+=("color$i=.colors.color$i")
     done
+    echo "${mappings[@]}"
+}
+
+colorscheme_xres() {
+    local current_file="$THEMECTL_CONF_DIR/colorscheme"
+    local mappings="$(colorscheme_mappings)"
+    mappings+=("name=.name")
 
     local args=()
     for m in ${mappings[@]}; do
@@ -128,6 +134,22 @@ colorscheme_xres() {
 colorscheme_generate_templates() {
     mkdir -p "$THEMECTL_CACHE_DIR"
     colorscheme_xres > "$THEMECTL_CACHE_DIR/colors.Xresources"
+}
+
+color_query() {
+    local color="$1"
+    local current_file="$THEMECTL_CONF_DIR/colorscheme"
+
+    local mappings="$(colorscheme_mappings)"
+    for m in ${mappings[@]}; do
+        local pair=(${m//=/ })
+        local name=${pair[0]}
+        if [ "$name" = "$color" ]; then
+            local value=$(cat "$current_file" | jq -r ${pair[1]})
+            echo "$value"
+            break
+        fi
+    done
 }
 
 #----------------------------------------------------------------------
@@ -154,6 +176,11 @@ colorscheme() {
         colorscheme_set "$filepath"
         colorscheme_generate_templates
     fi
+}
+
+color() {
+    local color="$1"
+    color_query "$color"
 }
 
 #----------------------------------------------------------------------
@@ -191,6 +218,10 @@ case "$cmd" in
     colorscheme)
         [ $# -gt 1 ] && die "Usage: $(basename $0) colorscheme [-l] [name]"
         colorscheme "$1"
+        ;;
+    color)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) color <name>"
+        color "$1"
         ;;
     *)
         echo "Unexpected command $cmd" >&2
