@@ -6,11 +6,9 @@
 #include ".xres.d/urxvt"
 #include ".xres.d/xterm"
 
-#if __has_include(".cache/themectl/colors.Xresources")
-#include ".cache/themectl/colors.Xresources"
-#endif
-
 #if __has_include(".cache/wal/colors.Xresources")
 #include ".cache/wal/colors.Xresources"
+#elif __has_include(".cache/themectl/colors.Xresources")
+#include ".cache/themectl/colors.Xresources"
 #endif
 ! vim:ft=xdefaults
