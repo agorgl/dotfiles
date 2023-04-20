@@ -74,6 +74,34 @@ read -r -d '' XRESOURCES << EOM || :
 *.color15:      {color15}
 EOM
 
+read -r -d '' ALACRITTY << EOM || :
+colors:
+  primary:
+    background: '{background}'
+    foreground: '{foreground}'
+  cursor:
+    text:   '#000000'
+    cursor: '{cursor}'
+  normal:
+    black:   '{color0}'
+    red:     '{color1}'
+    green:   '{color2}'
+    yellow:  '{color3}'
+    blue:    '{color4}'
+    magenta: '{color5}'
+    cyan:    '{color6}'
+    white:   '{color7}'
+  bright:
+    black:   '{color8}'
+    red:     '{color9}'
+    green:   '{color10}'
+    yellow:  '{color11}'
+    blue:    '{color12}'
+    magenta: '{color13}'
+    cyan:    '{color14}'
+    white:   '{color15}'
+EOM
+
 #----------------------------------------------------------------------
 # Helpers
 #----------------------------------------------------------------------
@@ -120,7 +148,8 @@ colorscheme_mappings() {
     echo "${mappings[@]}"
 }
 
-colorscheme_xres() {
+colorscheme_template() {
+    local template="$1"
     local current_file="$THEMECTL_CONF_DIR/colorscheme"
     local mappings="$(colorscheme_mappings)"
     mappings+=("name=.name")
@@ -132,12 +161,13 @@ colorscheme_xres() {
         local value=$(cat "$current_file" | jq -r ${pair[1]})
         args+=("-e s/{$name}/$value/g")
     done
-    sed "${args[@]}" <<<"$XRESOURCES"
+    sed "${args[@]}" <<<"$template"
 }
 
 colorscheme_generate_templates() {
     mkdir -p "$THEMECTL_CACHE_DIR"
-    colorscheme_xres > "$THEMECTL_CACHE_DIR/colors.Xresources"
+    colorscheme_template "$XRESOURCES" > "$THEMECTL_CACHE_DIR/colors.Xresources"
+    colorscheme_template "$ALACRITTY" > "$THEMECTL_CACHE_DIR/colors-alacritty.yml"
 }
 
 color_query() {
