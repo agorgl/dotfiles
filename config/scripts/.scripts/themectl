@@ -235,6 +235,7 @@ color_set_alias() {
     local name="$2"
     local aliases="$THEMECTL_CONF_DIR/colrefs"
     mkdir -p $(dirname "$aliases")
+    [ ! -f "$aliases" ] && echo "{}" > "$aliases"
     jq ".$alias = \"$name\"" "$aliases" > "$aliases".tmp && mv "$aliases".tmp "$aliases"
 }
 
