@@ -43,6 +43,11 @@ fi
 msg "Updating path..."
 PATH=$PATH:$HOME/.scripts:$HOME/.bin
 
+# Enable multilib repository
+msg "Enabling multilib repository..."
+sudo sed -i '/\[multilib\]/ {s/^#//;n;s/^#//}' /etc/pacman.conf
+sudo pacman -Syy
+
 # Install official packages
 msg "Bootstraping packages..."
 sudo pacman -S --needed $(pkglist -n)
