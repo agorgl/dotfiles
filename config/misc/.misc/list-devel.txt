@@ -1,5 +1,5 @@
 aardvark-dns
-android-udev-git
+android-udev
 babashka-bin
 bat
 buildah
