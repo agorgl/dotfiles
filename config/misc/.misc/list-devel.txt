@@ -17,7 +17,6 @@ jdk11-openjdk
 jdk17-openjdk
 jdk17-graalvm-bin
 jdtls
-js-beautify
 k9s
 kubectl
 maven
