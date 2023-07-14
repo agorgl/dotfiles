@@ -80,6 +80,7 @@ bwrap \
     --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0 \
     --ro-bind $XDG_RUNTIME_DIR/pipewire-0 $XDG_RUNTIME_DIR/pipewire-0 \
     --ro-bind $XDG_RUNTIME_DIR/pulse $XDG_RUNTIME_DIR/pulse \
+    --ro-bind $XDG_RUNTIME_DIR/bus $XDG_RUNTIME_DIR/bus \
     --bind $SANDBOX $SANDBOX \
     --bind $SANDBOX $HOME \
     --bind $HOME/.Xauthority $HOME/.Xauthority \
@@ -88,6 +89,7 @@ bwrap \
     --setenv HOME $HOME \
     --setenv DISPLAY $DISPLAY \
     --setenv XDG_RUNTIME_DIR "/run/user/$UID" \
+    --setenv DBUS_SESSION_BUS_ADDRESS $DBUS_SESSION_BUS_ADDRESS \
     --setenv WINEDLLOVERRIDES "libglesv2.dll=d" \
     --setenv DXVK_HUD 1 \
     --setenv YABRIDGE_NO_WATCHDOG 1 \
