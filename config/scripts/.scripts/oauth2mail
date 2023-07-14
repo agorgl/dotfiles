@@ -27,9 +27,8 @@ help() { echo "$HELP"; }
 # Script cache and data directories
 TOKEN_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/oauth2mail
 
-# Mutt oauth2 script source and target location
-MUTT_OAUTH2_SCRIPT_SOURCE=/usr/share/doc/neomutt/oauth2/mutt_oauth2.py
-MUTT_OAUTH2_SCRIPT_PATH=$(mktemp)
+# Mutt oauth2 script location
+MUTT_OAUTH2_SCRIPT_PATH=/usr/share/neomutt/oauth2/mutt_oauth2.py
 
 # Client credentials to replace in mutt_oauth2.py script
 # Source: https://hg.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.jsm
@@ -56,17 +55,47 @@ decrypt() {
     gpg --quiet --decrypt
 }
 
+domain_provider() {
+    local domain="$1"
+
+    local provider=""
+    case "$domain" in
+        gmail.com)
+            provider="google"
+            ;;
+        outlook.com|hotmail.*|live.*)
+            provider="microsoft"
+            ;;
+    esac
+    echo "$provider"
+}
+
+client_credentials() {
+    local provider="$1"
+
+    local client_id=""
+    local client_secret=""
+    case "$provider" in
+        google)
+            client_id="$GOOGLE_CLIENT_ID"
+            client_secret="$GOOGLE_CLIENT_SECRET"
+            ;;
+        microsoft)
+            client_id="$MICROSOFT_CLIENT_ID"
+            client_secret="$MICROSOFT_CLIENT_SECRET"
+            ;;
+    esac
+
+    local client_credentials=("$client_id" "$client_secret")
+    echo "${client_credentials[@]}"
+}
+
 mutt_oauth2() {
     local gpg_identity=$(gpg --list-secret-keys --with-colons | awk -F: '/uid/{match($10,/<(.*)>/,m); print m[1]}')
-    sed -e "0,/'client_id': ''/{s/\('client_id': \)''/\1'$GOOGLE_CLIENT_ID'/}" \
-        -e "0,/'client_secret': ''/{s/\('client_secret': \)''/\1'$GOOGLE_CLIENT_SECRET'/}" \
-        -e "0,/'client_id': ''/{s/\('client_id': \)''/\1'$MICROSOFT_CLIENT_ID'/}" \
-        -e "0,/'client_secret': ''/{s/\('client_secret': \)''/\1'$MICROSOFT_CLIENT_SECRET'/}" \
-        -e "s/YOUR_GPG_IDENTITY/$gpg_identity/" \
-        -e "s|import sys|\0;sys.argv[0]='$0'|" \
-      $MUTT_OAUTH2_SCRIPT_SOURCE > $MUTT_OAUTH2_SCRIPT_PATH
-    python $MUTT_OAUTH2_SCRIPT_PATH $@
-    rm $MUTT_OAUTH2_SCRIPT_PATH
+    python $MUTT_OAUTH2_SCRIPT_PATH \
+        --encryption-pipe "gpg --quiet --encrypt --armor --default-recipient-self" \
+        --decryption-pipe "gpg --quiet --decrypt" \
+        $@
 }
 
 #----------------------------------------------------------------------
@@ -76,10 +105,27 @@ fetch_token() {
     local email="$1"
     local tokenfile=$(tokenfile "$email")
 
-    echo "Fetching token for email \"$email\""
+    local domain="${email#*@}"
+    local provider=$(domain_provider "$domain")
+
+    local client_credentials=($(client_credentials "$provider"))
+    local client_id=${client_credentials[0]}
+    local client_secret=${client_credentials[1]}
+
+    [ -z "$domain" ] && die "could not extract domain from email \"$email\""
+    [ -z "$provider" ] && die "could not find provider for domain \"$domain\""
+    [ -z "$client_credentials" ] && die "could not find client credentials for provider \"$provider\""
+
+    echo "Fetching token for email \"$email\" from $provider"
     mkdir -p $(dirname "$tokenfile")
 
-    mutt_oauth2 -a "$tokenfile"
+    mutt_oauth2 -a \
+        --provider "$provider" \
+        --client-id "$client_id" \
+        --client-secret "$client_secret" \
+        --authflow localhostauthcode \
+        --email "$email" \
+        "$tokenfile"
 }
 
 show_token() {
