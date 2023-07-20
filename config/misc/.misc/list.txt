@@ -70,6 +70,7 @@ light
 logrotate
 lshw
 lsof
+ltrace
 lvm2
 macchanger
 nmap
