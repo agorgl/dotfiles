@@ -73,6 +73,7 @@ lsof
 ltrace
 lvm2
 macchanger
+mtr
 nmap
 openldap
 openssh
