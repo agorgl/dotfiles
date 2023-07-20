@@ -79,6 +79,7 @@ openldap
 openssh
 p7zip
 perl
+picocom
 pkgfile
 qrencode
 rclone
