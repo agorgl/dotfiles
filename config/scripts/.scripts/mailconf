@@ -101,8 +101,8 @@ read -r -d '' IMAPNOTIFYRC << EOM || :
   "password": "",
   "passwordCmd": "oauth2mail show {mail}",
   "xoauth2": true,
-  "onNewMail": "mbsync -Va -c $(reltohome $MAIL_CONF_DIR)/{mail}/mbsyncrc",
-  "onNewMailPost": "",
+  "onNewMail": "mbsync -Va -c $(reltohome $MAIL_CONF_DIR)/{mail}/mbsyncrc; true",
+  "onNewMailPost": "notmuch --config $(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc new",
   "boxes": ["Inbox"]
 }
 EOM
@@ -123,6 +123,24 @@ user           {mail}
 passwordeval   "oauth2mail show {mail}"
 EOM
 
+read -r -d '' NOTMUCHRC << EOM || :
+[database]
+path=$(reltohome $MAIL_CACHE_DIR)/{mail}/
+
+[user]
+name={mail}
+primary_email={mail}
+
+[new]
+ignore=.uidvalidity;.mbsyncstate;.mbsyncstate.lock
+
+[search]
+exclude_tags=deleted;spam
+
+[maildir]
+synchronize_flags=true
+EOM
+
 read -r -d '' MUTTRC << EOM || :
 set my_mail = "{mail}"
 set my_conf = "$(reltohome $MAIL_CONF_DIR)/{mail}"
@@ -141,6 +159,10 @@ set from = {mail}
 set realname = '{mail}'
 set sendmail = "msmtp -C $MAIL_CONF_DIR/{mail}/msmtprc -a mail"
 
+set nm_config_file = "$(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc"
+set nm_record = yes
+set nm_record_tags = "sent"
+
 mailboxes +Inbox \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Archive/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf '%h '\` +Archive +Drafts +Sent +Spam +Trash
 EOM
 
@@ -155,6 +177,7 @@ generate() {
     populate "$MBSYNCRC"     "$imap_host" "$mail" > "$mailconfdir/mbsyncrc"
     populate "$IMAPNOTIFYRC" "$imap_host" "$mail" > "$mailconfdir/imapnotifyrc"
     populate "$MSMTPRC"      "$smtp_host" "$mail" > "$mailconfdir/msmtprc"
+    populate "$NOTMUCHRC"    ""           "$mail" > "$mailconfdir/notmuchrc"
     populate "$MUTTRC"       ""           "$mail" > "$mailconfdir/muttrc"
     find "$mailconfdir" -type d -exec chmod 700 {} \;
     find "$mailconfdir" -type f -exec chmod 600 {} \;
@@ -189,10 +212,21 @@ watch() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailcachedir=$(mailcachedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "sync: mailconf dir for email \"$mail\" does not exist"
+        die "watch: mailconf dir for email \"$mail\" does not exist"
     fi
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
     goimapnotify -conf "$mailconfdir/imapnotifyrc"
+}
+
+index() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    local mailcachedir=$(mailcachedir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "index: mailconf dir for email \"$mail\" does not exist"
+    fi
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+    notmuch --config "$mailconfdir/notmuchrc" new
 }
 
 remove() {
@@ -244,6 +278,10 @@ case "$cmd" in
     watch)
         [ $# -ne 1 ] && die "Usage: $(basename $0) watch <email>"
         watch "$1"
+        ;;
+    index)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) index <email>"
+        index "$1"
         ;;
     rm)
         [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
