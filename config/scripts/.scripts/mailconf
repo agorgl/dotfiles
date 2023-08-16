@@ -141,7 +141,7 @@ set from = {mail}
 set realname = '{mail}'
 set sendmail = "msmtp -C $MAIL_CONF_DIR/{mail}/msmtprc -a mail"
 
-mailboxes =Inbox =Drafts =Sent =Trash
+mailboxes +Inbox \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Archive/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf '%h '\` +Archive +Drafts +Sent +Spam +Trash
 EOM
 
 #----------------------------------------------------------------------
