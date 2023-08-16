@@ -12,6 +12,7 @@ realtime-privileges
 reaper
 shntool
 v4l2loopback-dkms
-yabridge-bin
+yabridge
+yabridgectl
 zam-plugins
 zita-mu1
