@@ -20,10 +20,12 @@ ansictl set background color234
 # Launch mutt along with its companions, exposing the encrypted mail directory
 encdir expose $HOME/.cache/mail $HOME/.cache/mutt -- /bin/bash << 'EOF'
 {
+    mail=$(mailconf ls | head -n 1)
     exec < /dev/tty
     (
-        mailconf sync $(mailconf ls | head -n 1) &>/dev/null
-        mailconf watch $(mailconf ls | head -n 1) &>/dev/null
+        mailconf sync  $mail &>/dev/null
+        mailconf index $mail &>/dev/null
+        mailconf watch $mail &>/dev/null
     ) &
     neomutt
     exit
