@@ -60,6 +60,11 @@ populate() {
 # Templates
 #----------------------------------------------------------------------
 read -r -d '' MBSYNCRC << EOM || :
+Create Both
+Expunge Both
+SyncState *
+CopyArrivalDate yes
+
 IMAPAccount mail-account
 Host {host}
 Port 993
@@ -74,18 +79,14 @@ IMAPStore mail-remote
 Account mail-account
 
 MaildirStore mail-local
-SubFolders Verbatim
 Path $(reltohome $MAIL_CACHE_DIR)/{mail}/
 Inbox $(reltohome $MAIL_CACHE_DIR)/{mail}/Inbox
+SubFolders Verbatim
 
 Channel mail
 Far :mail-remote:
 Near :mail-local:
 Patterns *
-Create Both
-Expunge Both
-SyncState *
-CopyArrivalDate yes
 EOM
 
 read -r -d '' IMAPNOTIFYRC << EOM || :
