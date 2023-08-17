@@ -1,6 +1,8 @@
 # Replacements
 bind index D delete-thread
 bind index U undelete-thread
+bind index,pager,attach g noop
+bind index,pager,attach a group-reply
 
 # Vim like navigation
 bind generic,index j next-entry
@@ -26,6 +28,14 @@ bind index,pager N search-opposite
 bind index,pager B sidebar-toggle-visible
 macro index,pager \en "<sidebar-next><sidebar-open>"
 macro index,pager \ep "<sidebar-prev><sidebar-open>"
+
+# Mailbox navigation
+macro index,pager gi "<change-folder>+Inbox<enter>"
+macro index,pager ga "<change-folder>+Archive<enter>"
+macro index,pager gd "<change-folder>+Drafts<enter>"
+macro index,pager gs "<change-folder>+Sent<enter>"
+macro index,pager gj "<change-folder>+Spam<enter>"
+macro index,pager gt "<change-folder>+Trash<enter>"
 
 # Manually sync and index mail
 macro index S "<enter-command>echo 'Syncing mail'<enter><enter-command>set my_prev_wait_key=$wait_key<enter><enter-command>unset wait_key<enter><shell-escape>{ mailconf sync $my_mail; mailconf index $my_mail; } &>/dev/null &<enter><enter-command>set wait_key=$my_prev_wait_key<enter>"
