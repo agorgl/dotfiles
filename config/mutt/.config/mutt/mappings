@@ -1,8 +1,26 @@
+# Replacements
+bind index D delete-thread
+bind index U undelete-thread
+
 # Vim like navigation
 bind generic,index j next-entry
 bind generic,index k previous-entry
 bind pager j next-line
 bind pager k previous-line
+
+bind index,attach gg first-entry
+bind index,attach G last-entry
+bind pager gg top
+bind pager G bottom
+
+bind generic,index,pager \cd half-down
+bind generic,index,pager \cu half-up
+bind generic,index,pager \cf next-page
+bind generic,index,pager \cb previous-page
+
+bind index za collapse-thread
+bind index zA collapse-all
+bind index,pager N search-opposite
 
 # Sidebar navigation
 bind index,pager B sidebar-toggle-visible
