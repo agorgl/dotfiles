@@ -183,11 +183,15 @@ gtk-engine-murrine
 adobe-source-sans-fonts
 gtk2fontsel
 noto-fonts
+noto-fonts-emoji
 terminus-font
 ttf-anonymous-pro
 ttf-dejavu
 ttf-inconsolata
+ttf-nerd-fonts-symbols
+ttf-nerd-fonts-symbols-mono
 ttf-opensans
+ttf-terminus-nerd
 ttf-ubuntu-font-family
 
 # Programs
