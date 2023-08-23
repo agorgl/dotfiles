@@ -1,7 +1,7 @@
 ! ------------------------------------------------------------------------------
 ! Variables
 ! ------------------------------------------------------------------------------
-#define monofont xft:xos4 Terminess Powerline:size=11
-#define iconfont xft:TerminessTTF Nerd Font Mono:size=11
+#define monofont xft:Terminus:size=11
+#define iconfont xft:Terminess Nerd Font Mono:size=11
 #define termfont monofont,iconfont
 ! vim:ft=xdefaults
