@@ -29,6 +29,8 @@ set status_format = " %D%<r? %r> %> %<M?%M results for \"%V\" (%L)&%<p?%p postpo
 set pager_stop = yes
 # Do not display '+' markers in the beggining of wrapped lines
 set markers = no
+# Set the number of lines of the mini-index which is shown when in the pager
+set pager_index_lines = 10
 
 #
 # Sidebar
