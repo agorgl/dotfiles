@@ -39,3 +39,13 @@ set sidebar_format = "%B %<N?(%N)>"
 set sidebar_short_path = yes
 # Indent the mailbox path if it is abbreviated
 set sidebar_folder_indent = yes
+
+#
+# Preview
+#
+# Set list of colon-separated files to consult when attempting to display MIME bodies
+set mailcap_path = ~/.config/mutt/mailcap
+# Set content-types that you wish to view automatically
+auto_view text/html
+# Set list to determine if one of the available types is preferred
+alternative_order text/plain text/enriched text/html
