@@ -35,6 +35,8 @@ set pager_index_lines = 10
 #
 # Sidebar
 #
+# Set whether or not to show sidebar
+set sidebar_visible = yes
 # Customize the sidebar display
 set sidebar_format = "%B %<N?(%N)>"
 # Shorten the mailbox names relative to the previous name
