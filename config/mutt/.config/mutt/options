@@ -7,6 +7,20 @@ set sort = "reverse-date"
 set use_threads = yes
 # Calculate message statistics of a mailbox
 set mail_check_stats = yes
+# Format of the date printed by the “%d” sequence in $index_format
+set date_format = "%d/%m/%Y %H:%M"
+# Customize chars that indicate where mail is being addressed (not-in-list, unique, to, cc, originator, subscribed-list, reply-to)
+set to_chars = "󰀒󰋜󰑚"
+# Customize chars used in cryptography flags (good-sign, encrypted, signed, contains-key, no-crypto)
+set crypt_chars = " "
+# Customize chars used in mail flags (tagged, important, deleted, deleted-attach, replied, old, new, old-thread, new-thread, sempty, zempty)
+set flag_chars = "      "
+# Customize chars used mailbox status (unchanged, changed-needs-sync, read-only, attach-message-mode)
+set status_chars = " 󰁦"
+# Customize the message index display
+set index_format = " %zs %zc %zt  %[%d %b %H:%M]  %-20.20L  • %s %<M?(%M)>"
+# Customize the the status line displayed in the index menu
+set status_format = " %D%<r? %r> %> %<M?%M results for \"%V\" (%L)&%<p?%p postponed>%<p?%<t? / &%<d? / >>>%<t?%t tagged>%<d?%<t? / >>%<d?%d deleted>  • %<u?%u unread / >%m total%<l? (%l)>> "
 
 #
 # Pager
@@ -19,6 +33,8 @@ set markers = no
 #
 # Sidebar
 #
+# Customize the sidebar display
+set sidebar_format = "%B %<N?(%N)>"
 # Shorten the mailbox names relative to the previous name
 set sidebar_short_path = yes
 # Indent the mailbox path if it is abbreviated
