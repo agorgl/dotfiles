@@ -78,7 +78,7 @@ send_reset_osc() {
 
 uint16_to_uint8() {
     local n=0x$1
-    printf "%X" $((n * 0xFF / 0xFFFF))
+    printf "%02X" $((n * 0xFF / 0xFFFF))
 }
 
 uint8_to_uint16() {
