@@ -15,7 +15,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM EXIT
 
 # Set background color to match mutt theme
-ansictl set background color234
+ansictl set background '#2E3440'
 
 # Launch mutt along with its companions, exposing the encrypted mail directory
 encdir expose $HOME/.cache/mail $HOME/.cache/mutt -- /bin/bash << 'EOF'
