@@ -1,4 +1,10 @@
 #
+# General
+#
+# Menus will be scrolled up or down one line when you attempt to move across a screen boundary
+set menu_scroll = yes
+
+#
 # Index
 #
 # How to sort messages in the “index” menu
