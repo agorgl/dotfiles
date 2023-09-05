@@ -27,7 +27,7 @@ encdir expose $HOME/.cache/mail $HOME/.cache/mutt -- /bin/bash << 'EOF'
         mailconf index $mail &>/dev/null
         mailconf watch $mail &>/dev/null
     ) &
-    neomutt
+    TERM=xterm-direct neomutt
     exit
 }
 EOF
