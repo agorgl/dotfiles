@@ -1,0 +1,162 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) [<args>]"
+HELP="\
+$(basename $0) [<args>]
+
+Options:
+      --init      Create an empty sandbox
+  -h, --help      Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+NEW_USER="user"
+NEW_HOME="/home/$NEW_USER"
+NEW_XDG_CONFIG_HOME="$NEW_HOME/.config"
+NEW_XDG_CACHE_HOME="$NEW_HOME/.cache"
+NEW_XDG_DATA_HOME="$NEW_HOME/.local/share"
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+sandbox_dir() {
+    local path=$(pwd)
+    while [[ "$path" != "" && ! -e "$path/.sandbox" ]]; do
+        path=${path%/*}
+    done
+    echo "$path"
+}
+
+#----------------------------------------------------------------------
+# Actions
+#----------------------------------------------------------------------
+init() {
+    local params="$@"
+    local sandbox="`pwd`/.sandbox"
+    if [ -d "$sandbox" ]; then
+        die "init: sandbox directory already exists in '$sandbox'"
+    fi
+
+    echo "Initializing sandbox in '`pwd`'"
+    mkdir -p .sandbox
+    echo -n "${params[@]}" > .sandbox/config
+}
+
+run() {
+    local sandbox="$(sandbox_dir)"
+    [ ! -z "$SANDBOX" ] && sandbox="$SANDBOX"
+    if [ ! -d "$sandbox/.sandbox" ]; then
+        die "error: sandbox directory could not be found"
+    fi
+    local params="$(cat "${sandbox}/.sandbox/config")"
+    echo "Using sandbox in '$sandbox'" >&2
+
+    local cwd="`pwd`"
+    cwd="${cwd/${sandbox}/${NEW_HOME}}"
+    cwd="${cwd/${HOME}/${NEW_HOME}}"
+
+    local java_flags=()
+    if compgen -G /etc/java*-openjdk > /dev/null; then
+        for d in /etc/java*-openjdk; do
+            java_flags+=("--ro-bind" "$d" "$d");
+        done
+    fi
+
+    local yabridge_flags=()
+    if compgen -G $XDG_RUNTIME_DIR/yabridge-*/ > /dev/null; then
+        for d in $XDG_RUNTIME_DIR/yabridge-*/; do
+            yabridge_flags+=("--bind" "$d" "$d");
+        done
+    fi
+
+    bwrap \
+        --unshare-all \
+        --unshare-user \
+        --share-net \
+        --disable-userns \
+        --new-session \
+        --die-with-parent \
+        --clearenv \
+        --setenv USER $NEW_USER \
+        --setenv HOME $NEW_HOME \
+        --setenv LANG $LANG \
+        --setenv PATH /usr/bin \
+        --setenv DISPLAY $DISPLAY \
+        --setenv XDG_RUNTIME_DIR /run/user/$UID \
+        --setenv DBUS_SESSION_BUS_ADDRESS $DBUS_SESSION_BUS_ADDRESS \
+        --setenv YABRIDGE_NO_WATCHDOG 1 \
+        --setenv DXVK_HUD 1 \
+        --proc /proc \
+        --tmpfs /tmp \
+        --dev /dev \
+        --dev-bind /dev/dri /dev/dri \
+        --dev-bind /dev/shm /dev/shm \
+        --dev-bind /dev/snd /dev/snd \
+        --dev-bind /dev/input /dev/input \
+        --ro-bind /usr/bin /usr/bin \
+        --ro-bind /usr/lib /usr/lib \
+        --ro-bind /usr/lib32 /usr/lib32 \
+        --ro-bind /usr/lib64 /usr/lib64 \
+        --ro-bind /usr/share /usr/share \
+        --ro-bind /etc/resolv.conf /etc/resolv.conf \
+        --ro-bind /etc/ssl/certs /etc/ssl/certs \
+        --ro-bind /etc/fonts /etc/fonts \
+        --ro-bind /sys/dev/char /sys/dev/char \
+        --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00 \
+        --ro-bind /sys/class/input /sys/class/input \
+        --ro-bind /sys/class/hidraw /sys/class/hidraw \
+        --ro-bind /sys/devices/system/cpu /sys/devices/system/cpu \
+        --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0 \
+        --ro-bind $XDG_RUNTIME_DIR/pipewire-0 $XDG_RUNTIME_DIR/pipewire-0 \
+        --ro-bind $XDG_RUNTIME_DIR/pulse $XDG_RUNTIME_DIR/pulse \
+        --ro-bind $XDG_RUNTIME_DIR/bus $XDG_RUNTIME_DIR/bus \
+        --bind $sandbox $NEW_HOME \
+        --bind $sandbox $sandbox \
+        --bind $HOME/.Xauthority $NEW_HOME/.Xauthority \
+        "${java_flags[@]}" \
+        "${yabridge_flags[@]}" \
+        --symlink usr/bin /bin \
+        --symlink usr/lib /lib \
+        --symlink usr/lib64 /lib64 \
+        --chdir "$cwd" \
+        "$@"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$1" in
+    -h|--help)
+        help
+        exit 0
+        ;;
+    --init)
+        shift
+        init "$@"
+        exit 0
+        ;;
+    -*)
+        echo "Unexpected option $arg" >&2
+        die "See '$(basename $0) --help' for more information"
+        ;;
+esac
+
+if [ $# -eq 0 ]; then
+    help
+    exit 1
+fi
+run "$@"

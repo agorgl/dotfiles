@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#
+# Usage:
+# env WINELOADER="$(which sandbox-wine)"
+#
+
+# Prevent this file from being called recursively
+unset WINELOADER
+
+# Set wine binary
+WINE="wine"
+
+# If used with version flag skip sandboxing
+if (( $# == 1 )) && [[ "$1" = "--version" ]]; then
+    $WINE --version
+    exit $?
+fi
+
+# If used with init flag run wineboot instead of wine and bootstrap WINEPREFIX
+if (( $# == 1 )) && [[ "$1" = "--init" ]]; then
+    shift
+    [ ! -d ".sandbox" ] && sandbox --init
+    WINE="wineboot --init && wine reg add 'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Hardware Profiles\Current\Software\Fonts' /v LogPixels /t REG_DWORD /d $(dpictl dpi) /f"
+fi
+
+# If used with config flag run winecfg instead of wine
+if (( $# == 1 )) && [[ "$1" = "--config" ]]; then
+    shift
+    WINE="winecfg"
+fi
+
+# If used with setup flag run command directly
+if [[ "$1" = "--setup" ]]; then
+    shift
+    unset WINE
+fi
+
+# Override sandbox location if WINEPREFIX is specified
+if [ ! -z "$WINEPREFIX" ]; then
+    SANDBOX="$WINEPREFIX/.."
+fi
+
+# Sandbox it
+exec env SANDBOX=$SANDBOX sandbox /bin/bash -c 'mkdir -p ~/.wine && wineserver -p && '"$WINE ${*@Q}"'; ret=$?; wineserver -k; exit ${ret}'
