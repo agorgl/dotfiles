@@ -15,7 +15,7 @@ helmfile
 httpie
 jdk11-openjdk
 jdk17-openjdk
-jdk17-graalvm-bin
+jdk21-graalvm-bin
 jdtls
 k9s
 kubectl
