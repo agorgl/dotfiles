@@ -13,8 +13,8 @@ configuration {
 
     red:                         rgba(255, 0, 68, 100%);
     blue:                        rgba(38, 139, 210, 100%);
-    background:                  rgba(27, 29, 30, 100%);
-    foreground:                  rgba(38, 108, 152, 100%);
+    background:                  env(ROFI_BACKGROUND, rgba(27, 29, 30, 100%));
+    foreground:                  env(ROFI_FOREGROUND, rgba(38, 108, 152, 100%));
 
     background-color:            rgba(0, 0, 0, 0%);
     border-color:                var(foreground);

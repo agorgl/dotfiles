@@ -8,7 +8,7 @@ super + {_,shift +} Return
 
 # Start launcher
 super + space
-    rofi -dpi $(dpictl dpi) -show run
+    ROFI_BACKGROUND=$(themectl color background) ROFI_FOREGROUND=$(themectl color blue) rofi -dpi $(dpictl dpi) -show run
 
 # Start file explorer
 super + e
