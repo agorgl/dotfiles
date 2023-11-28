@@ -3,7 +3,7 @@
 //
 
 configuration {
-    font: "Monaco 18";
+    font: "Monaco 16";
     modi: "run,window,ssh";
     monitor: -1;
 }
@@ -109,7 +109,7 @@ element-icon {
 }
 
 window {
-    width:            60%;
+    width:            50%;
     padding:          6mm;
     background-color: var(background);
     border:           0em;
