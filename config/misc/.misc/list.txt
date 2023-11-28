@@ -53,6 +53,7 @@ dmidecode
 dos2unix
 e2fsprogs
 evtest
+exfatprogs
 expac
 fd
 fzf
