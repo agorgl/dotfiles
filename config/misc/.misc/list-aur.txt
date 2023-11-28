@@ -1,4 +1,4 @@
-conky-lua-nv
+conky-cairo
 cyrus-sasl-xoauth2-git
 ifdnfc-git
 jmtpfs
