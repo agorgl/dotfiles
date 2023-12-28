@@ -75,31 +75,33 @@ read -r -d '' XRESOURCES << EOM || :
 EOM
 
 read -r -d '' ALACRITTY << EOM || :
-colors:
-  primary:
-    background: '{background}'
-    foreground: '{foreground}'
-  cursor:
-    text:   '#000000'
-    cursor: '{cursor}'
-  normal:
-    black:   '{color0}'
-    red:     '{color1}'
-    green:   '{color2}'
-    yellow:  '{color3}'
-    blue:    '{color4}'
-    magenta: '{color5}'
-    cyan:    '{color6}'
-    white:   '{color7}'
-  bright:
-    black:   '{color8}'
-    red:     '{color9}'
-    green:   '{color10}'
-    yellow:  '{color11}'
-    blue:    '{color12}'
-    magenta: '{color13}'
-    cyan:    '{color14}'
-    white:   '{color15}'
+[colors.primary]
+foreground = "{foreground}"
+background = "{background}"
+
+[colors.cursor]
+text   = "#000000"
+cursor = "{cursor}"
+
+[colors.normal]
+black   = "{color0}"
+red     = "{color1}"
+green   = "{color2}"
+yellow  = "{color3}"
+blue    = "{color4}"
+magenta = "{color5}"
+cyan    = "{color6}"
+white   = "{color7}"
+
+[colors.bright]
+black   = "{color8}"
+red     = "{color9}"
+green   = "{color10}"
+yellow  = "{color11}"
+blue    = "{color12}"
+magenta = "{color13}"
+cyan    = "{color14}"
+white   = "{color15}"
 EOM
 
 #----------------------------------------------------------------------
@@ -167,7 +169,7 @@ colorscheme_template() {
 colorscheme_generate_templates() {
     mkdir -p "$THEMECTL_CACHE_DIR"
     colorscheme_template "$XRESOURCES" > "$THEMECTL_CACHE_DIR/colors.Xresources"
-    colorscheme_template "$ALACRITTY" > "$THEMECTL_CACHE_DIR/colors-alacritty.yml"
+    colorscheme_template "$ALACRITTY" > "$THEMECTL_CACHE_DIR/colors-alacritty.toml"
 }
 
 color_query() {
