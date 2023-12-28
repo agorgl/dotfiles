@@ -1,0 +1,34 @@
+import = [
+  "~/.config/alacritty/colors.toml",
+  "~/.cache/themectl/colors-alacritty.toml",
+  "~/.cache/wal/colors-alacritty.toml"
+]
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+dimensions = { columns = 80, lines = 24 }
+padding = { x = 16, y = 16 }
+decorations = "None"
+
+[font]
+normal = { family = "terminal" }
+size = 11.0
+
+[selection]
+save_to_clipboard = true
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
+blink_interval = 200
+unfocused_hollow = true
+
+[keyboard]
+bindings = [
+  { key = "C",   mods = "Control|Alt", action = "Copy"         },
+  { key = "V",   mods = "Control|Alt", action = "Paste"        },
+  { key = "F5",  mods = "Control",     chars  = "\u001B[15;5~" },
+  { key = "F5",  mods = "Shift",       chars  = "\u001B[15;2~" },
+  { key = "Tab", mods = "Shift",       chars  = "\u001B[9;2u"  }
+]
