@@ -32,7 +32,7 @@ scale trough highlight {
 //
 // Windows
 //
-.panel {
+.panel > * {
   background-color: $bg;
   padding: 2em;
   border-radius: 1em;
