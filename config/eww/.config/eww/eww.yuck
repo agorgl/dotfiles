@@ -153,7 +153,7 @@
   "rfkill -n -r | awk '/bluetooth/{print ($4 == \"unblocked\") ? \"true\" : \"false\"}' | head -n 1")
 
 (defpoll noisetorch :interval "1s" :initial false
-  "(pw-cli dump short | grep -i torch >/dev/null) && echo true || echo false")
+  "(pw-dump short | grep -i torch >/dev/null) && echo true || echo false")
 
 ;; Alternatives:
 ;;(defvar cpu
