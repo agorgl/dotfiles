@@ -135,7 +135,7 @@
   "playerctl --follow metadata --format '{{ artist }} - {{ title }}' || true")
 
 (deflisten volume :initial "0.0"
-  "(echo sink && pactl subscribe) | grep --line-buffered sink | xargs -n1 wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2 * 100)}'")
+  "(echo sink && pactl subscribe) | grep --line-buffered sink | xargs -n1 wpctl get-volume @DEFAULT_AUDIO_SINK@ | stdbuf -oL awk '{print int($2 * 100)}'")
 
 (defpoll brightness :interval "1s" :initial "0.0"
   "echo \"$(brightnessctl -q g)*100/255\" | bc")
