@@ -2,7 +2,15 @@
     Clock widget
 --]]
 
-conky.user_lua_path = '~/.config/conky/lua/'
+-- Extend package search to lua directory
+conky_luadir = debug.getinfo(1).source:match("@?(.*/).*/") .. '/lua/'
+package.path = conky_luadir .. "?.lua;" .. package.path
+
+-- Import utils
+require 'util'
+
+-- Search path for lua_* config variables
+conky.user_lua_path = conky_luadir
 
 conky.config = {
     alignment = 'top_left',
