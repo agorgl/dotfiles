@@ -1,0 +1,182 @@
+#!/bin/bash
+set -e
+
+#----------------------------------------------------------------------
+# Help
+#----------------------------------------------------------------------
+USAGE="Usage: $(basename $0) <command> [args]"
+HELP="\
+$(basename $0) <command> [args]
+
+Commands:
+  launch    <name> [args]   Launch a new VM instance
+  start     <name>          Start an existing VM instance
+  stop      <name>          Stop a running VM instance
+  delete    <name>          Delete a VM instance
+  list                      List VM instances
+  shell     <name>          Open a shell inside a VM instance
+
+Options:
+  -h, --help                Print current help message
+"
+
+die() { echo >&2 "$*"; exit 1; }
+usage() { die "$USAGE"; }
+help() { echo "$HELP"; }
+log() { echo -e "\033[1m> $@\033[0m" >&2; }
+
+#----------------------------------------------------------------------
+# Constants
+#----------------------------------------------------------------------
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+VM_IMAGE_DIR="${XDG_DATA_HOME}/libvirt/images"
+VM_NET_IFACE=virbr0
+
+#----------------------------------------------------------------------
+# Helpers
+#----------------------------------------------------------------------
+require_network() {
+    local network=$VM_NET_IFACE
+    if [ ! -d /sys/class/net/$network ]; then
+        log "Starting VM network \"$network\""
+        local active=$(virsh -c qemu:///system net-info default | awk '/Active/{print $2}')
+        if [ "$active" != "yes" ]; then
+            virsh -c qemu:///system net-start default 1>&2
+        fi
+    fi
+    echo $network
+}
+
+require_debian_image() {
+    local url="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+    local image="$(basename "$url")"
+    if [ ! -f "$VM_IMAGE_DIR/$image" ]; then
+        log "Fetching image \"$image\""
+        curl -s -L -o "$image" --create-dirs --output-dir "$VM_IMAGE_DIR" "$url"
+    fi
+    echo "$image"
+}
+
+require_image() {
+    require_debian_image
+}
+
+cloud_init_conf() {
+    cut -c5- <<<"
+    #cloud-config
+    users:
+      - default
+      - name: vuser
+        lock_passwd: false
+        passwd: $(echo debian | mkpasswd --method=SHA-512 -s)
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        shell: /bin/bash
+    "
+}
+
+#----------------------------------------------------------------------
+# Commands
+#----------------------------------------------------------------------
+launch() {
+    local name="$1"
+    local network=$(require_network)
+    local image=$(require_image)
+
+    log "Launching VM instance \"$name\" from image \"$image\" in network \"$network\""
+    virt-install \
+        --name "$name" \
+        --memory 2048 \
+        --vcpus 4 \
+        --disk=size=8,backing_store="$VM_IMAGE_DIR/$image" \
+        --network bridge=$network \
+        --cloud-init user-data=<(cloud_init_conf),disable=on \
+        --osinfo=debian12
+}
+
+start() {
+    local instance="$1"
+    require_network
+
+    log "Starting VM instance \"$instance\""
+    virsh start "$instance"
+}
+
+stop() {
+    local instance="$1"
+
+    log "Stopping VM instance \"$instance\""
+    virsh destroy "$instance"
+}
+
+delete() {
+    local instance="$1"
+
+    log "Deleting VM instance \"$instance\""
+    virsh undefine "$instance" --remove-all-storage
+}
+
+list() {
+    virsh list --all --name | sed '/^$/d'
+}
+
+shell() {
+    local instance="$1"
+    virsh console "$instance"
+}
+
+#----------------------------------------------------------------------
+# Entrypoint
+#----------------------------------------------------------------------
+case "$#" in
+    0)
+        usage ;;
+    *)
+        for arg in "$@"; do
+            case "$arg" in
+                -h|--help)
+                    help
+                    exit 0
+                    ;;
+                -*)
+                    echo "Unexpected option $arg" >&2
+                    die "See '$(basename $0) --help' for more information"
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+        done
+esac
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    launch)
+        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <name>"
+        launch "$@"
+        ;;
+    start)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        start "$1"
+        ;;
+    stop)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        stop "$1"
+        ;;
+    delete)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        delete "$1"
+        ;;
+    list)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) $cmd"
+        list
+        ;;
+    shell)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        shell "$1"
+        ;;
+    *)
+        echo "Unexpected command $cmd" >&2
+        die "See '$(basename $0) --help' for more information"
+esac
