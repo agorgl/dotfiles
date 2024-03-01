@@ -95,7 +95,7 @@ launch() {
 
 start() {
     local instance="$1"
-    require_network
+    require_network >/dev/null
 
     log "Starting VM instance \"$instance\""
     virsh start "$instance"
