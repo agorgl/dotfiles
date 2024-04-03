@@ -36,9 +36,14 @@ xss-lock -- i3lock -u -c 000000 &
 # Launch policy kit auth agent
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 
-# Start keyring daemon
-eval $(/usr/bin/gnome-keyring-daemon --start --components=pkcs11,secrets,ssh)
-export SSH_AUTH_SOCK
+# Setup ssh-agent component of gpg
+unset SSH_AGENT_PID
+if [ "${gnupg_SSH_AUTH_SOCK_by:-0}" -ne $$ ]; then
+    export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+fi
+
+export GPG_TTY="${TTY:-"$(tty)"}"
+gpg-connect-agent updatestartuptty /bye >/dev/null
 
 # Launch conky HUD
 conky-launcher &
