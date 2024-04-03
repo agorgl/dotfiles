@@ -9,6 +9,7 @@ HELP="\
 $(basename $0) <command> [args]
 
 Commands:
+  update                    Fetch latest image
   launch    <name> [args]   Launch a new VM instance
   start     <name>          Start an existing VM instance
   stop      <name>          Stop a running VM instance
@@ -101,6 +102,10 @@ cloud_init_conf() {
 #----------------------------------------------------------------------
 # Commands
 #----------------------------------------------------------------------
+update() {
+    fetch_image "$DEBIAN_IMAGE_URL"
+}
+
 launch() {
     local name="$1"
     local network=$(require_network)
@@ -206,6 +211,10 @@ cmd="$1"
 shift
 
 case "$cmd" in
+    update)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) $cmd"
+        update
+        ;;
     launch)
         [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <name>"
         launch "$@"
