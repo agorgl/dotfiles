@@ -127,7 +127,8 @@ launch() {
         --disk=path="$volume" \
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
-        --osinfo=debian12
+        --osinfo=debian12 \
+        --noautoconsole
 }
 
 start() {
