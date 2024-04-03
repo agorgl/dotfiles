@@ -118,6 +118,10 @@ stop() {
 delete() {
     local instance="$1"
 
+    if virsh list --name --state-running | grep -w "$instance" > /dev/null; then
+        stop "$instance"
+    fi
+
     log "Deleting VM instance \"$instance\""
     virsh undefine "$instance" --remove-all-storage
 }
