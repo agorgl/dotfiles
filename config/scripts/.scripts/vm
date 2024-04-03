@@ -34,8 +34,6 @@ VM_IMAGE_DIR="${XDG_DATA_HOME}/libvirt/images"
 VM_KEY_DIR="${XDG_DATA_HOME}/vm/keys"
 VM_NET_IFACE=virbr0
 VM_USER=user
-DEBIAN_IMAGE_URL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
-FEDORA_IMAGE_URL="https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
 
 #----------------------------------------------------------------------
 # Helpers
@@ -60,41 +58,64 @@ fetch_image() {
     curl -s -L -o "$fname" --create-dirs --output-dir "$VM_IMAGE_DIR" "$url"
 }
 
-image_url_for_distro() {
-    local distro="$1"
-    case $distro in
-        debian)
-            echo "$DEBIAN_IMAGE_URL"
-            ;;
-        fedora)
-            echo "$FEDORA_IMAGE_URL"
-            ;;
-        *)
-            echo "Unexpected distro \"$distro\", falling back to debian" >&2
-            echo "$DEBIAN_IMAGE_URL"
-            ;;
-    esac
+debian_image_info() {
+    local info=$(curl -s -L https://sources.debian.org/api/src/base-files/ | \
+        jq -c 'first(.versions[]
+                     | select(any(.suites[]; contains("sid")) | not)
+                     | {
+                         codename: .suites[0],
+                         version: .version | capture("(?<ver>\\d+)") | .ver
+                       })')
+    local distro="debian"
+    local codename=$(echo "$info" | jq -r .codename)
+    local version=$(echo "$info" | jq -r .version)
+    local url="https://cloud.debian.org/images/cloud/$codename/latest/debian-$version-generic-amd64.qcow2"
+    jq -c --null-input \
+        --arg distro "$distro" \
+        --arg codename "$codename" \
+        --arg version "$version" \
+        --arg url "$url" \
+        '{distro: $distro, codename: $codename, version: $version, url: $url}'
 }
 
-osinfo_for_distro() {
+fedora_image_info() {
+    local info=$(curl -s https://fedoraproject.org/releases.json | \
+        jq -c 'first(.[]
+                     | select(.arch == "x86_64" and
+                              .variant == "Cloud" and
+                              .subvariant == "Cloud_Base" and
+                              (.link | endswith(".qcow2")) and
+                              (.version | contains("Beta") | not)))')
+    local distro="fedora"
+    local codename=""
+    local version=$(echo "$info" | jq -r .version)
+    local url=$(echo "$info" | jq -r .link)
+    jq -c --null-input \
+        --arg distro "$distro" \
+        --arg codename "$codename" \
+        --arg version "$version" \
+        --arg url "$url" \
+        '{distro: $distro, codename: $codename, version: $version, url: $url}'
+}
+
+image_info() {
     local distro="$1"
     case $distro in
         debian)
-            echo debian12
+            debian_image_info
             ;;
         fedora)
-            echo fedora39
+            fedora_image_info
             ;;
         *)
             echo "Unexpected distro \"$distro\", falling back to debian" >&2
-            echo debian12
+            debian_image_info
             ;;
     esac
 }
 
 require_image() {
-    local distro="$1"
-    local url="$(image_url_for_distro "$distro")"
+    local url="$1"
     local fname="$(basename "$url")"
     local image=$VM_IMAGE_DIR/$fname
     [ ! -f "$image" ] && fetch_image "$url"
@@ -134,7 +155,8 @@ cloud_init_conf() {
 #----------------------------------------------------------------------
 update() {
     for distro in debian fedora; do
-        local url="$(image_url_for_distro "$distro")"
+        local info=$(image_info "$distro")
+        local url="$(echo "$info" | jq -r .url)"
         fetch_image "$url"
     done
 }
@@ -147,8 +169,9 @@ launch() {
         distro="debian"
     fi
 
+    local info=$(image_info "$distro")
     local network=$(require_network)
-    local image=$(require_image "$distro")
+    local image=$(require_image "$(echo "$info" | jq -r .url)")
     local keyfile=$(require_keyfile "$name")
 
     local volume="$VM_IMAGE_DIR/$name.${image##*.}"
@@ -167,7 +190,7 @@ launch() {
         --disk=path="$volume" \
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
-        --osinfo=$(osinfo_for_distro "$distro") \
+        --osinfo="$distro$(echo "$info" | jq -r .version)" \
         --noautoconsole \
         $@
 }
