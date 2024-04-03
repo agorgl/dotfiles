@@ -175,12 +175,13 @@ console() {
 
 shell() {
     local instance="$1"
-    ssh \
+    shift
+    ssh -t \
         -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null \
         -o LogLevel=error \
         -i "$VM_KEY_DIR/$instance" \
-        vuser@"$instance"
+        vuser@"$instance" $@
 }
 
 #----------------------------------------------------------------------
@@ -240,8 +241,10 @@ case "$cmd" in
         console "$1"
         ;;
     shell)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
-        shell "$1"
+        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        inst="$1"
+        shift
+        shell "$inst" "$@"
         ;;
     *)
         echo "Unexpected command $cmd" >&2
