@@ -32,6 +32,7 @@ XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 VM_IMAGE_DIR="${XDG_DATA_HOME}/libvirt/images"
 VM_KEY_DIR="${XDG_DATA_HOME}/vm/keys"
 VM_NET_IFACE=virbr0
+DEBIAN_IMAGE_URL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
 
 #----------------------------------------------------------------------
 # Helpers
@@ -48,13 +49,19 @@ require_network() {
     echo $network
 }
 
+fetch_image() {
+    local url="$1"
+    local fname="$(basename "$url")"
+
+    log "Fetching image \"$fname\""
+    curl -s -L -o "$fname" --create-dirs --output-dir "$VM_IMAGE_DIR" "$url"
+}
+
 require_debian_image() {
-    local url="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
-    local image="$(basename "$url")"
-    if [ ! -f "$VM_IMAGE_DIR/$image" ]; then
-        log "Fetching image \"$image\""
-        curl -s -L -o "$image" --create-dirs --output-dir "$VM_IMAGE_DIR" "$url"
-    fi
+    local url="$DEBIAN_IMAGE_URL"
+    local fname="$(basename "$url")"
+    local image=$VM_IMAGE_DIR/$fname
+    [ ! -f "$image" ] && fetch_image "$url"
     echo "$image"
 }
 
@@ -100,12 +107,20 @@ launch() {
     local image=$(require_image)
     local keyfile=$(require_keyfile "$name")
 
-    log "Launching VM instance \"$name\" from image \"$image\" in network \"$network\""
+    local volume="$VM_IMAGE_DIR/$name.${image##*.}"
+    if [ ! -f "$volume" ]; then
+        log "Creating volume \"$(basename "$volume")\" from image \"$(basename "$image")\""
+        cp "$image" "$volume"
+        virsh pool-refresh --pool default > /dev/null
+        virsh vol-resize "$volume" 8G > /dev/null
+    fi
+
+    log "Launching VM instance \"$name\" from image \"$(basename "$image")\" in network \"$network\""
     virt-install \
         --name "$name" \
         --memory 2048 \
         --vcpus 4 \
-        --disk=size=8,backing_store="$VM_IMAGE_DIR/$image" \
+        --disk=path="$volume" \
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
         --osinfo=debian12
