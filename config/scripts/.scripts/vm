@@ -90,8 +90,6 @@ cloud_init_conf() {
     users:
       - default
       - name: vuser
-        lock_passwd: false
-        passwd: $(echo debian | mkpasswd --method=SHA-512 -s)
         ssh_authorized_keys:
           - "$pubkey"
         sudo: ALL=(ALL) NOPASSWD:ALL
