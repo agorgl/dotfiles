@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -e
 
 #----------------------------------------------------------------------
 # Help
@@ -99,6 +99,11 @@ start() {
 
     log "Starting VM instance \"$instance\""
     virsh start "$instance"
+
+    if [ $? -ne 0 ]; then
+        log "Forcibly starting VM instance \"$instance\""
+        virsh start "$instance" --force-boot
+    fi
 }
 
 stop() {
