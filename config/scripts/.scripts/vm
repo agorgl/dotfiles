@@ -62,8 +62,10 @@ require_image() {
 }
 
 cloud_init_conf() {
+    local name="$1"
     cut -c5- <<<"
     #cloud-config
+    hostname: $name
     users:
       - default
       - name: vuser
@@ -89,7 +91,7 @@ launch() {
         --vcpus 4 \
         --disk=size=8,backing_store="$VM_IMAGE_DIR/$image" \
         --network bridge=$network \
-        --cloud-init user-data=<(cloud_init_conf),disable=on \
+        --cloud-init user-data=<(cloud_init_conf "$name"),disable=on \
         --osinfo=debian12
 }
 
