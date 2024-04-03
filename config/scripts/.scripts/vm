@@ -106,7 +106,7 @@ update() {
 }
 
 launch() {
-    local name="$1"
+    local name="$1"; shift
     local network=$(require_network)
     local image=$(require_image)
     local keyfile=$(require_keyfile "$name")
@@ -128,7 +128,8 @@ launch() {
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
         --osinfo=debian12 \
-        --noautoconsole
+        --noautoconsole \
+        $@
 }
 
 start() {
