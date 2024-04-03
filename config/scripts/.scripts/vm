@@ -30,6 +30,7 @@ log() { echo -e "\033[1m> $@\033[0m" >&2; }
 #----------------------------------------------------------------------
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 VM_IMAGE_DIR="${XDG_DATA_HOME}/libvirt/images"
+VM_KEY_DIR="${XDG_DATA_HOME}/vm/keys"
 VM_NET_IFACE=virbr0
 
 #----------------------------------------------------------------------
@@ -61,8 +62,20 @@ require_image() {
     require_debian_image
 }
 
+require_keyfile() {
+    local name="$1"
+    local keyfile="$VM_KEY_DIR/$name"
+    mkdir -p "$VM_KEY_DIR"
+    if [ ! -f "$keyfile" ]; then
+        ssh-keygen -q -N "" -C "" -f "$keyfile"
+    fi
+    echo "$keyfile"
+}
+
 cloud_init_conf() {
     local name="$1"
+    local pubkey="$2"
+
     cut -c5- <<<"
     #cloud-config
     hostname: $name
@@ -71,6 +84,8 @@ cloud_init_conf() {
       - name: vuser
         lock_passwd: false
         passwd: $(echo debian | mkpasswd --method=SHA-512 -s)
+        ssh_authorized_keys:
+          - "$pubkey"
         sudo: ALL=(ALL) NOPASSWD:ALL
         shell: /bin/bash
     "
@@ -83,6 +98,7 @@ launch() {
     local name="$1"
     local network=$(require_network)
     local image=$(require_image)
+    local keyfile=$(require_keyfile "$name")
 
     log "Launching VM instance \"$name\" from image \"$image\" in network \"$network\""
     virt-install \
@@ -91,7 +107,7 @@ launch() {
         --vcpus 4 \
         --disk=size=8,backing_store="$VM_IMAGE_DIR/$image" \
         --network bridge=$network \
-        --cloud-init user-data=<(cloud_init_conf "$name"),disable=on \
+        --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
         --osinfo=debian12
 }
 
@@ -117,6 +133,7 @@ stop() {
 
 delete() {
     local instance="$1"
+    local keyfile=$(require_keyfile "$instance")
 
     if virsh list --name --state-running | grep -w "$instance" > /dev/null; then
         stop "$instance"
@@ -124,15 +141,26 @@ delete() {
 
     log "Deleting VM instance \"$instance\""
     virsh undefine "$instance" --remove-all-storage
+    rm -f "$keyfile" "$keyfile.pub"
 }
 
 list() {
     virsh list --all --name | sed '/^$/d'
 }
 
-shell() {
+console() {
     local instance="$1"
     virsh console "$instance"
+}
+
+shell() {
+    local instance="$1"
+    ssh \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -o LogLevel=error \
+        -i "$VM_KEY_DIR/$instance" \
+        vuser@"$instance"
 }
 
 #----------------------------------------------------------------------
@@ -182,6 +210,10 @@ case "$cmd" in
     list)
         [ $# -ne 0 ] && die "Usage: $(basename $0) $cmd"
         list
+        ;;
+    console)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        console "$1"
         ;;
     shell)
         [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
