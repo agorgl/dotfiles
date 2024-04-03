@@ -9,7 +9,7 @@ HELP="\
 $(basename $0) <command> [args]
 
 Commands:
-  update                    Fetch latest image
+  update                    Fetch latest images
   launch    <name> [args]   Launch a new VM instance
   start     <name>          Start an existing VM instance
   stop      <name>          Stop a running VM instance
@@ -35,6 +35,7 @@ VM_KEY_DIR="${XDG_DATA_HOME}/vm/keys"
 VM_NET_IFACE=virbr0
 VM_USER=user
 DEBIAN_IMAGE_URL="https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+FEDORA_IMAGE_URL="https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
 
 #----------------------------------------------------------------------
 # Helpers
@@ -59,16 +60,45 @@ fetch_image() {
     curl -s -L -o "$fname" --create-dirs --output-dir "$VM_IMAGE_DIR" "$url"
 }
 
-require_debian_image() {
-    local url="$DEBIAN_IMAGE_URL"
+image_url_for_distro() {
+    local distro="$1"
+    case $distro in
+        debian)
+            echo "$DEBIAN_IMAGE_URL"
+            ;;
+        fedora)
+            echo "$FEDORA_IMAGE_URL"
+            ;;
+        *)
+            echo "Unexpected distro \"$distro\", falling back to debian" >&2
+            echo "$DEBIAN_IMAGE_URL"
+            ;;
+    esac
+}
+
+osinfo_for_distro() {
+    local distro="$1"
+    case $distro in
+        debian)
+            echo debian12
+            ;;
+        fedora)
+            echo fedora39
+            ;;
+        *)
+            echo "Unexpected distro \"$distro\", falling back to debian" >&2
+            echo debian12
+            ;;
+    esac
+}
+
+require_image() {
+    local distro="$1"
+    local url="$(image_url_for_distro "$distro")"
     local fname="$(basename "$url")"
     local image=$VM_IMAGE_DIR/$fname
     [ ! -f "$image" ] && fetch_image "$url"
     echo "$image"
-}
-
-require_image() {
-    require_debian_image
 }
 
 require_keyfile() {
@@ -88,6 +118,7 @@ cloud_init_conf() {
     cut -c5- <<<"
     #cloud-config
     hostname: $name
+    prefer_fqdn_over_hostname: false
     users:
       - default
       - name: $VM_USER
@@ -102,13 +133,22 @@ cloud_init_conf() {
 # Commands
 #----------------------------------------------------------------------
 update() {
-    fetch_image "$DEBIAN_IMAGE_URL"
+    for distro in debian fedora; do
+        local url="$(image_url_for_distro "$distro")"
+        fetch_image "$url"
+    done
 }
 
 launch() {
+    local distro="$1"; shift
     local name="$1"; shift
+    if [ -z "$name" ] || [[ "$name" = -* ]]; then
+        name="$distro"
+        distro="debian"
+    fi
+
     local network=$(require_network)
-    local image=$(require_image)
+    local image=$(require_image "$distro")
     local keyfile=$(require_keyfile "$name")
 
     local volume="$VM_IMAGE_DIR/$name.${image##*.}"
@@ -119,7 +159,7 @@ launch() {
         virsh vol-resize "$volume" 8G > /dev/null
     fi
 
-    log "Launching VM instance \"$name\" from image \"$(basename "$image")\" in network \"$network\""
+    log "Launching VM instance \"$name\" with $distro from image \"$(basename "$image")\" in network \"$network\""
     virt-install \
         --name "$name" \
         --memory 2048 \
@@ -127,7 +167,7 @@ launch() {
         --disk=path="$volume" \
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
-        --osinfo=debian12 \
+        --osinfo=$(osinfo_for_distro "$distro") \
         --noautoconsole \
         $@
 }
@@ -218,7 +258,7 @@ case "$cmd" in
         update
         ;;
     launch)
-        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <name>"
+        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd [distro] <name>"
         launch "$@"
         ;;
     start)
