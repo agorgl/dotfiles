@@ -163,12 +163,44 @@ update() {
 }
 
 launch() {
-    local distro="$1"; shift
     local name="$1"; shift
-    if [ -z "$name" ] || [[ "$name" = -* ]]; then
-        name="$distro"
-        distro="debian"
-    fi
+    local distro="debian"
+    local vcpus=1
+    local memory=2048
+    local disk="8G"
+    local rest_args=()
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --distro)
+                shift
+                local arg="$1"
+                [ ! -z "$arg" ] && distro="$arg"
+                shift
+                ;;
+            --vcpus)
+                shift
+                local arg="$1"
+                [ ! -z "$arg" ] && vcpus="$arg"
+                shift
+                ;;
+            --memory)
+                shift
+                local arg="$1"
+                [ ! -z "$arg" ] && memory="$arg"
+                shift
+                ;;
+            --disk)
+                shift
+                local arg="$1"
+                [ ! -z "$arg" ] && disk="$arg"
+                shift
+                ;;
+            *)
+                rest_args+=("$1")
+                shift
+                ;;
+        esac
+    done
 
     local info=$(image_info "$distro")
     local network=$(require_network)
@@ -180,20 +212,20 @@ launch() {
         log "Creating volume \"$(basename "$volume")\" from image \"$(basename "$image")\""
         cp "$image" "$volume"
         virsh pool-refresh --pool default > /dev/null
-        virsh vol-resize "$volume" 8G > /dev/null
+        virsh vol-resize "$volume" "$disk" > /dev/null
     fi
 
     log "Launching VM instance \"$name\" with $distro from image \"$(basename "$image")\" in network \"$network\""
     virt-install \
         --name "$name" \
-        --memory 2048 \
-        --vcpus 4 \
-        --disk=path="$volume" \
+        --vcpus "$vcpus" \
+        --memory "$memory" \
+        --disk path="$volume" \
         --network bridge=$network \
         --cloud-init user-data=<(cloud_init_conf "$name" "$(cat "$keyfile.pub")"),disable=on \
-        --osinfo="$distro$(echo "$info" | jq -r .version)" \
+        --osinfo "$distro$(echo "$info" | jq -r .version)" \
         --noautoconsole \
-        $@
+        ${rest_args[@]}
 }
 
 start() {
@@ -292,7 +324,7 @@ case "$cmd" in
         update
         ;;
     launch)
-        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd [distro] <name>"
+        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <name> [args]"
         launch "$@"
         ;;
     start)
