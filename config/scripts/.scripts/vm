@@ -16,6 +16,7 @@ Commands:
   delete    <name>          Delete a VM instance
   list                      List VM instances
   shell     <name>          Open a shell inside a VM instance
+  sshconf   <name>          Print a ssh config for a VM instance
 
 Options:
   -h, --help                Print current help message
@@ -248,6 +249,16 @@ shell() {
         $VM_USER@$instance $@
 }
 
+sshconf() {
+    local instance="$1"
+    echo "Host $instance
+    User $VM_USER
+    IdentityFile $(echo $VM_KEY_DIR | sed "s|$HOME|~|")/$instance
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    LogLevel error"
+}
+
 #----------------------------------------------------------------------
 # Entrypoint
 #----------------------------------------------------------------------
@@ -309,6 +320,10 @@ case "$cmd" in
         inst="$1"
         shift
         shell "$inst" "$@"
+        ;;
+    sshconf)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        sshconf "$1"
         ;;
     *)
         echo "Unexpected command $cmd" >&2
