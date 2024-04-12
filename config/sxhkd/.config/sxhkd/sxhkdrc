@@ -20,7 +20,7 @@ super + i
 
 # Toggle panel
 super + n
-    (eww windows | grep '*panel') && eww close panel || eww open panel
+    (eww active-windows | grep 'panel') && eww close panel || eww open panel
 
 # Make sxhkd reload its configuration files
 super + Escape
