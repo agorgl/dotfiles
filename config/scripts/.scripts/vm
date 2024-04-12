@@ -99,6 +99,21 @@ fedora_image_info() {
         '{distro: $distro, codename: $codename, version: $version, url: $url}'
 }
 
+almalinux_image_info() {
+    local info=$(curl -s https://raw.githubusercontent.com/AlmaLinux/mirrors/master/config.yml | \
+        yq -r '.versions | sort | last')
+    local distro="almalinux"
+    local codename=""
+    local version=${info%.*}
+    local url="https://repo.almalinux.org/almalinux/$info/cloud/x86_64/images/AlmaLinux-$version-GenericCloud-latest.x86_64.qcow2"
+    jq -c --null-input \
+        --arg distro "$distro" \
+        --arg codename "$codename" \
+        --arg version "$version" \
+        --arg url "$url" \
+        '{distro: $distro, codename: $codename, version: $version, url: $url}'
+}
+
 image_info() {
     local distro="$1"
     case $distro in
@@ -107,6 +122,9 @@ image_info() {
             ;;
         fedora)
             fedora_image_info
+            ;;
+        almalinux)
+            almalinux_image_info
             ;;
         *)
             echo "Unexpected distro \"$distro\", falling back to debian" >&2
@@ -156,7 +174,7 @@ cloud_init_conf() {
 # Commands
 #----------------------------------------------------------------------
 update() {
-    for distro in debian fedora; do
+    for distro in debian fedora almalinux; do
         local info=$(image_info "$distro")
         local url="$(echo "$info" | jq -r .url)"
         fetch_image "$url"
