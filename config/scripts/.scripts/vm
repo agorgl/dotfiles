@@ -141,6 +141,7 @@ cloud_init_conf() {
     #cloud-config
     hostname: $name
     prefer_fqdn_over_hostname: false
+    package_update: true
     users:
       - default
       - name: $VM_USER
