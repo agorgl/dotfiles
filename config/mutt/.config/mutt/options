@@ -24,7 +24,7 @@ set flag_chars = "      "
 # Customize chars used mailbox status (unchanged, changed-needs-sync, read-only, attach-message-mode)
 set status_chars = " 󰁦"
 # Customize the message index display
-set index_format = " %zs %zc %zt  %[%d %b %H:%M]  %-20.20L  • %s %<M?(%M)>"
+set index_format = " %zs %zc %zt  %[%d %b %y %H:%M]  %-20.20L  • %s %<M?(%M)>"
 # Customize the the status line displayed in the index menu
 set status_format = " %D%<r? %r> %> %<M?%M results for \"%V\" (%L)&%<p?%p postponed>%<p?%<t? / &%<d? / >>>%<t?%t tagged>%<d?%<t? / >>%<d?%d deleted>  • %<u?%u unread / >%m total%<l? (%l)>> "
 
