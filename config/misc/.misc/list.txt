@@ -205,8 +205,8 @@ d-feet
 dunst
 dzen2
 edk2-ovmf
+engrampa
 feh
-file-roller
 filelight
 galculator
 gnupg
