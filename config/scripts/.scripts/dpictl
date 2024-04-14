@@ -145,10 +145,23 @@ update_xsettings() {
       > "$XSETD_HIDPI_CONF"
 }
 
+update_firefox() {
+    local scale="$1"
+    local gtk_scales=($(gtk_scale "$scale"))
+    local text_scale_factor=$(bc <<< "$scale / ${gtk_scales[0]}")
+
+    local profile="$(grep -Po "(?<=Path=).*.default-release" $HOME/.mozilla/firefox/profiles.ini)"
+    local prefs="$HOME/.mozilla/firefox/$profile/prefs.js"
+    if [ -f "$prefs" ]; then
+        sed -n -r -i "/^user_pref\(\"ui.textScaleFactor\"/!p;\$auser_pref\(\"ui.textScaleFactor\", $text_scale_factor\);" $prefs
+    fi
+}
+
 update_scale() {
     local scale="$1"
     update_env_file $scale
     update_xsettings $scale
+    update_firefox $scale
     echo $scale > "$scalefile"
 }
 
