@@ -1,13 +1,3 @@
-gtk-theme-name = "Arc"
-gtk-icon-theme-name = "Paper"
-
-style "user-font"
-{
-    font_name = "Open Sans 9"
-}
-widget_class "*" style "user-font"
-gtk-font-name = "Open Sans 9"
-
 style "gvim"
 {
     bg[NORMAL] = "#1B1D1E"
