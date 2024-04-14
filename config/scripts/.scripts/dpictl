@@ -50,6 +50,10 @@ Gdk/WindowScalingFactor {window_scaling_factor}
 Gdk/UnscaledDPI {unscaled_dpi}
 EOM
 
+read -r -d '' XRES_HIDPI_FILE << EOM || :
+Xft.dpi: {dpi}
+EOM
+
 #----------------------------------------------------------------------
 # Helpers
 #----------------------------------------------------------------------
@@ -145,6 +149,14 @@ update_xsettings() {
       > "$XSETD_HIDPI_CONF"
 }
 
+update_xresources() {
+    local scale="$1"
+    local dpi=$(scale2dpi "$scale")
+    echo "$XRES_HIDPI_FILE" | sed \
+        -e "s/{dpi}/${dpi}/g" \
+      | xrdb -merge -
+}
+
 update_firefox() {
     local scale="$1"
     local gtk_scales=($(gtk_scale "$scale"))
@@ -161,6 +173,7 @@ update_scale() {
     local scale="$1"
     update_env_file $scale
     update_xsettings $scale
+    update_xresources $scale
     update_firefox $scale
     echo $scale > "$scalefile"
 }
@@ -209,6 +222,11 @@ autodetect() {
     dpi2scale "$dpi"
 }
 
+apply() {
+    local scale=$(scale)
+    update_xresources "$scale"
+}
+
 #----------------------------------------------------------------------
 # Entrypoint
 #----------------------------------------------------------------------
@@ -245,6 +263,10 @@ case "$cmd" in
     autodetect)
         [ $# -ne 0 ] && die "Usage: $(basename $0) autodetect"
         autodetect
+        ;;
+    apply)
+        [ $# -ne 0 ] && die "Usage: $(basename $0) apply"
+        apply
         ;;
     *)
         echo "Unexpected command $cmd" >&2

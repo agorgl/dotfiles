@@ -9,8 +9,7 @@ picom &
 xrdb -merge ~/.Xresources
 
 # Set dpi
-dpi=$(dpictl dpi)
-echo "Xft.dpi: $dpi" | xrdb -merge -
+dpictl apply
 
 # Set cursor to left ptr
 xsetroot -cursor_name left_ptr &
