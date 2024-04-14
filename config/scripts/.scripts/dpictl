@@ -26,20 +26,28 @@ help() { echo "$HELP"; }
 #----------------------------------------------------------------------
 DPICTL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/dpictl
 ENVD_HIDPI_CONF=${XDG_CONFIG_HOME:-$HOME/.config}/environment.d/hidpi.conf
+XSETD_HIDPI_CONF=${XDG_CONFIG_HOME:-$HOME/.config}/xsettingsd/conf.d/hidpi.conf
 XORG_MONITOR_CONF=/etc/X11/xorg.conf.d/*-monitor.conf
 
 #----------------------------------------------------------------------
 # Templates
 #----------------------------------------------------------------------
 read -r -d '' ENVD_HIDPI_FILE << EOM || :
-# HiDPI settings for GTK3+
-GDK_SCALE={gtk_scale}
-GDK_DPI_SCALE={gtk_dpi_scale}
+# HiDPI settings for GTK3+ (deprecated in favor of xsettings)
+#GDK_SCALE={gtk_scale}
+#GDK_DPI_SCALE={gtk_dpi_scale}
 
 # HiDPI settings for QT
 QT_AUTO_SCREEN_SCALE_FACTOR=1
 QT_ENABLE_HIGHDPI_SCALING=1
 PLASMA_USE_QT_SCALING=1
+EOM
+
+read -r -d '' XSETD_HIDPI_FILE << EOM || :
+# HiDPI settings for XSETTINGS
+Xft/DPI {xft_dpi}
+Gdk/WindowScalingFactor {window_scaling_factor}
+Gdk/UnscaledDPI {unscaled_dpi}
 EOM
 
 #----------------------------------------------------------------------
@@ -111,7 +119,7 @@ gtk_scale() {
     echo $gtk_scale $gtk_dpi_scale
 }
 
-update_env_file () {
+update_env_file() {
     local scale="$1"
     local gtk_scales=($(gtk_scale "$scale"))
     mkdir -p $(dirname "$ENVD_HIDPI_CONF")
@@ -121,9 +129,26 @@ update_env_file () {
       > "$ENVD_HIDPI_CONF"
 }
 
+update_xsettings() {
+    local scale="$1"
+    local dpi=$(scale2dpi "$scale")
+    local gtk_scales=($(gtk_scale "$scale"))
+
+    local xft_dpi=$(bc <<< "$dpi * 1024")
+    local window_scaling_factor=${gtk_scales[0]}
+    local unscaled_dpi=$(bc <<< "$xft_dpi / $window_scaling_factor")
+
+    echo "$XSETD_HIDPI_FILE" | sed \
+        -e "s/{xft_dpi}/${xft_dpi}/g" \
+        -e "s/{window_scaling_factor}/${window_scaling_factor}/g" \
+        -e "s/{unscaled_dpi}/${unscaled_dpi}/g" \
+      > "$XSETD_HIDPI_CONF"
+}
+
 update_scale() {
     local scale="$1"
     update_env_file $scale
+    update_xsettings $scale
     echo $scale > "$scalefile"
 }
 

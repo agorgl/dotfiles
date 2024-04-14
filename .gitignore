@@ -1,3 +1,4 @@
 # File manager bookmarks
 config/gtk/.config/gtk-3.0/bookmarks
 config/xorg/.config/xsettingsd/xsettingsd.conf
+config/xorg/.config/xsettingsd/conf.d/hidpi.conf
