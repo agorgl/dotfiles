@@ -25,6 +25,7 @@ setxkbmap -layout us,gr -option grp:lalt_lshift_toggle
 [ -f ~/.fehbg ] && ~/.fehbg &
 
 # Launch xsettings daemon
+cat ~/.config/xsettingsd/conf.d/* > ~/.config/xsettingsd/xsettingsd.conf
 xsettingsd &
 
 # Launch notification daemon
