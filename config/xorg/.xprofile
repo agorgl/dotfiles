@@ -35,7 +35,7 @@ dunst &
 xss-lock -- i3lock -u -c 000000 &
 
 # Launch policy kit auth agent
-/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+/usr/lib/mate-polkit/polkit-mate-authentication-agent-1 &
 
 # Setup ssh-agent component of gpg
 unset SSH_AGENT_PID
