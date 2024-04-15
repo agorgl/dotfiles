@@ -1,4 +1,6 @@
-awf-git
+awf-gtk2
+awf-gtk3
+awf-gtk4
 baresip
 blender
 caprine
