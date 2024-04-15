@@ -200,7 +200,7 @@ alacritty
 arandr
 ccid
 chromium
-d-feet
+d-spy
 dunst
 dzen2
 edk2-ovmf
