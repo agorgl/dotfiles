@@ -122,6 +122,7 @@ dhcpcd
 dnsmasq
 ethtool
 iwd
+systemd-resolvconf
 
 # Windowing
 autorandr
