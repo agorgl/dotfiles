@@ -24,6 +24,8 @@ valgrind
 # System
 acpi_call
 acpid
+dbus-broker
+dbus-broker-units
 dkms
 gocryptfs
 iptables-nft
