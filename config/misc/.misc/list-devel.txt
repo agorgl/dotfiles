@@ -1,5 +1,8 @@
 aardvark-dns
 android-udev
+ansible
+ansible-language-server
+ansible-lint
 babashka-bin
 bat
 buildah
