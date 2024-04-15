@@ -209,6 +209,7 @@ edk2-ovmf
 engrampa
 feh
 filelight
+firefox
 galculator
 gnupg
 goimapnotify
