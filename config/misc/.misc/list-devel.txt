@@ -40,3 +40,4 @@ terraform
 terraform-ls
 typescript-language-server
 vagrant
+yaml-language-server
