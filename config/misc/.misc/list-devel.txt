@@ -33,6 +33,7 @@ renderdoc
 rlwrap
 rustup
 saxon-he
+stylua
 tailwindcss-language-server
 terraform
 terraform-ls
