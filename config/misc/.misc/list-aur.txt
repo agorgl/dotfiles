@@ -1,5 +1,6 @@
 conky-cairo
 cyrus-sasl-xoauth2-git
+eww
 ifdnfc-git
 jmtpfs
 paper-icon-theme-git
