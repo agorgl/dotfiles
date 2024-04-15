@@ -111,7 +111,6 @@ youtube-dl
 # Networking
 blueman
 bluez
-bluez-plugins
 bluez-tools
 bluez-utils
 connman
