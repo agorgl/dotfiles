@@ -101,7 +101,7 @@ fedora_image_info() {
 
 almalinux_image_info() {
     local info=$(curl -s https://raw.githubusercontent.com/AlmaLinux/mirrors/master/config.yml | \
-        yq -r '.versions | sort | last')
+        yq -r '.versions | sort | .[-1]')
     local distro="almalinux"
     local codename=""
     local version=${info%.*}
