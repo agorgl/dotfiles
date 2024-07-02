@@ -210,8 +210,10 @@ cloud_init_conf() {
 # Commands
 #----------------------------------------------------------------------
 update() {
-    for distro in debian fedora almalinux; do
-        local info=$(image_info "$distro")
+    local distros=("$@")
+    [ -z "$distros" ] && distros=("debian" "fedora" "almalinux")
+    for distro in "${distros[@]}"; do
+        local info=$(update_image_info "$distro")
         local url="$(echo "$info" | jq -r .url)"
         fetch_image "$url"
     done
@@ -375,8 +377,8 @@ shift
 
 case "$cmd" in
     update)
-        [ $# -ne 0 ] && die "Usage: $(basename $0) $cmd"
-        update
+        [ $# -lt 0 ] && die "Usage: $(basename $0) $cmd"
+        update "$@"
         ;;
     launch)
         [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <name> [args]"
