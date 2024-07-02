@@ -7,6 +7,7 @@ current_path = debug.getinfo(1).source:match("@?(.*/)")
 package.path = current_path .. "?.lua;" .. package.path
 
 require 'cairo'
+require 'cairo_xlib'
 require 'util'
 
 --------------------------------------------------------------------------------------------

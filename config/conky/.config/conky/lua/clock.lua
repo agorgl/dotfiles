@@ -9,6 +9,7 @@ package.path = current_path .. "?.lua;" .. package.path
 require 'conf'
 require 'util'
 require 'cairo'
+require 'cairo_xlib'
 
 -- Constants
 CLOCK_FONT      = "Open Sans"
