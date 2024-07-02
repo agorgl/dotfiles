@@ -33,6 +33,7 @@ log() { echo -e "\033[1m> $@\033[0m" >&2; }
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 VM_IMAGE_DIR="${XDG_DATA_HOME}/libvirt/images"
 VM_KEY_DIR="${XDG_DATA_HOME}/vm/keys"
+VM_IMG_INFO_FILE="${XDG_DATA_HOME}/vm/images.json"
 VM_NET_IFACE=virbr0
 VM_USER=user
 
@@ -114,7 +115,7 @@ almalinux_image_info() {
         '{distro: $distro, codename: $codename, version: $version, url: $url}'
 }
 
-image_info() {
+fetch_image_info() {
     local distro="$1"
     case $distro in
         debian)
@@ -131,6 +132,41 @@ image_info() {
             debian_image_info
             ;;
     esac
+}
+
+require_image_metadata() {
+    local fname="$VM_IMG_INFO_FILE"
+    if [ ! -f "$fname" ]; then
+        mkdir -p "$(dirname "$fname")"
+        echo '{}' > "$fname"
+    fi
+    cat "$fname"
+}
+
+update_image_info() {
+    local distro="$1"
+    case $distro in
+        debian) ;;
+        fedora) ;;
+        almalinux) ;;
+        *)
+            echo "Unexpected distro \"$distro\", falling back to debian" >&2
+            distro="debian"
+            ;;
+    esac
+
+    local info=$(fetch_image_info "$distro")
+    local metadata=$(require_image_metadata)
+    echo "$metadata" | jq --argjson info "$info" ".$distro = \$info" > "$VM_IMG_INFO_FILE"
+    echo "$info"
+}
+
+image_info() {
+    local distro="$1"
+    local metadata=$(require_image_metadata)
+    local info=$(echo "$metadata" | jq -c ".$distro")
+    [ "$info" == "null" ] && info=$(update_image_info "$distro")
+    echo "$info"
 }
 
 require_image() {
