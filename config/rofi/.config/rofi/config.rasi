@@ -4,7 +4,7 @@
 
 configuration {
     font: "Monaco 16";
-    modi: "run,window,ssh";
+    modi: "run,drun,window,ssh";
     monitor: -1;
 }
 
