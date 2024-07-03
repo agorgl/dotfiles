@@ -1,15 +1,17 @@
 //
 // Variables
 //
+@import "${HOME}/.cache/wal/colors.scss";
+
 // Fonts
 $font: "JetBrains Mono, icomoon-feather";
 
 // Colors
-$bg: #161819;
-$bg-light: #1d2021;
-$bg-lighter: #4e4e4e;
-$fg: #b0b4bc;
-$fg-light: #cccccc;
+$bg: $background;
+$bg-light: lighten($bg, 2%);
+$bg-lighter: lighten($bg, 15%);
+$fg: $foreground;
+$fg-light: lighten($fg, 10%);
 
 //
 // Defaults
