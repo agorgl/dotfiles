@@ -36,6 +36,7 @@ scale trough highlight {
 //
 .panel > * {
   background-color: $bg;
+  margin: 1rem;
   padding: 2em;
   border-radius: 1em;
   color: $fg;
@@ -68,7 +69,7 @@ scale trough highlight {
 
 /* Groups */
 .groups {
-  margin-top: 2em;
+  margin-top: 1em;
 }
 
 .groups > *:not(:first-child):not(:last-child) {

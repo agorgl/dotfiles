@@ -4,9 +4,9 @@
 (defwindow panel
   :monitor 0
   :windowtype "dock"
-  :geometry (geometry :x "-8px"
+  :geometry (geometry :x "0"
                       :y "0%"
-                      :width "360px"
+                      :width "376px"
                       :height "0%"
                       :anchor "center right")
   :wm-ignore false
