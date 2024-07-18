@@ -6,5 +6,5 @@ siji-git
 termsyn-font
 ttf-icomoon-feather
 ttf-monaco
-ttf-ms-win10-auto
+ttf-ms-win11-auto
 ttf-unifont
