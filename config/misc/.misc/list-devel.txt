@@ -15,6 +15,7 @@ gopls
 helm
 helmfile
 httpie
+jdk-openjdk
 jdk11-openjdk
 jdk17-openjdk
 jdk21-graalvm-bin
