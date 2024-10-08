@@ -7,6 +7,7 @@ jack_capture
 lib32-pipewire-jack
 lingot
 lsp-plugins-lv2
+mda.lv2
 mod-utilities-lv2-git
 realtime-privileges
 reaper
