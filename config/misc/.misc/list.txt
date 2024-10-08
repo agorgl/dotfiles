@@ -34,6 +34,7 @@ man-db
 man-pages
 mate-polkit
 nano
+nfs-utils
 ntfs-3g
 ntp
 samba
