@@ -37,4 +37,5 @@ tailwindcss-language-server
 terraform
 typescript-language-server
 vagrant
+watchexec
 yaml-language-server
