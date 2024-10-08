@@ -9,7 +9,6 @@ buildah
 ccls
 clojure
 clojure-lsp-bin
-cni-plugins
 ctags
 go
 gopls
