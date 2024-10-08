@@ -110,6 +110,7 @@ vnstat
 vorbis-tools
 vulkan-tools
 w3m
+wavemon
 wget
 whois
 wireguard-tools
