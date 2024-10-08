@@ -14,7 +14,6 @@ gimp
 lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
-mailspring
 mesa-demos
 mgba-sdl
 mtpfs
