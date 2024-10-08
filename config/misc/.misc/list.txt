@@ -143,6 +143,7 @@ sxhkd
 weston
 wmctrl
 xclip
+xdg-desktop-portal-gtk
 xdo
 xdotool
 xf86-input-libinput
