@@ -60,6 +60,7 @@ evtest
 exfatprogs
 expac
 fd
+fdupes
 fzf
 gnu-netcat
 htop
