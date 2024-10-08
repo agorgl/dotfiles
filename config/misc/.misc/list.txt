@@ -110,6 +110,7 @@ vnstat
 vorbis-tools
 vulkan-tools
 wget
+whois
 wireguard-tools
 youtube-dl
 
