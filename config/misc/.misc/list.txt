@@ -27,6 +27,7 @@ acpid
 dbus-broker
 dbus-broker-units
 dkms
+fwupd
 gocryptfs
 iptables-nft
 man-db
