@@ -7,4 +7,5 @@ paper-icon-theme-git
 paru
 qimgv
 qt5-styleplugins
+qt5gtk2
 qt6gtk2
