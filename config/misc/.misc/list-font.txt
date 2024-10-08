@@ -1,5 +1,6 @@
 apple-fonts
 cozette-otb
+nerd-fonts-sf-mono
 otb-tamzen-font-git
 powerline-fonts-git
 siji-git
