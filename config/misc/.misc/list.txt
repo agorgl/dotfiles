@@ -118,7 +118,6 @@ blueman
 bluez
 bluez-tools
 bluez-utils
-connman
 dhclient
 dhcp
 dhcpcd
