@@ -8,6 +8,7 @@ discord
 downgrade
 element-desktop
 flatpak
+flatseal
 font-manager
 gimp
 lemonbar-xft-git
