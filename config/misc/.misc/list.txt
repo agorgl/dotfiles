@@ -115,7 +115,7 @@ wavemon
 wget
 whois
 wireguard-tools
-youtube-dl
+yt-dlp
 
 # Networking
 blueman
