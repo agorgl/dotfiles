@@ -13,6 +13,7 @@ gimp
 lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
+mblaze-git
 mesa-demos
 mgba-sdl
 mtpfs
