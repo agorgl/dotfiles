@@ -8,6 +8,7 @@ downgrade
 element-desktop
 flatpak
 flatseal
+flavours
 font-manager
 gimp
 gtk3-demos
