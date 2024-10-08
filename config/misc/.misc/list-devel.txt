@@ -23,6 +23,7 @@ k9s
 kubectl
 lua-language-server
 maven
+mdbook
 mitmproxy
 mold
 nodejs
