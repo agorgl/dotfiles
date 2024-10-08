@@ -10,6 +10,8 @@ flatpak
 flatseal
 font-manager
 gimp
+gtk3-demos
+gtk4-demos
 lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
