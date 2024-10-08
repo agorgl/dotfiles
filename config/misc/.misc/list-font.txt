@@ -5,6 +5,7 @@ otb-tamzen-font-git
 powerline-fonts-git
 siji-git
 termsyn-font
+ttf-font-awesome
 ttf-icomoon-feather
 ttf-monaco
 ttf-ms-win11-auto
