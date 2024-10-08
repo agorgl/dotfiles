@@ -183,6 +183,7 @@ wireplumber
 
 # Themes
 arc-gtk-theme
+gnome-themes-extra
 gtk-engine-murrine
 
 # Fonts
