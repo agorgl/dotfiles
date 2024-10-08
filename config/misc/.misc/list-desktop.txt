@@ -20,9 +20,11 @@ mesa-demos
 mgba-sdl
 mtpfs
 mupdf-tools
+openconnect
 python-pywal
 qbittorrent
 slack-desktop
+vpn-slice
 wine
 wine-gecko
 wine-mono
