@@ -6,7 +6,6 @@ jack-stdio
 jack_capture
 lib32-pipewire-jack
 mod-utilities-lv2-git
-oggfwd
 realtime-privileges
 reaper
 shntool
