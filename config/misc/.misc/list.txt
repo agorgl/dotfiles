@@ -109,6 +109,7 @@ vdpauinfo
 vnstat
 vorbis-tools
 vulkan-tools
+w3m
 wget
 whois
 wireguard-tools
