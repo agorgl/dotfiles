@@ -63,6 +63,7 @@ fd
 fdupes
 fzf
 gnu-netcat
+go-yq
 htop
 imagemagick
 indent
