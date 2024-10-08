@@ -5,6 +5,7 @@ guitarix
 jack-stdio
 jack_capture
 lib32-pipewire-jack
+lingot
 mod-utilities-lv2-git
 realtime-privileges
 reaper
