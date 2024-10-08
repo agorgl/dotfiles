@@ -28,7 +28,6 @@ help() { echo "$HELP"; }
 #----------------------------------------------------------------------
 MAIL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/mailconf
 MAIL_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/mail
-MUTT_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/mutt
 
 #----------------------------------------------------------------------
 # Helpers
@@ -79,8 +78,8 @@ IMAPStore mail-remote
 Account mail-account
 
 MaildirStore mail-local
-Path $(reltohome $MAIL_CACHE_DIR)/{mail}/
-Inbox $(reltohome $MAIL_CACHE_DIR)/{mail}/Inbox
+Path $(reltohome $MAIL_CACHE_DIR)/{mail}/data/
+Inbox $(reltohome $MAIL_CACHE_DIR)/{mail}/data/Inbox
 SubFolders Verbatim
 
 Channel mail
@@ -125,7 +124,7 @@ EOM
 
 read -r -d '' NOTMUCHRC << EOM || :
 [database]
-path=$(reltohome $MAIL_CACHE_DIR)/{mail}/
+path=$(reltohome $MAIL_CACHE_DIR)/{mail}/data/
 
 [user]
 name={mail}
@@ -144,11 +143,11 @@ EOM
 read -r -d '' MUTTRC << EOM || :
 set my_mail = "{mail}"
 set my_conf = "$(reltohome $MAIL_CONF_DIR)/{mail}"
-set header_cache = "$(reltohome $MUTT_CACHE_DIR)/{mail}/"
-set message_cachedir = "$(reltohome $MUTT_CACHE_DIR)/{mail}/"
+set header_cache = "$(reltohome $MAIL_CACHE_DIR)/{mail}/mutt/"
+set message_cachedir = "$(reltohome $MAIL_CACHE_DIR)/{mail}/mutt/"
 
 set mbox_type = Maildir
-set folder = "$(reltohome $MAIL_CACHE_DIR)/{mail}"
+set folder = "$(reltohome $MAIL_CACHE_DIR)/{mail}/data"
 
 set spoolfile = +Inbox
 set postponed = +Drafts
@@ -163,7 +162,7 @@ set nm_config_file = "$(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc"
 set nm_record = yes
 set nm_record_tags = "sent"
 
-mailboxes +Inbox \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Archive/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf '%h '\` +Archive +Drafts +Sent +Spam +Trash
+mailboxes +Inbox \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}/data" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Archive/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf '%h '\` +Archive +Drafts +Sent +Spam +Trash
 EOM
 
 #----------------------------------------------------------------------
@@ -192,6 +191,7 @@ add() {
     if [ -d "$mailconfdir" ]; then
         die "add: mailconf dir for email \"$mail\" already exists"
     fi
+
     mkdir -p "$mailconfdir"
     generate "$mail"
 }
@@ -203,7 +203,8 @@ sync() {
     if [ ! -d "$mailconfdir" ]; then
         die "sync: mailconf dir for email \"$mail\" does not exist"
     fi
-    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
     mbsync -Va -c "$mailconfdir/mbsyncrc"
 }
 
@@ -214,7 +215,8 @@ watch() {
     if [ ! -d "$mailconfdir" ]; then
         die "watch: mailconf dir for email \"$mail\" does not exist"
     fi
-    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
     goimapnotify -conf "$mailconfdir/imapnotifyrc"
 }
 
@@ -225,7 +227,8 @@ index() {
     if [ ! -d "$mailconfdir" ]; then
         die "index: mailconf dir for email \"$mail\" does not exist"
     fi
-    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir"
+
+    [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
     notmuch --config "$mailconfdir/notmuchrc" new
 }
 
@@ -235,6 +238,7 @@ remove() {
     if [ ! -d "$mailconfdir" ]; then
         die "rm: mailconf dir for email \"$mail\" does not exist"
     fi
+
     rm -rf $mailconfdir
 }
 

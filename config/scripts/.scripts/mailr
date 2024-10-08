@@ -19,7 +19,7 @@ ansictl set background '#2E3440'
 
 # Launch mutt along with its companions, exposing the encrypted mail directory
 mail=$(mailconf ls | fzf)
-encdir expose $HOME/.cache/mail $HOME/.cache/mutt -- /bin/bash << EOF
+encdir expose $HOME/.cache/mail -- /bin/bash << EOF
 {
     exec < /dev/tty
     (
