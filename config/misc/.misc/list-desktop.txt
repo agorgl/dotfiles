@@ -17,7 +17,6 @@ libappindicator-gtk3
 losslesscut-bin
 mblaze-git
 mesa-demos
-mgba-sdl
 mtpfs
 mupdf-tools
 openconnect
