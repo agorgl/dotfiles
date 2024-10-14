@@ -9,11 +9,13 @@ HELP="\
 $(basename $0) <command> [<args>]
 
 Commands:
-  add   <email>   Add new mail configuration
-  sync  <email>   Sync maildir folder
-  watch <email>   Watch for new mails
-  rm    <email>   Remove existing mail configuration
-  ls              List all mail configurations
+  add     <email>   Add new mail configuration
+  sync    <email>   Sync maildir folder
+  watch   <email>   Watch for new mails
+  daemon  <email>   Run daemon that listens for control commands
+  control <email>   Send control command to a running daemon
+  rm      <email>   Remove existing mail configuration
+  ls                List all mail configurations
 
 Options:
   -h, --help      Print current help message
@@ -22,12 +24,14 @@ Options:
 die() { echo >&2 "$*"; exit 1; }
 usage() { die "$USAGE"; }
 help() { echo "$HELP"; }
+log() { echo -e "\033[1m> $@\033[0m" >&2; }
 
 #----------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------
 MAIL_CONF_DIR=${XDG_CONFIG_HOME:-$HOME/.config}/mailconf
 MAIL_CACHE_DIR=${XDG_CACHE_HOME:-$HOME/.cache}/mail
+MAIL_STATE_DIR=$HOME/.local/state/mail
 
 #----------------------------------------------------------------------
 # Helpers
@@ -42,6 +46,12 @@ mailcachedir() {
     local mail="$1"
     local mailcachedir=$MAIL_CACHE_DIR/$mail
     echo $mailcachedir
+}
+
+mailstatedir() {
+    local mail="$1"
+    local mailstatedir=$MAIL_STATE_DIR/$mail
+    echo $mailstatedir
 }
 
 reltohome() {
@@ -100,8 +110,7 @@ read -r -d '' IMAPNOTIFYRC << EOM || :
   "password": "",
   "passwordCmd": "oauth2mail show {mail}",
   "xoauth2": true,
-  "onNewMail": "mbsync -Va -c $(reltohome $MAIL_CONF_DIR)/{mail}/mbsyncrc; true",
-  "onNewMailPost": "notmuch --config $(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc new",
+  "onNewMail": "mailconf control sync {mail}",
   "boxes": ["Inbox"]
 }
 EOM
@@ -232,6 +241,98 @@ index() {
     notmuch --config "$mailconfdir/notmuchrc" new
 }
 
+children() {
+    local children=$(ps -o pid= --ppid "$1")
+    for pid in $children; do
+        children "$pid"
+    done
+    echo "$children"
+}
+
+daemon() {
+    local mail="$1"
+    local mailconfdir=$(mailconfdir "$mail")
+    local mailstatedir=$(mailstatedir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "daemon: mailconf dir for email \"$mail\" does not exist"
+    fi
+
+    [ ! -d "$mailstatedir" ] && mkdir -p "$mailstatedir"
+    local pipe="$mailstatedir/control"
+    if [ -p "$pipe" ]; then
+        die "daemon: control fifo for email \"$mail\" already exists, is the daemon already running?"
+    fi
+
+    mkfifo $pipe
+    trap "rm -f $pipe" SIGINT SIGTERM EXIT
+
+    log "Watching inbox for \"$mail\""
+    watch "$mail" &
+    local watch_pid=$!
+
+    log "Starting timer to send periodic events"
+    while true; do
+        log "Requesting periodic sync"
+        control "$mail" sync
+        sleep 300
+    done &
+    local scheduled_pid=$!
+
+    log "Listening control events for \"$mail\""
+    local sync_pid
+    tail -f "$pipe" | while read -r command; do
+        local command=($command)
+        local cmd="${command[0]}"
+        local opts="${command[@]:1}"
+
+        log "Received command: ${cmd} ${opts[@]}"
+        case $cmd in
+            sync)
+                local sync_ppid=$([ ! -z $sync_pid ] && kill -0 $sync_pid &>/dev/null && cat /proc/$sync_pid/stat | cut -d ' ' -f 5)
+                if [ -z $sync_pid ] || [[ $sync_ppid != $$ ]]; then
+                    {
+                        log Syncing "$mail"
+                        sync "$mail"
+                        log Indexing "$mail"
+                        index "$mail"
+                        log Done
+                    } &
+                    sync_pid=$!
+                else
+                    log "A sync operation is already running, skipping sync"
+                fi
+                ;;
+            exit)
+                log "Exiting"
+                kill $(children $scheduled_pid) $scheduled_pid
+                kill $(children $watch_pid) $watch_pid
+                log "Bye"
+                break
+                ;;
+            *)
+                log "Unrecognized command: ${command[@]}"
+                ;;
+        esac
+    done
+}
+
+control() {
+    local mail="$1"
+    local cmd="$2"
+    local opts=("${@:3}")
+    local mailconfdir=$(mailconfdir "$mail")
+    local mailstatedir=$(mailstatedir "$mail")
+    if [ ! -d "$mailconfdir" ]; then
+        die "daemon: mailconf dir for email \"$mail\" does not exist"
+    fi
+
+    local pipe=$mailstatedir/control
+    if [ ! -p "$pipe" ]; then
+        die "control: control fifo for email \"$mail\" does not exist, is the daemon running?"
+    fi
+    echo "$cmd" "${opts[@]}" > $pipe
+}
+
 remove() {
     local mail="$1"
     local mailconfdir=$(mailconfdir "$mail")
@@ -286,6 +387,14 @@ case "$cmd" in
     index)
         [ $# -ne 1 ] && die "Usage: $(basename $0) index <email>"
         index "$1"
+        ;;
+    daemon)
+        [ $# -ne 1 ] && die "Usage: $(basename $0) daemon <email>"
+        daemon "$1"
+        ;;
+    control)
+        [ $# -lt 2 ] && die "Usage: $(basename $0) control <email> <command> [options...]"
+        control "$1" "$2" "${@:3}"
         ;;
     rm)
         [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
