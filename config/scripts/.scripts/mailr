@@ -1,19 +1,6 @@
 #!/bin/bash
 set -e
 
-# Setup cleanup trap
-cleanup() {
-    # Remove SIGTERM trap
-    trap - SIGTERM
-
-    # Reset background color
-    ansictl reset background
-
-    # Sends a SIGTERM to the whole process group, killing also descendants
-    [ ! -z "$(jobs -p)" ] && kill -- -$$
-}
-trap cleanup SIGINT SIGTERM EXIT
-
 # Set background color to match mutt theme
 ansictl set background '#2E3440'
 
@@ -39,3 +26,6 @@ encdir expose $HOME/.cache/mail -- /bin/bash << EOF
     wait
 } </dev/tty
 EOF
+
+# Reset background color
+ansictl reset background
