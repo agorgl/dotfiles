@@ -25,6 +25,7 @@ die() { echo >&2 "$*"; exit 1; }
 usage() { die "$USAGE"; }
 help() { echo "$HELP"; }
 log() { echo -e "\033[1m> $@\033[0m" >&2; }
+prefix() { while read -r line; do echo "$1$line"; done }
 
 #----------------------------------------------------------------------
 # Constants
@@ -214,7 +215,7 @@ sync() {
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
-    mbsync -Va -c "$mailconfdir/mbsyncrc"
+    mbsync -Va -c "$mailconfdir/mbsyncrc" |& prefix "mbsync: "
 }
 
 watch() {
@@ -226,7 +227,7 @@ watch() {
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
-    goimapnotify -conf "$mailconfdir/imapnotifyrc.yaml"
+    goimapnotify -conf "$mailconfdir/imapnotifyrc.yaml" |& stdbuf -oL cut -d ' ' -f2- | prefix "goimapnotify: "
 }
 
 index() {
@@ -238,7 +239,7 @@ index() {
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
-    notmuch --config "$mailconfdir/notmuchrc" new
+    notmuch --config "$mailconfdir/notmuchrc" new |& prefix "notmuch: "
 }
 
 children() {
