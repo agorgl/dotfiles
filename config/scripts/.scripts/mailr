@@ -17,8 +17,17 @@ trap cleanup SIGINT SIGTERM EXIT
 # Set background color to match mutt theme
 ansictl set background '#2E3440'
 
+# Pick mail
+lastmail=$HOME/.cache/.lastmail
+if [ "$1" = "-p" ] || [ ! -f "$lastmail" ]; then
+    mail=$(mailconf ls | fzf)
+    [ ! -z $mail ] && echo $mail > "$lastmail"
+fi
+mail=$(cat $lastmail)
+[ -z $mail ] && exit 1
+
 # Launch mutt along with its companions, exposing the encrypted mail directory
-mail=$(mailconf ls | fzf)
+echo Opening mail $mail
 encdir expose $HOME/.cache/mail -- /bin/bash << EOF
 {
     exec < /dev/tty
