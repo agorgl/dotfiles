@@ -98,7 +98,7 @@ expose_encdirs() {
     exec 3>&-
 
     unshare -Umrfp --mount-proc \
-        /bin/bash -c "set -e; while IFS=: read -r dir chipherdir password <&4; do echo \$password | gocryptfs -q \$chipherdir \$dir; done && unshare --map-user=$USER --map-group=$USER $cmd"
+        /bin/bash -c "set -e; while IFS=: read -r dir chipherdir password <&4; do echo \$password | gocryptfs -q \$chipherdir \$dir; done && unshare --map-user=$USER --map-group=$USER $cmd; for dir in ${dirs[@]}; do fusermount -u \$dir; done"
 }
 
 #----------------------------------------------------------------------
