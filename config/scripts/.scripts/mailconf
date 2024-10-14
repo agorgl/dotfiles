@@ -71,7 +71,7 @@ User {mail}
 AuthMechs XOAUTH2
 PassCmd "oauth2mail show {mail}"
 TLSType IMAPS
-TLSVersions TLSv1.3
+TLSVersions +1.3
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
 IMAPStore mail-remote
