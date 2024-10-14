@@ -30,13 +30,12 @@ mail=$(cat $lastmail)
 echo Opening mail $mail
 encdir expose $HOME/.cache/mail -- /bin/bash << EOF
 {
-    exec < /dev/tty
-    (
-        mailconf sync  $mail &>/dev/null
-        mailconf index $mail &>/dev/null
-        mailconf watch $mail &>/dev/null
-    ) &
+    keyctl new_session >/dev/null
+
+    mailconf daemon $mail |& systemd-cat -t mailr &
     TERM=xterm-direct MAIL=$mail neomutt
-    exit
-}
+
+    mailconf control $mail exit
+    wait
+} </dev/tty
 EOF
