@@ -99,20 +99,20 @@ Patterns *
 EOM
 
 read -r -d '' IMAPNOTIFYRC << EOM || :
-{
-  "host": "{host}",
-  "port": 993,
-  "tls": true,
-  "tlsOptions": {
-    "rejectUnauthorized": false
-  },
-  "username": "{mail}",
-  "password": "",
-  "passwordCmd": "oauth2mail show {mail}",
-  "xoauth2": true,
-  "onNewMail": "mailconf control sync {mail}",
-  "boxes": ["Inbox"]
-}
+configurations:
+  - host: "{host}"
+    port: 993
+    tls: true
+    tlsOptions:
+      rejectUnauthorized: true
+      starttls: false
+    username: "{mail}"
+    passwordCMD: "oauth2mail show {mail}"
+    xoAuth2: true
+    boxes:
+      - mailbox: "Inbox"
+        onNewMail: "mailconf control {mail} sync"
+        onNewMailPost: SKIP
 EOM
 
 read -r -d '' MSMTPRC << EOM || :
@@ -183,7 +183,7 @@ generate() {
     local imap_host="imap.sample.com"
     local smtp_host="smtp.sample.com"
     populate "$MBSYNCRC"     "$imap_host" "$mail" > "$mailconfdir/mbsyncrc"
-    populate "$IMAPNOTIFYRC" "$imap_host" "$mail" > "$mailconfdir/imapnotifyrc"
+    populate "$IMAPNOTIFYRC" "$imap_host" "$mail" > "$mailconfdir/imapnotifyrc.yaml"
     populate "$MSMTPRC"      "$smtp_host" "$mail" > "$mailconfdir/msmtprc"
     populate "$NOTMUCHRC"    ""           "$mail" > "$mailconfdir/notmuchrc"
     populate "$MUTTRC"       ""           "$mail" > "$mailconfdir/muttrc"
@@ -226,7 +226,7 @@ watch() {
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
-    goimapnotify -conf "$mailconfdir/imapnotifyrc"
+    goimapnotify -conf "$mailconfdir/imapnotifyrc.yaml"
 }
 
 index() {
