@@ -80,7 +80,7 @@ Host {host}
 Port 993
 User {mail}
 AuthMechs XOAUTH2
-PassCmd "$MAIL_CONF_DIR/{mail}/passfetch"
+PassCmd $(reltohome $MAIL_CACHE_DIR)/{mail}/passfetch
 TLSType IMAPS
 TLSVersions +1.3
 CertificateFile /etc/ssl/certs/ca-certificates.crt
@@ -108,7 +108,7 @@ configurations:
       rejectUnauthorized: true
       starttls: false
     username: "{mail}"
-    passwordCMD: "$MAIL_CONF_DIR/{mail}/passfetch"
+    passwordCMD: "$(reltohome $MAIL_CACHE_DIR)/{mail}/passfetch"
     xoAuth2: true
     boxes:
       - mailbox: "Inbox"
@@ -129,7 +129,7 @@ host           {host}
 port           465
 from           {mail}
 user           {mail}
-passwordeval   "$MAIL_CONF_DIR/{mail}/passfetch"
+passwordeval   $(reltohome $MAIL_CACHE_DIR)/{mail}/passfetch
 EOM
 
 read -r -d '' NOTMUCHRC << EOM || :
@@ -166,7 +166,7 @@ set trash = +Trash
 
 set from = {mail}
 set realname = '{mail}'
-set sendmail = "msmtp -C $MAIL_CONF_DIR/{mail}/msmtprc -a mail"
+set sendmail = "msmtp -C \"$(reltohome $MAIL_CONF_DIR)/{mail}/msmtprc\" -a mail"
 
 set nm_config_file = "$(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc"
 set nm_record = yes
