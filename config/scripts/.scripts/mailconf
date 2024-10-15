@@ -172,7 +172,7 @@ set nm_config_file = "$(reltohome $MAIL_CONF_DIR)/{mail}/notmuchrc"
 set nm_record = yes
 set nm_record_tags = "sent"
 
-mailboxes +Inbox \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}/data" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Archive/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf '%h '\` +Archive +Drafts +Sent +Spam +Trash
+mailboxes +Inbox +Drafts +Sent \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}/data" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf "'%h' " | sort -t/\` +Spam +Trash
 EOM
 
 #----------------------------------------------------------------------
