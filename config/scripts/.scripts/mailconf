@@ -281,7 +281,7 @@ daemon() {
 
     log "Listening control events for \"$mail\""
     local sync_pid
-    tail -f "$pipe" | while read -r command; do
+    while read -r command; do
         local command=($command)
         local cmd="${command[0]}"
         local opts="${command[@]:1}"
@@ -289,7 +289,7 @@ daemon() {
         log "Received command: ${cmd} ${opts[@]}"
         case $cmd in
             sync)
-                local sync_ppid=$([ ! -z $sync_pid ] && kill -0 $sync_pid &>/dev/null && cat /proc/$sync_pid/stat | cut -d ' ' -f 5)
+                local sync_ppid=$([ ! -z $sync_pid ] && kill -0 $sync_pid &>/dev/null && cat /proc/$sync_pid/stat | cut -d ' ' -f 4)
                 if [ -z $sync_pid ] || [[ $sync_ppid != $$ ]]; then
                     {
                         log Syncing "$mail"
@@ -314,7 +314,7 @@ daemon() {
                 log "Unrecognized command: ${command[@]}"
                 ;;
         esac
-    done
+    done < <(tail -f "$pipe")
 }
 
 control() {
