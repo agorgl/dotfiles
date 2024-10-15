@@ -80,7 +80,7 @@ Host {host}
 Port 993
 User {mail}
 AuthMechs XOAUTH2
-PassCmd "oauth2mail show {mail}"
+PassCmd "$MAIL_CONF_DIR/{mail}/passfetch"
 TLSType IMAPS
 TLSVersions +1.3
 CertificateFile /etc/ssl/certs/ca-certificates.crt
@@ -108,7 +108,7 @@ configurations:
       rejectUnauthorized: true
       starttls: false
     username: "{mail}"
-    passwordCMD: "oauth2mail show {mail}"
+    passwordCMD: "$MAIL_CONF_DIR/{mail}/passfetch"
     xoAuth2: true
     boxes:
       - mailbox: "Inbox"
@@ -129,7 +129,7 @@ host           {host}
 port           465
 from           {mail}
 user           {mail}
-passwordeval   "oauth2mail show {mail}"
+passwordeval   "$MAIL_CONF_DIR/{mail}/passfetch"
 EOM
 
 read -r -d '' NOTMUCHRC << EOM || :
@@ -175,6 +175,14 @@ set nm_record_tags = "sent"
 mailboxes +Inbox +Drafts +Sent \`find "$(reltohome $MAIL_CACHE_DIR)/{mail}/data" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf "'%h' " | sort -t/\` +Spam +Trash
 EOM
 
+read -r -d '' PASSFETCH << EOM || :
+#!/bin/bash
+
+password() { oauth2mail show {mail}; }
+
+password
+EOM
+
 #----------------------------------------------------------------------
 # Actions
 #----------------------------------------------------------------------
@@ -188,8 +196,10 @@ generate() {
     populate "$MSMTPRC"      "$smtp_host" "$mail" > "$mailconfdir/msmtprc"
     populate "$NOTMUCHRC"    ""           "$mail" > "$mailconfdir/notmuchrc"
     populate "$MUTTRC"       ""           "$mail" > "$mailconfdir/muttrc"
+    populate "$PASSFETCH"    ""           "$mail" > "$mailconfdir/passfetch"
     find "$mailconfdir" -type d -exec chmod 700 {} \;
     find "$mailconfdir" -type f -exec chmod 600 {} \;
+    chmod u+x "$mailconfdir/passfetch"
 }
 
 #----------------------------------------------------------------------
