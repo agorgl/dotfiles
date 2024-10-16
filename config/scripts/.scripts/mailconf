@@ -9,13 +9,13 @@ HELP="\
 $(basename $0) <command> [<args>]
 
 Commands:
-  add     <email>   Add new mail configuration
-  sync    <email>   Sync maildir folder
-  watch   <email>   Watch for new mails
-  daemon  <email>   Run daemon that listens for control commands
-  control <email>   Send control command to a running daemon
-  rm      <email>   Remove existing mail configuration
-  ls                List all mail configurations
+  add     <mail>   Add new mail configuration
+  sync    <mail>   Sync maildir folder
+  watch   <mail>   Watch for new mails
+  daemon  <mail>   Run daemon that listens for control commands
+  control <mail>   Send control command to a running daemon
+  rm      <mail>   Remove existing mail configuration
+  ls               List all mail configurations
 
 Options:
   -h, --help      Print current help message
@@ -230,7 +230,7 @@ add() {
     local mail="$1"
     local mailconfdir=$(mailconfdir "$mail")
     if [ -d "$mailconfdir" ]; then
-        die "add: mailconf dir for email \"$mail\" already exists"
+        die "add: mailconf dir for mail \"$mail\" already exists"
     fi
 
     mkdir -p "$mailconfdir"
@@ -242,7 +242,7 @@ sync() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailcachedir=$(mailcachedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "sync: mailconf dir for email \"$mail\" does not exist"
+        die "sync: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
@@ -254,7 +254,7 @@ watch() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailcachedir=$(mailcachedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "watch: mailconf dir for email \"$mail\" does not exist"
+        die "watch: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
@@ -266,7 +266,7 @@ index() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailcachedir=$(mailcachedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "index: mailconf dir for email \"$mail\" does not exist"
+        die "index: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
@@ -286,13 +286,13 @@ daemon() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailstatedir=$(mailstatedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "daemon: mailconf dir for email \"$mail\" does not exist"
+        die "daemon: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     [ ! -d "$mailstatedir" ] && mkdir -p "$mailstatedir"
     local pipe="$mailstatedir/control"
     if [ -p "$pipe" ]; then
-        die "daemon: control fifo for email \"$mail\" already exists, is the daemon already running?"
+        die "daemon: control fifo for mail \"$mail\" already exists, is the daemon already running?"
     fi
 
     mkfifo $pipe
@@ -355,12 +355,12 @@ control() {
     local mailconfdir=$(mailconfdir "$mail")
     local mailstatedir=$(mailstatedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "daemon: mailconf dir for email \"$mail\" does not exist"
+        die "daemon: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     local pipe=$mailstatedir/control
     if [ ! -p "$pipe" ]; then
-        die "control: control fifo for email \"$mail\" does not exist, is the daemon running?"
+        die "control: control fifo for mail \"$mail\" does not exist, is the daemon running?"
     fi
     echo "$cmd" "${opts[@]}" > $pipe
 }
@@ -369,7 +369,7 @@ remove() {
     local mail="$1"
     local mailconfdir=$(mailconfdir "$mail")
     if [ ! -d "$mailconfdir" ]; then
-        die "rm: mailconf dir for email \"$mail\" does not exist"
+        die "rm: mailconf dir for mail \"$mail\" does not exist"
     fi
 
     rm -rf $mailconfdir
@@ -405,31 +405,31 @@ shift
 
 case "$cmd" in
     add)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) add <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) add <mail>"
         add "$1"
         ;;
     sync)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) sync <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) sync <mail>"
         sync "$1"
         ;;
     watch)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) watch <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) watch <mail>"
         watch "$1"
         ;;
     index)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) index <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) index <mail>"
         index "$1"
         ;;
     daemon)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) daemon <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) daemon <mail>"
         daemon "$1"
         ;;
     control)
-        [ $# -lt 2 ] && die "Usage: $(basename $0) control <email> <command> [options...]"
+        [ $# -lt 2 ] && die "Usage: $(basename $0) control <mail> <command> [options...]"
         control "$1" "$2" "${@:3}"
         ;;
     rm)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) rm <email>"
+        [ $# -ne 1 ] && die "Usage: $(basename $0) rm <mail>"
         remove "$1"
         ;;
     ls)
