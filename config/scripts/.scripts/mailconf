@@ -91,7 +91,9 @@ IMAPAccount mail-account
 Host {{ imap_host }}
 Port 993
 User {{ mail }}
+{% if oauth %}
 AuthMechs XOAUTH2
+{% endif %}
 PassCmd {{ mail_cache_dir }}/{{ mail }}/passfetch
 TLSType IMAPS
 TLSVersions +1.3
@@ -121,7 +123,7 @@ configurations:
       starttls: false
     username: "{{ mail }}"
     passwordCMD: "{{ mail_cache_dir }}/{{ mail }}/passfetch"
-    xoAuth2: true
+    xoAuth2: {{ oauth }}
     boxes:
       - mailbox: "Inbox"
         onNewMail: "mailconf control {{ mail }} sync"
@@ -130,11 +132,10 @@ EOM
 
 read -r -d '' MSMTPRC << EOM || :
 defaults
-auth           on
 tls            on
 tls_starttls   off
 tls_trust_file /etc/ssl/certs/ca-certificates.crt
-auth           oauthbearer
+auth           {{ 'oauthbearer' if oauth else 'on' }}
 
 account        mail
 host           {{ smtp_host }}
@@ -190,7 +191,7 @@ EOM
 read -r -d '' PASSFETCH << EOM || :
 #!/bin/bash
 
-password() { oauth2mail show "{{ mail }}"; }
+password() { {{ 'oauth2mail show' if oauth else 'pass' }} "{{ mail }}"; }
 
 password
 EOM
@@ -208,7 +209,8 @@ generate() {
         \"mail_conf_dir\": \"$(reltohome $MAIL_CONF_DIR)\",
         \"mail_cache_dir\": \"$(reltohome $MAIL_CACHE_DIR)\",
         \"imap_host\": \"$imap_host\",
-        \"smtp_host\": \"$smtp_host\"
+        \"smtp_host\": \"$smtp_host\",
+        \"oauth\": \"true\"
     }"
     render "$MBSYNCRC"     "$params" > "$mailconfdir/mbsyncrc"
     render "$IMAPNOTIFYRC" "$params" > "$mailconfdir/imapnotifyrc.yaml"
