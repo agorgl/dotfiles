@@ -424,6 +424,7 @@ daemon() {
                 log "Exiting"
                 kill $(children $scheduled_pid) $scheduled_pid
                 kill $(children $watch_pid) $watch_pid
+                [ ! -z $sync_pid ] && kill -0 $sync_pid &>/dev/null && kill $(children $sync_pid) $sync_pid
                 log "Bye"
                 break
                 ;;
