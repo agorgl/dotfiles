@@ -252,7 +252,7 @@ mailboxes \\
 {% if domain == 'gmail.com' %}
     +All \\
 {% endif %}
-    \`find "{{ mail_cache_dir }}/{{ mail }}/data" \\
+    \`find {{ mail_cache_dir }}/{{ mail }}/data \\
         -type d \\
         -name cur \\
         -not \( \\
