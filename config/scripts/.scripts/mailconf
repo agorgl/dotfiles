@@ -202,12 +202,14 @@ EOM
 generate() {
     local mail="$1"
     local mailconfdir=$(mailconfdir "$mail")
-    local imap_host="imap.sample.com"
-    local smtp_host="smtp.sample.com"
+    local domain="${mail#*@}"
+    local imap_host="imap.$domain"
+    local smtp_host="smtp.$domain"
     local params="{
         \"mail\": \"$mail\",
         \"mail_conf_dir\": \"$(reltohome $MAIL_CONF_DIR)\",
         \"mail_cache_dir\": \"$(reltohome $MAIL_CACHE_DIR)\",
+        \"domain\": \"$domain\",
         \"imap_host\": \"$imap_host\",
         \"smtp_host\": \"$smtp_host\",
         \"oauth\": \"true\"
