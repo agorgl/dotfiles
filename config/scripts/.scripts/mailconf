@@ -218,7 +218,11 @@ set folder = "{{ mail_cache_dir }}/{{ mail }}/data"
 
 set spoolfile = +Inbox
 set postponed = +Drafts
+{% if domain == 'gmail.com' %}
+unset record
+{% else %}
 set record = +Sent
+{% endif %}
 set trash = +Trash
 
 set from = {{ mail }}
@@ -233,6 +237,9 @@ mailboxes \
     +Inbox \
     +Drafts \
     +Sent \
+{% if domain == 'gmail.com' %}
+    +All \
+{% endif %}
     \`find "{{ mail_cache_dir }}/{{ mail }}/data" \
         -type d \
         -name cur \
@@ -240,6 +247,9 @@ mailboxes \
             -path "*/Inbox/*" -o \
             -path "*/Drafts/*" -o \
             -path "*/Sent/*" -o \
+{% if domain == 'gmail.com' %}
+            -path "*/All/*" -o \
+{% endif %}
             -path "*/Spam/*" -o \
             -path "*/Trash/*" \
         \) -printf "'%h' " \
