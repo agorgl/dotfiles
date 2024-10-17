@@ -81,6 +81,46 @@ render() {
 #----------------------------------------------------------------------
 # Templates
 #----------------------------------------------------------------------
+read -r -d '' MBSYNCRC_CHANNELS_GMAIL << EOM || :
+Channel mail-default
+Far :mail-remote:
+Near :mail-local:
+Patterns * "![Gmail]/*" "!All" "!Drafts" "!Sent" "!Spam" "!Trash"
+
+Channel mail-all
+Far :mail-remote:"[Gmail]/All Mail"
+Near :mail-local:All
+Create Near
+
+Channel mail-drafts
+Far :mail-remote:"[Gmail]/Drafts"
+Near :mail-local:Drafts
+Create Near
+
+Channel mail-sent
+Far :mail-remote:"[Gmail]/Sent Mail"
+Near :mail-local:Sent
+Create Near
+
+Channel mail-spam
+Far :mail-remote:"[Gmail]/Spam"
+Near :mail-local:Spam
+Create Near
+
+Channel mail-trash
+Far :mail-remote:"[Gmail]/Trash"
+Near :mail-local:Trash
+Create Near
+
+Group mail
+Channel mail-default
+Channel mail-all
+Channel mail-drafts
+Channel mail-sent
+Channel mail-spam
+Channel mail-trash
+EOM
+
 read -r -d '' MBSYNCRC << EOM || :
 Create Both
 Expunge Both
@@ -107,10 +147,14 @@ Path {{ mail_cache_dir }}/{{ mail }}/data/
 Inbox {{ mail_cache_dir }}/{{ mail }}/data/Inbox
 SubFolders Verbatim
 
+{% if domain == 'gmail.com' %}
+$MBSYNCRC_CHANNELS_GMAIL
+{% else %}
 Channel mail
 Far :mail-remote:
 Near :mail-local:
 Patterns *
+{% endif %}
 EOM
 
 read -r -d '' IMAPNOTIFYRC << EOM || :
