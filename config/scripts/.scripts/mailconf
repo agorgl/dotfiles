@@ -59,6 +59,14 @@ reltohome() {
     echo $1 | sed "s|$HOME|~|"
 }
 
+children() {
+    local children=$(ps -o pid= --ppid "$1")
+    for pid in $children; do
+        children "$pid"
+    done
+    echo "$children"
+}
+
 render() {
     local template="$1"
     local params="$2"
@@ -344,14 +352,6 @@ index() {
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
     notmuch --config "$mailconfdir/notmuchrc" new |& prefix "notmuch: "
-}
-
-children() {
-    local children=$(ps -o pid= --ppid "$1")
-    for pid in $children; do
-        children "$pid"
-    done
-    echo "$children"
 }
 
 daemon() {
