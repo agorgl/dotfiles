@@ -229,7 +229,23 @@ set nm_config_file = "{{ mail_conf_dir }}/{{ mail }}/notmuchrc"
 set nm_record = yes
 set nm_record_tags = "sent"
 
-mailboxes +Inbox +Drafts +Sent \`find "{{ mail_cache_dir }}/{{ mail }}/data" -type d -name cur -not \( -path "*/Inbox/*" -o -path "*/Drafts/*" -o -path "*/Sent/*" -o -path "*/Spam/*" -o -path "*/Trash/*" \) -printf "'%h' " | sort -t/\` +Spam +Trash
+mailboxes \
+    +Inbox \
+    +Drafts \
+    +Sent \
+    \`find "{{ mail_cache_dir }}/{{ mail }}/data" \
+        -type d \
+        -name cur \
+        -not \( \
+            -path "*/Inbox/*" -o \
+            -path "*/Drafts/*" -o \
+            -path "*/Sent/*" -o \
+            -path "*/Spam/*" -o \
+            -path "*/Trash/*" \
+        \) -printf "'%h' " \
+      | sort -t/\` \
+    +Spam \
+    +Trash
 EOM
 
 read -r -d '' PASSFETCH << EOM || :
