@@ -71,6 +71,7 @@ render() {
     local template="$1"
     local params="$2"
     local script=$(awk 'NR==1 && match($0, /^ +/){n=RLENGTH} {print substr($0, n+1)}' <<<"\
+        import os
         import sys
         import json
         from jinja2 import Environment, BaseLoader
@@ -78,7 +79,10 @@ render() {
         inp = sys.stdin.read()
         var = json.loads(sys.argv[1])
 
+        abs = lambda x: os.path.abspath(os.path.expanduser(x))
         env = Environment(loader=BaseLoader(), trim_blocks=True, lstrip_blocks=True)
+        env.filters['abspath'] = abs
+
         tpl = env.from_string(inp)
         str = tpl.render(**var)
         print(str)
@@ -199,7 +203,7 @@ EOM
 
 read -r -d '' NOTMUCHRC << EOM || :
 [database]
-path={{ mail_cache_dir }}/{{ mail }}/data/
+path={{ mail_cache_dir | abspath }}/{{ mail }}/data/
 
 [user]
 name={{ mail }}
@@ -235,7 +239,7 @@ set trash = +Trash
 
 set from = {{ mail }}
 set realname = '{{ mail }}'
-set sendmail = "msmtp -C \"{{ mail_conf_dir }}/{{ mail }}/msmtprc\" -a mail"
+set sendmail = "msmtp -C {{ mail_conf_dir | abspath }}/{{ mail }}/msmtprc -a mail"
 
 set nm_config_file = "{{ mail_conf_dir }}/{{ mail }}/notmuchrc"
 set nm_record = yes
