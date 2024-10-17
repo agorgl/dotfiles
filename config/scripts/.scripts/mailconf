@@ -205,6 +205,7 @@ generate() {
     local domain="${mail#*@}"
     local imap_host="imap.$domain"
     local smtp_host="smtp.$domain"
+    local oauth=$([[ "$domain" = "gmail.com" ]] && echo "true" || echo "false")
     local params="{
         \"mail\": \"$mail\",
         \"mail_conf_dir\": \"$(reltohome $MAIL_CONF_DIR)\",
@@ -212,7 +213,7 @@ generate() {
         \"domain\": \"$domain\",
         \"imap_host\": \"$imap_host\",
         \"smtp_host\": \"$smtp_host\",
-        \"oauth\": \"true\"
+        \"oauth\": \"$oauth\"
     }"
     render "$MBSYNCRC"     "$params" > "$mailconfdir/mbsyncrc"
     render "$IMAPNOTIFYRC" "$params" > "$mailconfdir/imapnotifyrc.yaml"
