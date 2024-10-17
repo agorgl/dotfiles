@@ -161,6 +161,10 @@ Path {{ mail_cache_dir }}/{{ mail }}/data/
 Inbox {{ mail_cache_dir }}/{{ mail }}/data/Inbox
 SubFolders Verbatim
 
+Channel inbox
+Far :mail-remote:
+Near :mail-local:
+
 {% if domain == 'gmail.com' %}
 $MBSYNCRC_CHANNELS_GMAIL
 {% else %}
@@ -184,7 +188,7 @@ configurations:
     xoAuth2: {{ oauth | lower }}
     boxes:
       - mailbox: "Inbox"
-        onNewMail: "mailconf control {{ mail }} sync"
+        onNewMail: "mailconf control {{ mail }} sync inbox"
         onNewMailPost: SKIP
 EOM
 
@@ -327,6 +331,8 @@ add() {
 
 sync() {
     local mail="$1"
+    local opts=("${@:2}")
+    local channel="${opts[0]:-mail}"
     local mailconfdir=$(mailconfdir "$mail")
     local mailcachedir=$(mailcachedir "$mail")
     if [ ! -d "$mailconfdir" ]; then
@@ -334,7 +340,7 @@ sync() {
     fi
 
     [ ! -d "$mailcachedir" ] && mkdir -p "$mailcachedir/data"
-    mbsync -Va -c "$mailconfdir/mbsyncrc" |& prefix "mbsync: "
+    mbsync -V -c "$mailconfdir/mbsyncrc" "$channel" |& prefix "mbsync: "
 }
 
 watch() {
@@ -404,7 +410,7 @@ daemon() {
                 if [ -z $sync_pid ] || [[ $sync_ppid != $$ ]]; then
                     {
                         log Syncing "$mail"
-                        sync "$mail"
+                        sync "$mail" "${opts[@]}"
                         log Indexing "$mail"
                         index "$mail"
                         log Done
@@ -489,8 +495,8 @@ case "$cmd" in
         add "$1"
         ;;
     sync)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) sync <mail>"
-        sync "$1"
+        [ $# -lt 1 ] && die "Usage: $(basename $0) sync <mail> <opts>"
+        sync "$1" "${@:2}"
         ;;
     watch)
         [ $# -ne 1 ] && die "Usage: $(basename $0) watch <mail>"
