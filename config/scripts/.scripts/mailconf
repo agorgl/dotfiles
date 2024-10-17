@@ -175,7 +175,7 @@ configurations:
       starttls: false
     username: "{{ mail }}"
     passwordCMD: "{{ mail_conf_dir }}/{{ mail }}/passfetch"
-    xoAuth2: {{ oauth }}
+    xoAuth2: {{ oauth | lower }}
     boxes:
       - mailbox: "Inbox"
         onNewMail: "mailconf control {{ mail }} sync"
@@ -292,7 +292,7 @@ generate() {
         \"domain\": \"$domain\",
         \"imap_host\": \"$imap_host\",
         \"smtp_host\": \"$smtp_host\",
-        \"oauth\": \"$oauth\"
+        \"oauth\": $oauth
     }"
     render "$MBSYNCRC"     "$params" > "$mailconfdir/mbsyncrc"
     render "$IMAPNOTIFYRC" "$params" > "$mailconfdir/imapnotifyrc.yaml"
