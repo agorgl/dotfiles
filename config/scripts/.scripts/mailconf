@@ -241,28 +241,29 @@ set nm_config_file = "{{ mail_conf_dir }}/{{ mail }}/notmuchrc"
 set nm_record = yes
 set nm_record_tags = "sent"
 
-mailboxes \
-    +Inbox \
-    +Drafts \
-    +Sent \
+mailboxes \\
+    +Inbox \\
+    +Drafts \\
+    +Sent \\
 {% if domain == 'gmail.com' %}
-    +All \
+    +All \\
 {% endif %}
-    \`find "{{ mail_cache_dir }}/{{ mail }}/data" \
-        -type d \
-        -name cur \
-        -not \( \
-            -path "*/Inbox/*" -o \
-            -path "*/Drafts/*" -o \
-            -path "*/Sent/*" -o \
+    \`find "{{ mail_cache_dir }}/{{ mail }}/data" \\
+        -type d \\
+        -name cur \\
+        -not \( \\
+            -path "*/Inbox/*" -o \\
+            -path "*/Drafts/*" -o \\
+            -path "*/Sent/*" -o \\
 {% if domain == 'gmail.com' %}
-            -path "*/All/*" -o \
+            -path "*/All/*" -o \\
 {% endif %}
-            -path "*/Spam/*" -o \
-            -path "*/Trash/*" \
-        \) -printf "'%h' " \
-      | sort -t/\` \
-    +Spam \
+            -path "*/Spam/*" -o \\
+            -path "*/Trash/*" \\
+        \) \\
+        -printf "'%h' " \\
+      | sort -t/\` \\
+    +Spam \\
     +Trash
 EOM
 
