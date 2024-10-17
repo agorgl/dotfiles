@@ -143,10 +143,12 @@ IMAPAccount mail-account
 Host {{ imap_host }}
 Port 993
 User {{ mail }}
+PassCmd {{ mail_conf_dir }}/{{ mail }}/passfetch
 {% if oauth %}
 AuthMechs XOAUTH2
+{% else %}
+AuthMechs PLAIN
 {% endif %}
-PassCmd {{ mail_conf_dir }}/{{ mail }}/passfetch
 TLSType IMAPS
 TLSVersions +1.3
 CertificateFile /etc/ssl/certs/ca-certificates.crt
