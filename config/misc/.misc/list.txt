@@ -128,6 +128,7 @@ dhcp
 dhcpcd
 dnsmasq
 ethtool
+impala
 iwd
 systemd-resolvconf
 
