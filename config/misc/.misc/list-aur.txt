@@ -5,7 +5,6 @@ ifdnfc-git
 jmtpfs
 paper-icon-theme-git
 paru
-qimgv
 qt5gtk2
 qt6gtk2
 wpgtk
