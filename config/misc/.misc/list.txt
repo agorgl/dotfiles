@@ -211,6 +211,7 @@ arandr
 ccid
 chromium
 d-spy
+dconf-editor
 dunst
 dzen2
 edk2-ovmf
