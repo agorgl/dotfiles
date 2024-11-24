@@ -228,6 +228,7 @@ gvfs-mtp
 gvfs-nfs
 gvfs-smb
 i3lock
+imv
 isync
 libfido2
 libnfc
