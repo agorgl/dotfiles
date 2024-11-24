@@ -175,5 +175,14 @@ XF86AudioMute
 XF86AudioMicMute
     wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
 
+XF86AudioPlay
+    playerctl play-pause
+
+XF86AudioStop
+    playerctl stop
+
+XF86Audio{Prev,Next} 
+    playerctl {previous,next}
+
 XF86MonBrightness{Down,Up}
     brightnessctl s 5%{-,+}
