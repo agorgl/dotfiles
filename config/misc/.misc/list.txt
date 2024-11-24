@@ -68,6 +68,7 @@ htop
 imagemagick
 indent
 inetutils
+inotify-tools
 iperf3
 iw
 jfsutils
