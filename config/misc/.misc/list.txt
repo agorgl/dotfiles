@@ -260,6 +260,7 @@ thunar-volman
 thunderbird
 udiskie
 virt-manager
+virt-viewer
 weechat
 x11-ssh-askpass
 xss-lock
