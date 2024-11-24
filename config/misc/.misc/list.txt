@@ -253,7 +253,6 @@ senpai
 slirp4netns
 smplayer
 sshfs
-sxiv
 systemd-ui
 thunar
 thunar-archive-plugin
