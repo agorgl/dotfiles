@@ -225,8 +225,8 @@ goimapnotify
 guvcview
 gvfs
 gvfs-mtp
-gvfs-smb
 gvfs-nfs
+gvfs-smb
 i3lock
 isync
 libfido2
