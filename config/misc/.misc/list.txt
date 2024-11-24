@@ -249,6 +249,7 @@ qemu-user-static-binfmt
 rofi
 rxvt-unicode
 seahorse
+senpai
 slirp4netns
 smplayer
 sshfs
