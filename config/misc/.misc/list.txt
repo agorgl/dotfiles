@@ -257,6 +257,7 @@ systemd-ui
 thunar
 thunar-archive-plugin
 thunar-volman
+thunderbird
 udiskie
 virt-manager
 weechat
