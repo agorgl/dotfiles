@@ -136,12 +136,9 @@ systemd-resolvconf
 autorandr
 bspwm
 dmenu
-libva-mesa-driver
 libva-utils
-libva-vdpau-driver
 mesa
 mesa-utils
-mesa-vdpau
 picom
 polybar
 stalonetray
