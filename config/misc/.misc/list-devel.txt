@@ -33,6 +33,7 @@ mitmproxy
 mold
 nodejs
 npm
+podlet
 podman
 pyright
 renderdoc
