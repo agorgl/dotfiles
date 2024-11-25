@@ -18,7 +18,7 @@ httpie
 jdk-openjdk
 jdk11-openjdk
 jdk17-openjdk
-jdk21-graalvm-bin
+jdk22-graalvm-ee-bin
 jdtls
 k9s
 kubectl
