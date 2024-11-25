@@ -13,6 +13,7 @@ font-manager
 gimp
 gtk3-demos
 gtk4-demos
+ldtk
 lemonbar-xft-git
 libappindicator-gtk3
 losslesscut-bin
