@@ -1,6 +1,11 @@
 #!/bin/bash
 
 #----------------------------------------------------------------------
+# Configuration
+#----------------------------------------------------------------------
+PACKAGE_FILES=($HOME/.misc/list*.txt)
+
+#----------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------
 USAGE="Usage: pkgdiff [OPTION]... [PKGFILE]..."
@@ -27,38 +32,33 @@ INCLUDE_FOREIGN_PKGS=0
 SHOW_SYSTEM_ONLY_PKGS=0
 SHOW_LIST_ONLY_PKGS=0
 
-case "$#" in
-    0)
-        usage ;;
-    *)
-        while [ $# -gt 0 ]; do
-            case "$1" in
-                -h|--help)
-                    help
-                    exit 0
-                    ;;
-                -a|--all)
-                    INCLUDE_NATIVE_PKGS=1
-                    INCLUDE_FOREIGN_PKGS=1
-                    ;;
-                -n|--native-only)
-                    INCLUDE_NATIVE_PKGS=1
-                    ;;
-                -m|--foreign-only)
-                    INCLUDE_FOREIGN_PKGS=1
-                    ;;
-                -s|--system-only)
-                    SHOW_SYSTEM_ONLY_PKGS=1
-                    ;;
-                -l|--list-only)
-                    SHOW_LIST_ONLY_PKGS=1
-                    ;;
-                *)
-                    break ;;
-            esac
-            shift
-        done
-esac
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            help
+            exit 0
+            ;;
+        -a|--all)
+            INCLUDE_NATIVE_PKGS=1
+            INCLUDE_FOREIGN_PKGS=1
+            ;;
+        -n|--native-only)
+            INCLUDE_NATIVE_PKGS=1
+            ;;
+        -m|--foreign-only)
+            INCLUDE_FOREIGN_PKGS=1
+            ;;
+        -s|--system-only)
+            SHOW_SYSTEM_ONLY_PKGS=1
+            ;;
+        -l|--list-only)
+            SHOW_LIST_ONLY_PKGS=1
+            ;;
+        *)
+            break ;;
+    esac
+    shift
+done
 
 # Check provided package list files
 if [ $# -gt 0 ]; then
