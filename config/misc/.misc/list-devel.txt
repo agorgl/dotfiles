@@ -25,6 +25,7 @@ jdtls
 jet-bin
 k9s
 kubectl
+leiningen
 lua-language-server
 maven
 mdbook
