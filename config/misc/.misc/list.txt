@@ -38,6 +38,7 @@ nfs-utils
 ntfs-3g
 ntp
 samba
+tlp
 vi
 wireless-regdb
 zsh
