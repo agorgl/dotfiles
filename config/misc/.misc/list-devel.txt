@@ -12,6 +12,7 @@ ccls
 clojure
 clojure-lsp-bin
 ctags
+d2
 go
 gopls
 helm
