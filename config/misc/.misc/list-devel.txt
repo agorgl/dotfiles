@@ -1,4 +1,5 @@
 aardvark-dns
+android-tools
 android-udev
 ansible
 ansible-language-server
