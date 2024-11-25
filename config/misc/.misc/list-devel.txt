@@ -5,6 +5,7 @@ ansible
 ansible-language-server
 ansible-lint
 babashka-bin
+bash-language-server
 bat
 buildah
 ccls
