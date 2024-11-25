@@ -23,6 +23,7 @@ mupdf-tools
 openconnect
 python-pywal
 qbittorrent
+resticprofile-bin
 slack-desktop
 vpn-slice
 wine
