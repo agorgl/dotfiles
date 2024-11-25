@@ -3,7 +3,7 @@
 #----------------------------------------------------------------------
 # Configuration
 #----------------------------------------------------------------------
-PACKAGE_FILES=($HOME/.misc/list.txt $HOME/.misc/list-aur.txt)
+PACKAGE_FILES=($HOME/.misc/list*.txt)
 
 #----------------------------------------------------------------------
 # Help
@@ -32,38 +32,33 @@ INCLUDE_FOREIGN_PKGS=0
 SHOW_DUPLICATES=0
 SHOW_RAW=0
 
-case "$#" in
-    0)
-        usage ;;
-    *)
-        while [ $# -gt 0 ]; do
-            case "$1" in
-                -h|--help)
-                    help
-                    exit 0
-                    ;;
-                -a|--all)
-                    INCLUDE_NATIVE_PKGS=1
-                    INCLUDE_FOREIGN_PKGS=1
-                    ;;
-                -n|--native-only)
-                    INCLUDE_NATIVE_PKGS=1
-                    ;;
-                -m|--foreign-only)
-                    INCLUDE_FOREIGN_PKGS=1
-                    ;;
-                -r|--raw)
-                    SHOW_RAW=1
-                    ;;
-                -d|--duplicates)
-                    SHOW_DUPLICATES=1
-                    ;;
-                *)
-                    break ;;
-            esac
-            shift
-        done
-esac
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+            help
+            exit 0
+            ;;
+        -a|--all)
+            INCLUDE_NATIVE_PKGS=1
+            INCLUDE_FOREIGN_PKGS=1
+            ;;
+        -n|--native-only)
+            INCLUDE_NATIVE_PKGS=1
+            ;;
+        -m|--foreign-only)
+            INCLUDE_FOREIGN_PKGS=1
+            ;;
+        -r|--raw)
+            SHOW_RAW=1
+            ;;
+        -d|--duplicates)
+            SHOW_DUPLICATES=1
+            ;;
+        *)
+            break ;;
+    esac
+    shift
+done
 
 # Check provided package list files
 if [ $# -gt 0 ]; then
