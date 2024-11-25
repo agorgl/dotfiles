@@ -287,14 +287,15 @@ launch() {
 
 start() {
     local instance="$1"
+    shift
     require_network >/dev/null
 
     log "Starting VM instance \"$instance\""
-    virsh start "$instance"
+    virsh start "$instance" $@
 
     if [ $? -ne 0 ]; then
         log "Forcibly starting VM instance \"$instance\""
-        virsh start "$instance" --force-boot
+        virsh start "$instance" --force-boot $@
     fi
 }
 
@@ -385,8 +386,10 @@ case "$cmd" in
         launch "$@"
         ;;
     start)
-        [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
-        start "$1"
+        [ $# -lt 1 ] && die "Usage: $(basename $0) $cmd <instance>"
+        inst="$1"
+        shift
+        start "$inst" "$@"
         ;;
     stop)
         [ $# -ne 1 ] && die "Usage: $(basename $0) $cmd <instance>"
