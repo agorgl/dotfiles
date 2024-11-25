@@ -19,7 +19,6 @@ helm
 helmfile
 httpie
 jdk-openjdk
-jdk11-openjdk
 jdk17-openjdk
 jdk22-graalvm-ee-bin
 jdtls
