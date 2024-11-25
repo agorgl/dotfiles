@@ -315,7 +315,7 @@ delete() {
     fi
 
     log "Deleting VM instance \"$instance\""
-    virsh undefine "$instance" --remove-all-storage --managed-save
+    virsh undefine "$instance" --remove-all-storage --snapshots-metadata --managed-save --nvram
     rm -f "$keyfile" "$keyfile.pub"
 }
 
