@@ -233,7 +233,6 @@ i3lock
 imv
 isync
 libfido2
-libnfc
 libvirt
 maim
 mpv
