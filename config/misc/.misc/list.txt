@@ -92,6 +92,7 @@ picocom
 pkgfile
 qrencode
 rclone
+restic
 ripgrep
 rsync
 s-nail
