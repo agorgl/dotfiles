@@ -24,8 +24,11 @@ mesa-demos
 mtpfs
 mupdf-tools
 openconnect
+paper-icon-theme-git
 python-pywal
 qbittorrent
+qt5gtk2
+qt6gtk2
 resticprofile-bin
 slack-desktop
 vpn-slice
@@ -35,5 +38,6 @@ wine-mono
 wineasio
 winetricks
 wireshark-qt
+wpgtk
 xtitle
 zbar

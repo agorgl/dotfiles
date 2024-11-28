@@ -1,6 +1,2 @@
 cyrus-sasl-xoauth2-git
-paper-icon-theme-git
 paru
-qt5gtk2
-qt6gtk2
-wpgtk
