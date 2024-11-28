@@ -1,7 +1,5 @@
 bemenu
 foot
-greetd
-greetd-tuigreet
 kanshi
 lswt
 mako

@@ -135,6 +135,10 @@ impala
 iwd
 systemd-resolvconf
 
+# Login
+greetd
+greetd-tuigreet
+
 # Windowing
 autorandr
 bspwm
