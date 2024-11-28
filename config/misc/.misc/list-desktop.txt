@@ -3,7 +3,6 @@ baresip
 blender
 discord
 element-desktop
-flatpak
 flatseal
 font-manager
 gimp

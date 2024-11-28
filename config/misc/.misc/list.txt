@@ -62,6 +62,7 @@ exfatprogs
 expac
 fd
 fdupes
+flatpak
 fzf
 gnu-netcat
 go-yq
