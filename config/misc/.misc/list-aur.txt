@@ -1,2 +1,0 @@
-cyrus-sasl-xoauth2-git
-paru
