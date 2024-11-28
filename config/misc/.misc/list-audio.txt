@@ -13,6 +13,7 @@ realtime-privileges
 reaper
 shntool
 v4l2loopback-dkms
+wineasio
 yabridge
 yabridgectl
 zam-plugins

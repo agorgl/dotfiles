@@ -35,7 +35,6 @@ vpn-slice
 wine
 wine-gecko
 wine-mono
-wineasio
 winetricks
 wireshark-qt
 wpgtk
