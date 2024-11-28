@@ -238,6 +238,7 @@ maim
 mpv
 msmtp
 mupdf
+mupdf-tools
 neomutt
 notmuch
 pass

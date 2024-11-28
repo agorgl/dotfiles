@@ -10,7 +10,6 @@ gimp
 ldtk
 losslesscut-bin
 mesa-demos
-mupdf-tools
 qbittorrent
 slack-desktop
 wireshark-qt
