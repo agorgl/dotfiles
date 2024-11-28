@@ -1,6 +1,4 @@
-conky-cairo
 cyrus-sasl-xoauth2-git
-eww
 paper-icon-theme-git
 paru
 qt5gtk2

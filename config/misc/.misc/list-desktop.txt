@@ -3,9 +3,11 @@ awf-gtk3
 awf-gtk4
 baresip
 blender
+conky-cairo
 discord
 downgrade
 element-desktop
+eww
 flatpak
 flatseal
 flavours
