@@ -1,44 +1,71 @@
+# Android
 android-tools
+
+# Ansible
 ansible
 ansible-language-server
 ansible-lint
-babashka-bin
-bash-language-server
-bat
-buildah
+
+# C
 ccls
+
+# Clojure
+babashka-bin
 clojure
 clojure-lsp-bin
-d2
-go
-gopls
+jet-bin
+leiningen
+rlwrap
+zprint-bin
+
+# Containers
+buildah
 helm
 helmfile
-httpie
+k9s
+kubectl
+podlet
+podman
+yaml-language-server
+
+# CSS
+tailwindcss-language-server
+
+# Go
+go
+gopls
+
+# Java
 jdk-openjdk
 jdk17-openjdk
 jdk22-graalvm-ee-bin
 jdtls
-jet-bin
-k9s
-kubectl
-leiningen
-lua-language-server
 maven
-mdbook
-mitmproxy
-mold
+
+# JavaScript
 nodejs
 npm
-podlet
-podman
-pyright
-renderdoc
-rlwrap
-rustup
-stylua
-tailwindcss-language-server
 typescript-language-server
+
+# Lua
+lua-language-server
+stylua
+
+# Python
+pyright
+
+# Rust
+rustup
+mold
+
+# Shell
+bash-language-server
+
+# Utils
+bat
+d2
+httpie
+mdbook
+mitmproxy
+renderdoc
 watchexec
-yaml-language-server
-zprint-bin
