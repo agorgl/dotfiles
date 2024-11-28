@@ -1,6 +1,4 @@
-aardvark-dns
 android-tools
-android-udev
 ansible
 ansible-language-server
 ansible-lint
@@ -11,7 +9,6 @@ buildah
 ccls
 clojure
 clojure-lsp-bin
-ctags
 d2
 go
 gopls
@@ -41,9 +38,7 @@ rlwrap
 rustup
 stylua
 tailwindcss-language-server
-terraform
 typescript-language-server
-vagrant
 watchexec
 yaml-language-server
 zprint-bin
