@@ -7,16 +7,11 @@ refind
 
 # Devel
 base-devel
-cmake
 git
 git-lfs
 git-filter-repo
 gvim
-lld
-lldb
-llvm
 neovim
-perf
 
 # System
 acpi_call
