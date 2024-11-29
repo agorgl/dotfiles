@@ -8,6 +8,9 @@ ansible-lint
 
 # C
 ccls
+clang
+gdb
+valgrind
 
 # Clojure
 babashka-bin

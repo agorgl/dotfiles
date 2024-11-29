@@ -7,9 +7,7 @@ refind
 
 # Devel
 base-devel
-clang
 cmake
-gdb
 git
 git-lfs
 git-filter-repo
@@ -19,7 +17,6 @@ lldb
 llvm
 neovim
 perf
-valgrind
 
 # System
 acpi_call
