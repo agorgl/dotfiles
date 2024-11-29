@@ -14,8 +14,6 @@ gvim
 neovim
 
 # System
-acpi_call
-acpid
 dbus-broker
 dbus-broker-units
 dkms
