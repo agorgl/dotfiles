@@ -160,15 +160,12 @@ ttf-terminus-nerd
 ttf-ubuntu-font-family
 
 # Programs
-acsccid
 alacritty
 arandr
-ccid
 chromium
 d-spy
 dconf-editor
 dunst
-dzen2
 edk2-ovmf
 engrampa
 feh
@@ -177,7 +174,6 @@ firefox
 galculator
 gnupg
 goimapnotify
-guvcview
 gvfs
 gvfs-mtp
 gvfs-nfs
@@ -190,14 +186,10 @@ libvirt
 maim
 mpv
 msmtp
-mupdf
-mupdf-tools
 neomutt
 notmuch
 pass
 pavucontrol
-pcsc-tools
-pcsclite
 qemu-full
 qemu-user-static
 qemu-user-static-binfmt
@@ -205,15 +197,11 @@ rofi
 rxvt-unicode
 seahorse
 senpai
-slirp4netns
-smplayer
 sshfs
-systemd-ui
 thunar
 thunar-archive-plugin
 thunar-volman
 thunderbird
-udiskie
 virt-manager
 virt-viewer
 weechat
