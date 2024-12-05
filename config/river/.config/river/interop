@@ -2,7 +2,7 @@
 
 # Environment variables for user systemd
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
-systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=river
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
 
 # Gtk settings
 config="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-3.0/settings.ini"
