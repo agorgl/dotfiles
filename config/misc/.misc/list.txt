@@ -131,17 +131,12 @@ xsettingsd
 xterm
 
 # Audio
-alsa-firmware
 alsa-utils
 gst-plugin-pipewire
-lib32-alsa-plugins
-lib32-libpulse
-libpipeline
 pipewire
 pipewire-alsa
 pipewire-jack
 pipewire-pulse
-rtkit
 wireplumber
 
 # Themes
