@@ -92,13 +92,8 @@ yt-dlp
 # Networking
 blueman
 bluez
-bluez-tools
 bluez-utils
-dhclient
-dhcp
-dhcpcd
 dnsmasq
-ethtool
 impala
 iwd
 systemd-resolvconf
