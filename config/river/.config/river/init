@@ -27,11 +27,11 @@ riverctl border-width 2
 riverctl set-repeat 50 300
 
 # Make certain views start floating
-riverctl float-filter-add app-id float
-riverctl float-filter-add title "popup title with spaces"
+riverctl rule-add -app-id "float" float
+riverctl rule-add -title "popup title with spaces" float
 
 # Set app-ids and titles of views which should use client side decorations
-riverctl csd-filter-add app-id "gedit"
+riverctl rule-add -app-id "gedit" csd
 
 # Wallpaper
 riverctl spawn "swaybg -m fill -i $(awk '/feh/{print $4}' ~/.fehbg)"
