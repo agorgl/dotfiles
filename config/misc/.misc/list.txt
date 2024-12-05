@@ -33,19 +33,11 @@ zsh
 
 # Shell utilities
 acpi
-aspell
 bc
 bind
 brightnessctl
-cdemu-client
-cdrtools
 cups
-darkhttpd
-diffutils
 dmidecode
-dos2unix
-e2fsprogs
-evtest
 exfatprogs
 expac
 fd
@@ -56,26 +48,17 @@ gnu-netcat
 go-yq
 htop
 imagemagick
-indent
-inetutils
 inotify-tools
 iperf3
 iw
-jfsutils
 jq
 less
-logrotate
 lshw
 lsof
-ltrace
-lvm2
-macchanger
 mtr
 nmap
-openldap
 openssh
 p7zip
-perl
 picocom
 pkgfile
 qrencode
@@ -83,7 +66,6 @@ rclone
 restic
 ripgrep
 rsync
-s-nail
 socat
 sox
 stow
@@ -98,7 +80,6 @@ unrar
 unzip
 usbutils
 vdpauinfo
-vnstat
 vorbis-tools
 vulkan-tools
 w3m
