@@ -1,0 +1,114 @@
+# Base
+git
+neovim
+openssh
+vim
+zsh
+
+# Wifi
+iwd
+wireless-regdb
+impala
+
+# Login
+greetd
+greetd-tuigreet
+
+# Xorg
+xorg-server
+xorg-xinit
+xorg-xrandr
+xorg-xsetroot
+xsettingsd
+autorandr
+
+# Wayland
+wayland
+wlr-randr
+kanshi
+
+# Desktop
+dex
+dunst
+rofi-wayland
+xdg-desktop-portal
+xdg-desktop-portal-gtk
+
+# Window Manager
+bspwm
+sxhkd
+feh
+picom
+dmenu
+polybar
+i3lock
+xss-lock
+xclip
+
+# Compositor
+river
+swaybg
+bemenu-wayland
+waybar
+swaylock
+swayidle
+wl-clipboard
+
+# Audio
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+gst-plugin-pipewire
+
+# Toolkits
+qt5-wayland
+qt6-wayland
+
+# Polkit
+polkit
+mate-polkit
+
+# Terminal
+alacritty
+foot
+xterm
+
+# Bluetooth
+bluez
+bluez-utils
+blueman
+
+# Web
+chromium
+firefox
+
+# Files
+thunar
+thunar-archive-plugin
+thunar-volman
+tumbler
+engrampa
+gvfs
+gvfs-mtp
+gvfs-nfs
+gvfs-smb
+
+# Media
+imv
+mpv
+
+# Documents
+zathura
+zathura-pdf-mupdf
+
+# Fonts
+terminus-font
+noto-fonts
+noto-fonts-extra
+noto-fonts-emoji
+ttf-terminus-nerd
+ttf-noto-nerd
+ttf-nerd-fonts-symbols
+ttf-nerd-fonts-symbols-mono

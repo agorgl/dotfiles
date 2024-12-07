@@ -1,25 +1,17 @@
 # Devel
-git
 git-lfs
 git-filter-repo
-gvim
-neovim
 
 # System
-dbus-broker
-dbus-broker-units
 fwupd
 gocryptfs
 iptables-nft
 man-db
 man-pages
-mate-polkit
 nano
 nfs-utils
 samba
 tlp
-wireless-regdb
-zsh
 
 # Shell utilities
 acpi
@@ -47,7 +39,6 @@ lshw
 lsof
 mtr
 nmap
-openssh
 p7zip
 picocom
 pkgfile
@@ -80,54 +71,23 @@ wireguard-tools
 yt-dlp
 
 # Networking
-blueman
-bluez
-bluez-utils
 dnsmasq
-impala
-iwd
 systemd-resolvconf
 
-# Login
-greetd
-greetd-tuigreet
-
 # Windowing
-autorandr
-bspwm
-dmenu
 libva-utils
-mesa
 mesa-utils
-picom
-polybar
 stalonetray
-sxhkd
 weston
 wmctrl
-xclip
-xdg-desktop-portal-gtk
 xdo
 xdotool
-xorg-server
-xorg-xinit
 xorg-xinput
 xorg-xprop
-xorg-xrandr
 xorg-xrdb
-xorg-xsetroot
-xsel
-xsettingsd
-xterm
 
 # Audio
 alsa-utils
-gst-plugin-pipewire
-pipewire
-pipewire-alsa
-pipewire-jack
-pipewire-pulse
-wireplumber
 
 # Themes
 arc-gtk-theme
@@ -137,44 +97,25 @@ gtk-engine-murrine
 # Fonts
 adobe-source-sans-fonts
 gtk2fontsel
-noto-fonts
-noto-fonts-emoji
-terminus-font
 ttf-anonymous-pro
 ttf-dejavu
 ttf-inconsolata
-ttf-nerd-fonts-symbols
-ttf-nerd-fonts-symbols-mono
 ttf-opensans
-ttf-terminus-nerd
 ttf-ubuntu-font-family
 
 # Programs
-alacritty
 arandr
-chromium
 d-spy
 dconf-editor
-dunst
 edk2-ovmf
-engrampa
-feh
 filelight
-firefox
 galculator
 gnupg
 goimapnotify
-gvfs
-gvfs-mtp
-gvfs-nfs
-gvfs-smb
-i3lock
-imv
 isync
 libfido2
 libvirt
 maim
-mpv
 msmtp
 neomutt
 notmuch
@@ -183,19 +124,12 @@ pavucontrol
 qemu-full
 qemu-user-static
 qemu-user-static-binfmt
-rofi
 rxvt-unicode
 seahorse
 senpai
 sshfs
-thunar
-thunar-archive-plugin
-thunar-volman
 thunderbird
 virt-manager
 virt-viewer
 weechat
 x11-ssh-askpass
-xss-lock
-zathura
-zathura-pdf-mupdf
