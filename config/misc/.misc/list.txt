@@ -3,7 +3,6 @@ base
 linux
 linux-firmware
 linux-headers
-refind
 
 # Devel
 base-devel
