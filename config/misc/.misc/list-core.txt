@@ -1,0 +1,6 @@
+base
+base-devel
+efibootmgr
+linux
+linux-firmware
+vi
