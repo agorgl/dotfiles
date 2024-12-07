@@ -2,7 +2,6 @@
 base
 linux
 linux-firmware
-linux-headers
 
 # Devel
 base-devel
@@ -15,7 +14,6 @@ neovim
 # System
 dbus-broker
 dbus-broker-units
-dkms
 fwupd
 gocryptfs
 iptables-nft
