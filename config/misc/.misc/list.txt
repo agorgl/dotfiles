@@ -1,7 +1,3 @@
-# Devel
-git-lfs
-git-filter-repo
-
 # System
 fwupd
 gocryptfs
