@@ -1,12 +1,6 @@
 cyrus-sasl-xoauth2-git
 downgrade
 mblaze-git
-mtpfs
-openconnect
 paru
 resticprofile-bin
 vpn-slice
-wine
-wine-gecko
-wine-mono
-winetricks

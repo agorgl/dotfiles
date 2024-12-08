@@ -1,0 +1,169 @@
+# Archives
+p7zip
+unrar
+
+# Audio
+alsa-utils
+sox
+vorbis-tools
+
+# Chat
+senpai
+weechat
+
+# Compatibility
+wine
+wine-gecko
+wine-mono
+winetricks
+
+# Email
+goimapnotify
+isync
+msmtp
+neomutt
+notmuch
+thunderbird
+w3m
+
+# Filesystems
+btrfs-progs
+dosfstools
+exfatprogs
+gocryptfs
+mtpfs
+nfs-utils
+samba
+sshfs
+
+# Fonts
+adobe-source-sans-fonts
+ttf-anonymous-pro
+ttf-dejavu
+ttf-inconsolata
+ttf-opensans
+ttf-ubuntu-font-family
+
+# Graphics
+libva-utils
+mesa-utils
+vdpauinfo
+vulkan-tools
+
+# Informational
+dmidecode
+lshw
+sysfsutils
+usbutils
+
+# Monitoring
+acpi
+htop
+lsof
+sysstat
+
+# Networking
+bind
+dnsmasq
+gnu-netcat
+iperf3
+iptables-nft
+iw
+mtr
+nmap
+socat
+tcpdump
+traceroute
+wavemon
+whois
+
+# Packages
+expac
+flatpak
+pkgfile
+
+# Programs
+filelight
+galculator
+gtk2fontsel
+maim
+pavucontrol
+rxvt-unicode
+stalonetray
+
+# Security
+gnome-keyring
+gnupg
+libfido2
+pass
+seahorse
+x11-ssh-askpass
+
+# Settings
+arandr
+d-spy
+dconf-editor
+
+# Shell
+bash-completion
+zsh-completions
+
+# System
+man-db
+man-pages
+tlp
+
+# Themes
+arc-gtk-theme
+gnome-themes-extra
+gtk-engine-murrine
+
+# Tools
+brightnessctl
+cups
+fdupes
+fwupd
+imagemagick
+inotify-tools
+picocom
+rclone
+restic
+rsync
+stow
+strace
+tmux
+yt-dlp
+
+# Utils
+bc
+fd
+fzf
+go-yq
+jq
+less
+qrencode
+ripgrep
+tree
+wget
+
+# Virtual Machines
+edk2-ovmf
+libvirt
+qemu-full
+qemu-user-static
+qemu-user-static-binfmt
+virt-manager
+virt-viewer
+
+# VPNs
+openconnect
+systemd-resolvconf
+wireguard-tools
+
+# Windowing
+weston
+wmctrl
+xdo
+xdotool
+xorg-xinput
+xorg-xprop
