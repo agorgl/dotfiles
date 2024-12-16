@@ -43,10 +43,13 @@ awf-gtk4
 flavours
 gtk3-demos
 gtk4-demos
+lutgen-bin
+nwg-look
 paper-icon-theme-git
 python-pywal
 qt5gtk2
 qt6gtk2
+wallust
 wpgtk
 
 # Tools
