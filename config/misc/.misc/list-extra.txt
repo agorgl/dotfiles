@@ -31,7 +31,6 @@ sysfsutils
 usbutils
 
 # Monitoring
-acpi
 htop
 lsof
 sysstat
@@ -56,6 +55,10 @@ expac
 flatpak
 pkgfile
 
+# Power
+acpi
+tlp
+
 # Security
 gnome-keyring
 gnupg
@@ -76,7 +79,6 @@ zsh-completions
 # System
 man-db
 man-pages
-tlp
 
 # Themes
 arc-gtk-theme
