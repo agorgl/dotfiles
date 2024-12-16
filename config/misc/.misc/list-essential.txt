@@ -44,6 +44,7 @@ polybar
 i3lock
 xss-lock
 xclip
+maim
 
 # Compositor
 river
