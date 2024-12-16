@@ -98,6 +98,10 @@ gvfs-mtp
 gvfs-nfs
 gvfs-smb
 
+# Archives
+p7zip
+unrar
+
 # Media
 imv
 mpv

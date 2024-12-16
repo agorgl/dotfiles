@@ -1,7 +1,3 @@
-# Archives
-p7zip
-unrar
-
 # Audio
 alsa-utils
 pavucontrol
