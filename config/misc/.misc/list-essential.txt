@@ -75,6 +75,7 @@ mate-polkit
 # Terminal
 alacritty
 foot
+rxvt-unicode
 xterm
 
 # Bluetooth

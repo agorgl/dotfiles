@@ -83,9 +83,6 @@ expac
 flatpak
 pkgfile
 
-# Programs
-rxvt-unicode
-
 # Security
 gnome-keyring
 gnupg
