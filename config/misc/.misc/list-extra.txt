@@ -84,8 +84,6 @@ flatpak
 pkgfile
 
 # Programs
-filelight
-galculator
 maim
 rxvt-unicode
 

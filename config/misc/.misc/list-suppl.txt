@@ -25,8 +25,10 @@ baresip
 blender
 discord
 element-desktop
+filelight
 flatseal
 font-manager
+galculator
 gimp
 ldtk
 losslesscut-bin
