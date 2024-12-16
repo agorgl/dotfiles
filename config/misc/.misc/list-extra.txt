@@ -116,7 +116,6 @@ rsync
 stow
 strace
 tmux
-yt-dlp
 
 # Utils
 bc

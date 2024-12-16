@@ -67,6 +67,7 @@ mblaze-git
 paru
 resticprofile-bin
 vpn-slice
+yt-dlp
 
 # Widgets
 conky-cairo
