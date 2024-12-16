@@ -85,7 +85,6 @@ pkgfile
 # Programs
 filelight
 galculator
-gtk2fontsel
 maim
 pavucontrol
 rxvt-unicode
