@@ -37,14 +37,6 @@ nfs-utils
 samba
 sshfs
 
-# Fonts
-adobe-source-sans-fonts
-ttf-anonymous-pro
-ttf-dejavu
-ttf-inconsolata
-ttf-opensans
-ttf-ubuntu-font-family
-
 # Graphics
 libva-utils
 mesa-utils

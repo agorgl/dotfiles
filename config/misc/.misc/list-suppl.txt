@@ -7,6 +7,7 @@ yabridge
 yabridgectl
 
 # Fonts
+adobe-source-sans-fonts
 apple-fonts
 cozette-otb
 nerd-fonts-sf-mono
@@ -14,10 +15,15 @@ otb-tamzen-font-git
 powerline-fonts-git
 siji-git
 termsyn-font
+ttf-anonymous-pro
+ttf-dejavu
 ttf-font-awesome
 ttf-icomoon-feather
+ttf-inconsolata
 ttf-monaco
 ttf-ms-win11-auto
+ttf-opensans
+ttf-ubuntu-font-family
 ttf-unifont
 
 # Programs
