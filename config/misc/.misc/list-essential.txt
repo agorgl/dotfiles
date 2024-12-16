@@ -54,6 +54,7 @@ waybar
 swaylock
 swayidle
 wl-clipboard
+grim
 
 # Audio
 pipewire
