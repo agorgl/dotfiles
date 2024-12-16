@@ -6,24 +6,11 @@ unrar
 alsa-utils
 pavucontrol
 
-# Chat
-senpai
-weechat
-
 # Compatibility
 wine
 wine-gecko
 wine-mono
 winetricks
-
-# Email
-goimapnotify
-isync
-msmtp
-neomutt
-notmuch
-thunderbird
-w3m
 
 # Filesystems
 btrfs-progs
