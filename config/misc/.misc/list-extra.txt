@@ -4,6 +4,7 @@ unrar
 
 # Audio
 alsa-utils
+pavucontrol
 sox
 vorbis-tools
 
@@ -86,7 +87,6 @@ pkgfile
 filelight
 galculator
 maim
-pavucontrol
 rxvt-unicode
 
 # Security
