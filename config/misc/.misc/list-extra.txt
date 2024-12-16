@@ -89,7 +89,6 @@ gtk2fontsel
 maim
 pavucontrol
 rxvt-unicode
-stalonetray
 
 # Security
 gnome-keyring

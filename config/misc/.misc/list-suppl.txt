@@ -65,4 +65,5 @@ conky-cairo
 eww
 lemonbar-xft-git
 libappindicator-gtk3
+stalonetray
 xtitle
