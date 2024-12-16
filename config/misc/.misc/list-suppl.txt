@@ -1,3 +1,25 @@
+# Audio
+carla
+realtime-privileges
+reaper
+wineasio
+yabridge
+yabridgectl
+
+# Fonts
+apple-fonts
+cozette-otb
+nerd-fonts-sf-mono
+otb-tamzen-font-git
+powerline-fonts-git
+siji-git
+termsyn-font
+ttf-font-awesome
+ttf-icomoon-feather
+ttf-monaco
+ttf-ms-win11-auto
+ttf-unifont
+
 # Programs
 baresip
 blender
@@ -26,6 +48,14 @@ python-pywal
 qt5gtk2
 qt6gtk2
 wpgtk
+
+# Tools
+cyrus-sasl-xoauth2-git
+downgrade
+mblaze-git
+paru
+resticprofile-bin
+vpn-slice
 
 # Widgets
 conky-cairo

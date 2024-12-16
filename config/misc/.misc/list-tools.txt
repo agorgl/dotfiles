@@ -1,6 +1,0 @@
-cyrus-sasl-xoauth2-git
-downgrade
-mblaze-git
-paru
-resticprofile-bin
-vpn-slice
