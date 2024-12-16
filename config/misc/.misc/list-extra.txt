@@ -5,8 +5,6 @@ unrar
 # Audio
 alsa-utils
 pavucontrol
-sox
-vorbis-tools
 
 # Chat
 senpai

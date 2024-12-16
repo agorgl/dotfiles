@@ -66,6 +66,8 @@ downgrade
 mblaze-git
 paru
 resticprofile-bin
+sox
+vorbis-tools
 vpn-slice
 yt-dlp
 
