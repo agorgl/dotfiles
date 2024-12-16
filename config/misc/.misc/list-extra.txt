@@ -76,10 +76,6 @@ dconf-editor
 bash-completion
 zsh-completions
 
-# System
-man-db
-man-pages
-
 # Themes
 arc-gtk-theme
 gnome-themes-extra
@@ -107,6 +103,8 @@ fzf
 go-yq
 jq
 less
+man-db
+man-pages
 qrencode
 ripgrep
 tree
