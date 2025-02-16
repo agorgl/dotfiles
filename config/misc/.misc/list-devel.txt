@@ -10,6 +10,7 @@ ansible-lint
 ccls
 clang
 gdb
+meson
 valgrind
 
 # Clojure
