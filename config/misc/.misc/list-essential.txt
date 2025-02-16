@@ -55,6 +55,7 @@ swaylock
 swayidle
 wl-clipboard
 grim
+slurp
 
 # Audio
 pipewire
