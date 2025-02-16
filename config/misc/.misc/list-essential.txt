@@ -87,6 +87,16 @@ blueman
 chromium
 firefox
 
+# Filesystems
+btrfs-progs
+dosfstools
+exfatprogs
+gocryptfs
+mtpfs
+nfs-utils
+samba
+sshfs
+
 # Files
 thunar
 thunar-archive-plugin

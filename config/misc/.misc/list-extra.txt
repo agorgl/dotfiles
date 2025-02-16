@@ -8,16 +8,6 @@ wine-gecko
 wine-mono
 winetricks
 
-# Filesystems
-btrfs-progs
-dosfstools
-exfatprogs
-gocryptfs
-mtpfs
-nfs-utils
-samba
-sshfs
-
 # Graphics
 libva-utils
 mesa-utils
