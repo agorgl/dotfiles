@@ -113,7 +113,7 @@ gvfs-nfs
 gvfs-smb
 
 # Archives
-p7zip
+7zip
 unrar
 
 # Media
