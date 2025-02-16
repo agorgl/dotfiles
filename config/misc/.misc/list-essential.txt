@@ -47,6 +47,8 @@ xclip
 maim
 
 # Compositor
+sway
+sway-contrib
 river
 swaybg
 bemenu-wayland
