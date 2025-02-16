@@ -23,6 +23,7 @@ usbutils
 # Monitoring
 htop
 lsof
+progress
 sysstat
 
 # Networking
