@@ -29,7 +29,6 @@ ttf-unifont
 # Programs
 baresip
 blender
-discord
 element-desktop
 filelight
 flatseal
@@ -40,7 +39,6 @@ ldtk
 losslesscut-bin
 mesa-demos
 qbittorrent
-slack-desktop
 wireshark-qt
 zbar
 
