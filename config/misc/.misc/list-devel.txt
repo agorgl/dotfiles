@@ -47,8 +47,6 @@ gopls
 
 # Java
 jdk-openjdk
-jdk17-openjdk
-jdk22-graalvm-ee-bin
 jdtls
 maven
 
