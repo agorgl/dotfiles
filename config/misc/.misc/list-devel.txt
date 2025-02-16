@@ -53,7 +53,7 @@ jdtls
 maven
 
 # JavaScript
-nodejs
+nodejs-lts-jod
 npm
 typescript-language-server
 
