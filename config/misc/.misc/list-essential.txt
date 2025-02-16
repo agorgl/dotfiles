@@ -33,6 +33,7 @@ dunst
 rofi-wayland
 xdg-desktop-portal
 xdg-desktop-portal-gtk
+xdg-desktop-portal-wlr
 
 # Window Manager
 bspwm
