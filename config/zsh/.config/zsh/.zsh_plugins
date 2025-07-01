@@ -1,0 +1,34 @@
+#
+# zsh/plugins
+#
+
+# Completions
+mattmc3/ez-compinit
+zsh-users/zsh-completions kind:fpath path:src
+aloxaf/fzf-tab
+
+# Completion styles
+belak/zsh-utils path:completion/functions kind:autoload post:compstyle_zshzoo_setup
+
+# Keybindings
+belak/zsh-utils path:editor
+
+# History
+belak/zsh-utils path:history
+
+# Prompt
+romkatv/powerlevel10k
+
+# Utilities
+belak/zsh-utils path:utility
+romkatv/zsh-bench kind:path
+ohmyzsh/ohmyzsh path:plugins/extract
+
+# Syntax highlighting
+zdharma-continuum/fast-syntax-highlighting
+
+# Auto-suggestions
+zsh-users/zsh-autosuggestions
+
+# Up/Down to search history
+zsh-users/zsh-history-substring-search
