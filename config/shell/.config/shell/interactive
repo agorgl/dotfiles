@@ -4,3 +4,6 @@
 
 # GPG
 export GPG_TTY="${TTY:-"$(tty)"}"
+
+# Local environment
+[[ -f ~/.envlocal ]] && . ~/.envlocal
