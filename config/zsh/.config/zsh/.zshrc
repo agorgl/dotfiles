@@ -37,3 +37,6 @@ antidote load
 
 # Keymode
 bindkey -e
+
+# Interactive
+[[ -f ~/.config/shell/interactive ]] && . ~/.config/shell/interactive
