@@ -1,0 +1,7 @@
+[Unit]
+Description=X auto lock
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/xss-lock -l -s ${XDG_SESSION_ID} -- i3lock
