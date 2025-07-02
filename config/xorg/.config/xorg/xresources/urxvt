@@ -1,0 +1,14 @@
+!
+! xorg/xresources/urxvt
+!
+
+URxvt.font: xft:TERM_FONT_NAME:size=TERM_FONT_SIZE:style=Regular,xft:TERM_ICON_FONT_NAME:size=TERM_FONT_SIZE:style=Regular
+URxvt.boldFont: xft:TERM_FONT_NAME:size=TERM_FONT_SIZE:style=Medium,xft:TERM_ICON_FONT_NAME:size=TERM_FONT_SIZE:style=Medium
+URxvt.italicFont: xft:TERM_FONT_NAME:size=TERM_FONT_SIZE:style=Italic,xft:TERM_ICON_FONT_NAME:size=TERM_FONT_SIZE:style=Italic
+URxvt.boldItalicFont: xft:TERM_FONT_NAME:size=TERM_FONT_SIZE:style=Medium Italic,xft:TERM_ICON_FONT_NAME:size=TERM_FONT_SIZE:style=Medium Italic
+URxvt.internalBorder: TERM_PADDING
+URxvt.scrollBar: false
+URxvt.cursorBlink: true
+URxvt.perl-ext-common: default,matcher
+URxvt.url-launcher: /usr/bin/xdg-open
+URxvt.matcher.button: 1
