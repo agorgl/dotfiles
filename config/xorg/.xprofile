@@ -1,0 +1,9 @@
+#
+# xorg/.xprofile
+#
+
+xprofile_dir=${XDG_CONFIG_HOME:-$HOME/.config}/xorg/xprofile
+for f in $xprofile_dir/*; do
+    [ -x "$f" ] && . "$f"
+done
+unset f
