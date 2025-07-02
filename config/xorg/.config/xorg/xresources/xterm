@@ -1,0 +1,19 @@
+!
+! xorg/xresources/xterm
+!
+
+*XTerm.termName: xterm-256color
+*XTerm.ttyModes: erase ^?
+*XTerm.vt100.faceName: TERM_FONT_NAME
+*XTerm.vt100.faceSize: TERM_FONT_SIZE
+*XTerm.vt100.internalBorder: TERM_PADDING
+*XTerm.vt100.limitFontsets: 255
+*XTerm.vt100.scrollBar: false
+*XTerm.vt100.cursorBlink: true
+*XTerm.vt100.cursorOnTime: 500
+*XTerm.vt100.cursorOffTime: 500
+*XTerm.vt100.locale: true
+*XTerm.vt100.metaSendsEscape: true
+*XTerm.vt100.backarrowKey: false
+*XTerm.vt100.saveLines: 4096
+*XTerm.vt100.selectToClipboard: true
