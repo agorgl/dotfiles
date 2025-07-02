@@ -3,3 +3,4 @@
 !
 
 #include "xresources/variables"
+#include "xresources/colors"
