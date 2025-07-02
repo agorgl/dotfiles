@@ -1,0 +1,9 @@
+[Unit]
+Description=Feh background setter
+PartOf=graphical-session.target
+ConditionPathExists=%h/.fehbg
+
+[Service]
+Type=oneshot
+ExecStart=%h/.fehbg
+Slice=session.slice
