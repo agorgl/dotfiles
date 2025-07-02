@@ -1,0 +1,7 @@
+[Unit]
+Description=PolicyKit Authentication Agent
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/lib/mate-polkit/polkit-mate-authentication-agent-1
+Slice=session.slice
