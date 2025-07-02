@@ -1,3 +1,5 @@
 !
 ! xorg/.Xresources
 !
+
+#include "xresources/variables"

@@ -1,0 +1,8 @@
+!
+! xorg/xresources/variables
+!
+
+#define TERM_FONT_NAME terminal
+#define TERM_ICON_FONT_NAME icons
+#define TERM_FONT_SIZE 11
+#define TERM_PADDING 16
