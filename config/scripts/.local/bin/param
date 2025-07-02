@@ -1,0 +1,33 @@
+#!/bin/bash
+
+module="$1"
+parameter="$2"
+value="$3"
+
+list () { ls -A -1 "$1"; }
+
+modules_dir="${XDG_CONFIG_HOME:-$HOME/.config}/module"
+if [ -z "$module" ]; then
+    if [ -d "$modules_dir" ]; then
+        list "$modules_dir"
+    fi
+    exit 0
+fi
+
+parameters_dir="$modules_dir/$module/parameters"
+if [ -z "$parameter" ]; then
+    list "$parameters_dir"
+    exit 0
+fi
+
+value_file="$parameters_dir/$parameter"
+if [ -z "$value" ]; then
+    if [ -f "$value_file" ]; then
+        cat "$value_file"
+        exit 0
+    fi
+    exit 1
+fi
+
+mkdir -p "$parameters_dir"
+echo "$value" > "$value_file"
