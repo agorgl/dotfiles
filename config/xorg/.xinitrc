@@ -19,4 +19,6 @@ xorg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/xorg"
 [ -f $xorg_dir/.Xmodmap ] && xmodmap $xorg_dir/.Xmodmap
 [ -f ~/.xprofile ] && . ~/.xprofile
 
-exec "$WINDOW_MANAGER" "${@:2}"
+systemctl --user start x-session.target
+"$WINDOW_MANAGER" "${@:2}"
+systemctl --user stop x-session.target
