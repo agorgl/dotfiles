@@ -4,6 +4,8 @@
 # xorg/.xinitrc
 #
 
+export WINDOW_MANAGER="$1"
+
 if [ -d /etc/X11/xinit/xinitrc.d ]; then
     for f in /etc/X11/xinit/xinitrc.d/?*.sh; do
         [ -x "$f" ] && . "$f"
@@ -17,4 +19,4 @@ xorg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/xorg"
 [ -f $xorg_dir/.Xmodmap ] && xmodmap $xorg_dir/.Xmodmap
 [ -f ~/.xprofile ] && . ~/.xprofile
 
-exec "$@"
+exec "$WINDOW_MANAGER" "${@:2}"
