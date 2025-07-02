@@ -1,0 +1,33 @@
+#
+# xorg/xprofile/scaling
+#
+
+scale=$(param xorg scale || echo 100)
+dpi=$(( 96 * $scale / 100 ))
+
+xrandr --dpi $dpi
+echo "Xft.dpi: $dpi" | xrdb -merge -
+
+gdk_scale=$(( ($scale + (100 / 2)) / 100 ))
+gdk_dpi_scale=$(awk "BEGIN { print (1 / $gdk_scale) }")
+
+xsettingsd_dir="${XDG_CONFIG_HOME:-$HOME/.config}/xsettingsd"
+xsettingsd_conf_dir="$xsettingsd_dir/conf.d"
+mkdir -p "$xsettingsd_conf_dir"
+cat << EOF > "$xsettingsd_conf_dir/scaling.conf"
+Xft/DPI $(( $dpi * 1024 ))
+Gdk/WindowScalingFactor $gdk_scale
+Gdk/UnscaledDPI $(( ($dpi * 1024) / $gdk_scale ))
+EOF
+cat "$xsettingsd_conf_dir"/* > "$xsettingsd_dir/xsettingsd.conf"
+
+export GDK_SCALE=$gdk_scale
+export GDK_DPI_SCALE=$gdk_dpi_scale
+export QT_AUTO_SCREEN_SCALE_FACTOR=1
+export QT_ENABLE_HIGHDPI_SCALING=1
+
+dbus-update-activation-environment --systemd \
+    GDK_SCALE \
+    GDK_DPI_SCALE \
+    QT_AUTO_SCREEN_SCALE_FACTOR \
+    QT_ENABLE_HIGHDPI_SCALING
