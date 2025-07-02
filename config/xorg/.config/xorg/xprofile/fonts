@@ -1,0 +1,42 @@
+#
+# xorg/xprofile/fonts
+#
+
+antialias=$(param xft antialias || echo 1)
+hinting=$(param xft hinting || echo 1)
+hintstyle=$(param xft hintstyle || echo "hintslight")
+rgba=$(param xft rgba || echo "rgb")
+autohint=$(param xft autohint || echo 0)
+lcdfilter=$(param xft lcdfilter || echo "lcddefault")
+
+cat << EOF | xrdb -merge -
+Xft.autohint: $autohint
+Xft.lcdfilter: $lcdfilter
+Xft.hintstyle: $hintstyle
+Xft.hinting: $hinting
+Xft.antialias: $antialias
+Xft.rgba: $rgba
+EOF
+
+antialiasing_enum=("none" "grayscale" "rgba")
+hinting_enum=("none" "slight" "medium" "full")
+rgba_enum=("rgba" "rgb" "bgr" "vrgb" "vbgr")
+font_rendering_enum=("automatic" "manual")
+
+gsettings set org.gnome.desktop.interface font-antialiasing "${antialiasing_enum[$(( $antialias == 0 ? 0 : ($([[ $rgba != 'none' ]]; echo $?) ? 1 : 2) ))]}"
+gsettings set org.gnome.desktop.interface font-hinting "${hintstyle#hint}"
+gsettings set org.gnome.desktop.interface font-rgba-order "$rgba"
+gsettings set org.gnome.desktop.interface font-rendering "${font_rendering_enum[1]}"
+
+xsettingsd_dir="${XDG_CONFIG_HOME:-$HOME/.config}/xsettingsd"
+xsettingsd_conf_dir="$xsettingsd_dir/conf.d"
+mkdir -p "$xsettingsd_conf_dir"
+cat << EOF > "$xsettingsd_conf_dir/fonts.conf"
+Xft/Antialias $antialias
+Xft/Hinting $hinting
+Xft/HintStyle "$hintstyle"
+Xft/RGBA "$rgba"
+Xft/AutoHint $autohint
+Xft/lcdfilter "$lcdfilter"
+EOF
+cat "$xsettingsd_conf_dir"/* > "$xsettingsd_dir/xsettingsd.conf"
