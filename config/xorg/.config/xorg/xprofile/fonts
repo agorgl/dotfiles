@@ -2,12 +2,43 @@
 # xorg/xprofile/fonts
 #
 
-antialias=$(param xft antialias || echo 1)
-hinting=$(param xft hinting || echo 1)
-hintstyle=$(param xft hintstyle || echo "hintslight")
-rgba=$(param xft rgba || echo "rgb")
-autohint=$(param xft autohint || echo 0)
-lcdfilter=$(param xft lcdfilter || echo "lcddefault")
+antialias=$(param fonts antialias || echo 1)
+hinting=$(param fonts hinting || echo 1)
+hintstyle=$(param fonts hintstyle || echo "hintslight")
+rgba=$(param fonts rgba || echo "rgb")
+autohint=$(param fonts autohint || echo 0)
+lcdfilter=$(param fonts lcdfilter || echo "lcddefault")
+
+boolean_enum=("false" "true")
+
+fontconfig_local_conf_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fontconfig-local/conf.d"
+mkdir -p "$fontconfig_local_conf_dir"
+cat << EOF > "$fontconfig_local_conf_dir/10-settings.conf"
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+  <match target="font">
+    <edit name="antialias" mode="assign">
+      <bool>${boolean_enum[$antialias]}</bool>
+    </edit>
+    <edit name="rgba" mode="assign">
+      <const>rgb</const>
+    </edit>
+    <edit name="lcdfilter" mode="assign">
+      <const>lcddefault</const>
+    </edit>
+    <edit name="hinting" mode="assign">
+      <bool>${boolean_enum[$hinting]}</bool>
+    </edit>
+    <edit name="hintstyle" mode="assign">
+      <const>hintslight</const>
+    </edit>
+    <edit name="autohint" mode="assign">
+      <bool>${boolean_enum[$autohint]}</bool>
+    </edit>
+  </match>
+</fontconfig>
+EOF
 
 cat << EOF | xrdb -merge -
 Xft.autohint: $autohint
