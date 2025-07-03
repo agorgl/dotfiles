@@ -21,8 +21,8 @@ Gdk/UnscaledDPI $(( ($dpi * 1024) / $gdk_scale ))
 EOF
 cat "$xsettingsd_conf_dir"/* > "$xsettingsd_dir/xsettingsd.conf"
 
-export GDK_SCALE=$gdk_scale
-export GDK_DPI_SCALE=$gdk_dpi_scale
+#export GDK_SCALE=$gdk_scale
+#export GDK_DPI_SCALE=$gdk_dpi_scale
 export QT_AUTO_SCREEN_SCALE_FACTOR=1
 export QT_ENABLE_HIGHDPI_SCALING=1
 
