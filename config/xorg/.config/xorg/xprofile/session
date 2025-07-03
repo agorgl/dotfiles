@@ -5,3 +5,9 @@
 export XDG_SESSION_TYPE=x11
 export XDG_SESSION_DESKTOP=$WINDOW_MANAGER
 export XDG_CURRENT_DESKTOP=$WINDOW_MANAGER
+
+dbus-update-activation-environment --systemd \
+    XDG_SESSION_ID \
+    XDG_SESSION_TYPE \
+    XDG_SESSION_DESKTOP \
+    XDG_CURRENT_DESKTOP
