@@ -1,0 +1,22 @@
+#
+# graphical/theme
+#
+
+theme=$(param gtk theme || echo "Adwaita")
+icon_theme=$(param gtk icon-theme || echo "Adwaita")
+cursor_theme=$(param gtk cursor-theme || echo "Adwaita")
+font_name=$(param gtk font-name || echo "Noto Sans 10")
+decoration_layout=$(param gtk decoration-layout || echo ":")
+
+gsettings set org.gnome.desktop.interface gtk-theme "$theme"
+gsettings set org.gnome.desktop.interface icon-theme "$icon_theme"
+gsettings set org.gnome.desktop.interface cursor-theme "$cursor_theme"
+gsettings set org.gnome.desktop.interface font-name "$font_name"
+gsettings set org.gnome.desktop.wm.preferences button-layout "$decoration_layout"
+
+export THEME_NAME=$theme
+export ICON_THEME_NAME=$icon_theme
+
+dbus-update-activation-environment --systemd \
+    THEME_NAME \
+    ICON_THEME_NAME
