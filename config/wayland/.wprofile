@@ -1,0 +1,9 @@
+#
+# wayland/.wprofile
+#
+
+wprofile_dir=${XDG_CONFIG_HOME:-$HOME/.config}/wayland/wprofile
+for f in $wprofile_dir/*; do
+    [ -x "$f" ] && . "$f"
+done
+unset f
