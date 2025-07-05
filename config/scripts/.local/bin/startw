@@ -1,0 +1,6 @@
+#!/bin/sh
+
+export WAYLAND_COMPOSITOR="$1"
+
+[ -f ~/.wprofile ] && . ~/.wprofile
+exec "$WAYLAND_COMPOSITOR" "${@:2}"
