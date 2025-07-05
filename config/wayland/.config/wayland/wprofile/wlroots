@@ -1,0 +1,9 @@
+#
+# wayland/wprofile/wlroots
+#
+
+# Virtual Machines
+if grep -q "^flags.* hypervisor" /proc/cpuinfo; then
+    export WLR_NO_HARDWARE_CURSORS=1
+    export WLR_DRM_NO_ATOMIC=1
+fi
