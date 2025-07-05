@@ -1,0 +1,15 @@
+#
+# wayland/wprofile/session
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/session
+
+export XDG_SESSION_TYPE=wayland
+export XDG_SESSION_DESKTOP=$WAYLAND_COMPOSITOR
+export XDG_CURRENT_DESKTOP=$WAYLAND_COMPOSITOR
+
+dbus-update-activation-environment --systemd \
+    XDG_SESSION_ID \
+    XDG_SESSION_TYPE \
+    XDG_SESSION_DESKTOP \
+    XDG_CURRENT_DESKTOP
