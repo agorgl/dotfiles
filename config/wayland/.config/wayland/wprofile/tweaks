@@ -3,3 +3,13 @@
 #
 
 . ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/tweaks
+
+# Firefox
+export MOZ_ENABLE_WAYLAND=1
+
+# Qt
+export QT_QPA_PLATFORM=wayland-egl
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+
+# SDL
+export SDL_VIDEODRIVER=wayland
