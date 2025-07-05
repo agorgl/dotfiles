@@ -2,8 +2,4 @@
 # xorg/xprofile/tweaks
 #
 
-# Fix java application decorations, for tiling window managers
-export _JAVA_AWT_WM_NONREPARENTING=1
-
-# Enable firefox one-to-one trackpad scrolling
-export MOZ_USE_XINPUT2=1
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/tweaks
