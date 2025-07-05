@@ -1,0 +1,5 @@
+#
+# wayland/wprofile/theme
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/theme
