@@ -1,0 +1,5 @@
+#
+# wayland/wprofile/tweaks
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/tweaks
