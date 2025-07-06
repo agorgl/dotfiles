@@ -1,0 +1,8 @@
+#
+# graphical/programs
+#
+
+export TERMINAL=alacritty
+export BROWSER=chromium
+export FILE_MANAGER=thunar
+export MENU=rofi
