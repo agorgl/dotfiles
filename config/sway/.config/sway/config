@@ -194,9 +194,8 @@ bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 # take a screenshot
 bindsym Print exec grim
 
-#
-# Status Bar:
-#
+## Bar
+
 bar {
     position top
 
