@@ -211,3 +211,4 @@ bar {
 }
 
 include /etc/sway/config.d/*
+include systemd

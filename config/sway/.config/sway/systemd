@@ -1,0 +1,6 @@
+#
+# sway/systemd
+#
+
+exec systemctl --user start wayland-session.target
+exec swaymsg -t subscribe '["shutdown"]' && systemctl --user stop wayland-session.target
