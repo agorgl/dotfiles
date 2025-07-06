@@ -1,0 +1,5 @@
+#
+# xorg/xprofile/programs
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/programs
