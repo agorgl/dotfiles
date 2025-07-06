@@ -1,0 +1,5 @@
+#
+# wayland/wprofile/programs
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/programs
