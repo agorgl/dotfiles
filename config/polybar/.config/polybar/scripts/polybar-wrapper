@@ -1,5 +1,8 @@
 #!/bin/sh
 
+reload(){ trap - USR1; pkill -P $$; exec $0; }
+trap reload USR1
+
 polybar_config="$(dirname $0)/../config.ini"
 
 for m in $(polybar --list-monitors | cut -d":" -f1); do
