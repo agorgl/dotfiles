@@ -1,0 +1,9 @@
+#!/bin/sh
+
+polybar_config="$(dirname $0)/../config.ini"
+
+for m in $(polybar --list-monitors | cut -d":" -f1); do
+    MONITOR=$m polybar -c "$polybar_config" &
+done
+
+wait
