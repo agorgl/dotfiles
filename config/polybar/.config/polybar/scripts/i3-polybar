@@ -1,0 +1,25 @@
+#!/bin/sh
+
+i3_num_persistent_workspaces="$1"
+i3_proxy_dir="$(mktemp -d)"
+i3_proxy="$i3_proxy_dir/i3"
+i3_exec="$(which i3)"
+
+touch "$i3_proxy"
+cat >"$i3_proxy" <<-EOF
+#!/bin/sh
+
+if [ "\$1" = "--get-socketpath" ]; then
+    echo "\$("$i3_exec" --get-socketpath).proxy.sock"
+    exit
+fi
+
+exec "$i3_exec" "\$@"
+EOF
+chmod a+x "$i3_proxy"
+trap 'rm -rf -- "$i3_proxy_dir"' EXIT TERM INT
+
+"$(dirname $0)/i3-workspaces-proxy" "$i3_num_persistent_workspaces" 2>/dev/null &
+
+export PATH="$i3_proxy_dir":$PATH
+"$(dirname $0)/polybar-wrapper"
