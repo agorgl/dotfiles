@@ -3,6 +3,8 @@
 reload(){ trap - USR1; pkill -P $$; exec $0; }
 trap reload USR1
 
+export CPU_HWMON=$(for m in /sys/class/hwmon/*; do [[ -f $m/temp1_input ]] && paste <(cat $m/name) <(echo $m/temp1_input); done | awk '/(coretemp|k10temp)/{print $2}')
+
 polybar_config="$(dirname $0)/../config.ini"
 
 for m in $(polybar --list-monitors | cut -d":" -f1); do
