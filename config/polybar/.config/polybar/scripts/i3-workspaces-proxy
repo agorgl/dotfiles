@@ -1,0 +1,104 @@
+#!/bin/bash
+
+workspaces() {
+    local num_workspaces=${1:-4}
+
+    jq --unbuffered -c --argjson num_workspaces $num_workspaces '
+      [
+        group_by(.output)
+          | .[]
+          | (
+              .[0].output as $output
+                | . | map(.focused = .visible) | map(.visible = true) # hack: use visible flag for populated workspaces
+                  +
+                  [
+                    range(1; $num_workspaces + 1)
+                      | {
+                          num: .,
+                          name: . | tostring,
+                          visible: false,
+                          focused: false,
+                          urgent: false,
+                          output: $output
+                        }
+                  ]
+                | unique_by(.name)
+            )
+      ] | flatten
+        | sort_by(.output, .num)
+    '
+}
+
+log() { echo "$@" >&2; }
+
+echo_int_bytes() {
+    local int="$1"
+    printf "0: %.8x" $int | sed -E 's/0: (..)(..)(..)(..)/0: \4\3\2\1/' | xxd -r -p
+}
+
+intercept() {
+    local msg_command="$1"
+    local msg_payload="$2"
+
+    if [ "$msg_command" -eq 1 ]; then
+        log "intercept: intercepting workspaces command"
+        echo "$msg_payload" | workspaces $NUM_WORKSPACES
+    fi
+}
+
+proxy_filter() {
+    local msg_magic="$(head -c 6)"
+    [ -z "$msg_magic" ] && return 1
+
+    local msg_length="$(head -c 4 | od -An -t u4 | awk '{$1=$1};1')"
+    local msg_command="$(head -c 4 | od -An -t u4 | awk '{$1=$1};1')"
+    local msg_payload="$(head -c "$msg_length")"
+
+    log "filter: received msg_magic: $msg_magic"
+    log "filter: received msg_length: $msg_length"
+    log "filter: received msg_command: $msg_command"
+    log "filter: received msg_payload: $msg_payload"
+
+    local is_event=$(( $msg_command >> 31 ))
+    local event_type=$(( $msg_command & 0x7FFFFFFF ))
+    local type=$([[ $is_event = 1 ]] && echo "event" || echo "command")
+    local number=$([[ $is_event = 1 ]] && echo $event_type || echo $msg_command)
+    log "filter: message is $type with number $number"
+
+    local rpl_payload="$msg_payload"
+    local rpl_length="$(echo -n "$rpl_payload" | wc -c)"
+
+    local intercepted_payload=$(intercept "$msg_command" "$msg_payload")
+    if [ ! -z "$intercepted_payload" ]; then
+        rpl_payload="$intercepted_payload"
+        rpl_length="$(echo -n "$rpl_payload" | wc -c)"
+    else
+        log "filter: passing through $type number $number"
+    fi
+
+    log "filter: sending rpl_length: $rpl_length"
+    log "filter: sending rpl_payload: $rpl_payload"
+
+    echo -n "$msg_magic"
+    echo_int_bytes "$rpl_length"
+    echo_int_bytes "$msg_command"
+    echo -n "$rpl_payload"
+}
+
+if [ "$1" = "filter" ]; then
+    log "main: starting proxy filter loop"
+    while true; do
+        proxy_filter
+        [ $? -eq 1 ] && break
+    done
+
+    log "main: exited proxy filter loop"
+    exit
+fi
+
+i3sock_real="$(i3 --get-socketpath)"
+i3sock_proxy="$i3sock_real.proxy.sock"
+
+log "main: starting proxy listener"
+socat unix-listen:"$i3sock_proxy",fork \
+      system:"socat - unix-connect\:$i3sock_real | $0 filter",nofork
