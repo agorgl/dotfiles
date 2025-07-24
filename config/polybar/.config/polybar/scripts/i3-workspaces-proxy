@@ -96,9 +96,14 @@ if [ "$1" = "filter" ]; then
     exit
 fi
 
+cleanup(){ pkill -P $$; }
+trap cleanup EXIT
+
 i3sock_real="$(i3 --get-socketpath)"
 i3sock_proxy="$i3sock_real.proxy.sock"
 
 log "main: starting proxy listener"
 socat unix-listen:"$i3sock_proxy",fork \
-      system:"socat - unix-connect\:$i3sock_real | $0 filter",nofork
+      system:"socat - unix-connect\:$i3sock_real | $0 filter",nofork &
+
+wait

@@ -17,9 +17,13 @@ fi
 exec "$i3_exec" "\$@"
 EOF
 chmod a+x "$i3_proxy"
-trap 'rm -rf -- "$i3_proxy_dir"' EXIT TERM INT
+
+cleanup(){ pkill -P $$; rm -rf -- "$i3_proxy_dir"; }
+trap cleanup EXIT
 
 "$(dirname $0)/i3-workspaces-proxy" "$i3_num_persistent_workspaces" 2>/dev/null &
 
 export PATH="$i3_proxy_dir":$PATH
-"$(dirname $0)/polybar-wrapper"
+"$(dirname $0)/polybar-wrapper" &
+
+wait $!
