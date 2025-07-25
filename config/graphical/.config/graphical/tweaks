@@ -10,3 +10,6 @@ export MOZ_USE_XINPUT2=1
 
 # Make qt have uniform look with gtk
 export QT_QPA_PLATFORMTHEME=gtk3
+
+# Allow electron apps to work under native wayland
+export ELECTRON_OZONE_PLATFORM_HINT=auto
