@@ -7,3 +7,6 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 
 # Enable firefox one-to-one trackpad scrolling
 export MOZ_USE_XINPUT2=1
+
+# Make qt have uniform look with gtk
+export QT_QPA_PLATFORMTHEME=gtk3
