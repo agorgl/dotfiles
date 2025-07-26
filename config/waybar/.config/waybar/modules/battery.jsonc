@@ -1,0 +1,10 @@
+//
+// waybar/modules/battery.jsonc
+//
+
+{
+  "battery": {
+    "format": "{capacity}% {icon}",
+    "format-icons": ["", "", "", "", ""]
+  }
+}
