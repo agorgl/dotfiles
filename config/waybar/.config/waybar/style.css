@@ -7,6 +7,7 @@
 @import url("modules/sway-workspaces.css");
 @import url("modules/sway-mode.css");
 @import url("modules/sway-window.css");
+@import url("modules/clock.css");
 
 window#waybar {
   background-color: @background;
