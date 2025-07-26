@@ -33,3 +33,11 @@ button {
 button:hover {
   background: inherit;
 }
+
+tooltip {
+  background: @background;
+}
+
+tooltip label {
+  color: @foreground;
+}
