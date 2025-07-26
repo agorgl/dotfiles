@@ -1,0 +1,8 @@
+/*
+ * waybar/config/fonts.css
+ */
+
+* {
+  font-family: monospace, lucide;
+  font-size: 7.5pt;
+}
