@@ -4,6 +4,7 @@
 
 {
   "sway/window": {
-    "max-length": 50
+    "max-length": 60,
+    "tooltip": false
   }
 }
