@@ -9,3 +9,7 @@ window#waybar {
   background-color: @background;
   color: @foreground;
 }
+
+.modules-right {
+  margin-right: 4pt;
+}
