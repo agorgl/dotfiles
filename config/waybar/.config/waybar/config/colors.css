@@ -1,0 +1,8 @@
+/*
+ * waybar/config/colors.css
+ */
+
+@define-color background #282A2E;
+@define-color foreground #C5C8C6;
+@define-color alert #A54242;
+@define-color disabled #707880;
