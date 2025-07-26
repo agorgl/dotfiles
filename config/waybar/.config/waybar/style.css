@@ -13,3 +13,12 @@ window#waybar {
 .modules-right {
   margin-right: 4pt;
 }
+
+button {
+  border: none;
+  border-radius: 0;
+}
+
+button:hover {
+  background: inherit;
+}
