@@ -1,0 +1,12 @@
+//
+// waybar/modules/cpu.jsonc
+//
+
+{
+  "cpu": {
+    "interval": 2,
+    "format": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {usage}%",
+    "format-icons": [""],
+    "tooltip": false
+  }
+}

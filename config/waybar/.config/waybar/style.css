@@ -13,6 +13,7 @@
 @import url("modules/battery.css");
 @import url("modules/temperature.css");
 @import url("modules/memory.css");
+@import url("modules/cpu.css");
 
 window#waybar {
   background-color: @background;
