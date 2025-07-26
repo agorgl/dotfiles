@@ -1,0 +1,9 @@
+//
+// waybar/modules/sway-window.jsonc
+//
+
+{
+  "sway/window": {
+    "max-length": 50
+  }
+}
