@@ -9,6 +9,7 @@
 @import url("modules/sway-window.css");
 @import url("modules/tray.css");
 @import url("modules/clock.css");
+@import url("modules/audio.css");
 @import url("modules/battery.css");
 
 window#waybar {

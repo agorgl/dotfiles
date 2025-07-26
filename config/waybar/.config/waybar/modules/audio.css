@@ -1,0 +1,7 @@
+/*
+ * waybar/modules/audio.css
+ */
+
+#pulseaudio.muted {
+  color: @disabled;
+}

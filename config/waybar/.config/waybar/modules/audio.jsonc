@@ -1,0 +1,12 @@
+//
+// waybar/modules/audio.jsonc
+//
+
+{
+  "pulseaudio": {
+    "format": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {volume}%",
+    "format-muted": "<span size=\"9pt\" rise=\"-2.3pt\"></span>",
+    "format-icons": ["", "", ""],
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+  }
+}
