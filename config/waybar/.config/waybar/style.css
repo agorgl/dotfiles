@@ -14,6 +14,7 @@
 @import url("modules/temperature.css");
 @import url("modules/memory.css");
 @import url("modules/cpu.css");
+@import url("modules/network.css");
 
 window#waybar {
   background-color: @background;

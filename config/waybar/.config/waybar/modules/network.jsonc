@@ -1,0 +1,17 @@
+//
+// waybar/modules/network.jsonc
+//
+
+{
+  "network": {
+    "interval": 2,
+    "format-ethernet": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span>",
+    "format-wifi": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {essid}",
+    "format-disconnected": "",
+    "format-icons": {
+      "ethernet": "",
+      "wifi": ["", "", ""]
+    },
+    "tooltip-format": "{ipaddr}/{cidr}"
+  }
+}
