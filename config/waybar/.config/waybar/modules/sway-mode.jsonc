@@ -1,0 +1,9 @@
+//
+// waybar/modules/sway-mode.jsonc
+//
+
+{
+  "sway/mode": {
+    "tooltip": false
+  }
+}

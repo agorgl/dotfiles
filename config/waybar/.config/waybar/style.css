@@ -5,6 +5,7 @@
 @import url("config/colors.css");
 @import url("config/fonts.css");
 @import url("modules/sway-workspaces.css");
+@import url("modules/sway-mode.css");
 
 window#waybar {
   background-color: @background;

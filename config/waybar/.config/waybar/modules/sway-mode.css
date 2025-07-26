@@ -1,0 +1,10 @@
+/*
+ * waybar/modules/sway-mode.css
+ */
+
+#mode {
+  padding: 0 8pt;
+  font-weight: 600;
+  background-color: @alert;
+  color: @background;
+}
