@@ -3,7 +3,6 @@
 //
 
 {
-  "layer": "top",
   "include": ["modules/*.jsonc"],
   "modules-left": ["sway/workspaces", "sway/mode"],
   "modules-center": ["sway/window"],
