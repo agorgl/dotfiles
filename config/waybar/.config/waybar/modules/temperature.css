@@ -1,0 +1,7 @@
+/*
+ * waybar/modules/temperature.css
+ */
+
+#temperature.critical {
+  color: @alert;
+}

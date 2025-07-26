@@ -8,5 +8,5 @@
   "include": ["modules/*.jsonc"],
   "modules-left": ["sway/workspaces", "sway/mode"],
   "modules-center": ["sway/window"],
-  "modules-right": ["battery", "pulseaudio", "clock", "tray"]
+  "modules-right": ["temperature", "battery", "pulseaudio", "clock", "tray"]
 }

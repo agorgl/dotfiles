@@ -11,6 +11,7 @@
 @import url("modules/clock.css");
 @import url("modules/audio.css");
 @import url("modules/battery.css");
+@import url("modules/temperature.css");
 
 window#waybar {
   background-color: @background;

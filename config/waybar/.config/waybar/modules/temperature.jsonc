@@ -1,0 +1,13 @@
+//
+// waybar/modules/temperature.jsonc
+//
+
+{
+  "temperature": {
+    "interval": 1,
+    "format": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {temperatureC}°C",
+    "format-icons": [""],
+    "critical-threshold": 80,
+    "tooltip": false
+  }
+}
