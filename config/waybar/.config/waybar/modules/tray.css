@@ -1,3 +1,7 @@
 /*
  * waybar/modules/tray.css
  */
+
+#tray {
+  margin-left: -6pt;
+}

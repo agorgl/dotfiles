@@ -4,7 +4,7 @@
 
 {
   "height": 26,
-  "spacing": 8,
+  "spacing": 14,
   "include": ["modules/*.jsonc"],
   "modules-left": ["sway/workspaces", "sway/mode"],
   "modules-center": ["sway/window"],
