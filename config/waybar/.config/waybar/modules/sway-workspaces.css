@@ -3,7 +3,7 @@
  */
 
 #workspaces button {
-  padding: 2pt;
+  padding: 1pt;
   font-weight: 600;
   color: @foreground;
 }
