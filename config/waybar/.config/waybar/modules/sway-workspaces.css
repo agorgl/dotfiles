@@ -1,0 +1,21 @@
+/*
+ * waybar/modules/sway-workspaces.css
+ */
+
+#workspaces button {
+  padding: 2pt;
+  font-weight: 600;
+  color: @foreground;
+}
+
+#workspaces button.visible {
+  box-shadow: inset 0 -1pt @foreground;
+}
+
+#workspaces button.urgent {
+  color: @alert;
+}
+
+#workspaces button.empty {
+  color: @disabled;
+}
