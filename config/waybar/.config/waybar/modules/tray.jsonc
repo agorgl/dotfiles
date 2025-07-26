@@ -1,0 +1,10 @@
+//
+// waybar/modules/tray.jsonc
+//
+
+{
+  "tray": {
+    "spacing": 4,
+    "reverse-direction": true
+  }
+}
