@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd "$(dirname $0)/.."
+waybar_config="$(dirname $0)/../config.jsonc"
+waybar_style="$(dirname $0)/../style.css"
+exec waybar -c "$waybar_config" -s "$waybar_style"
