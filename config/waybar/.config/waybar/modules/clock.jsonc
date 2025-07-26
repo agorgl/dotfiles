@@ -1,0 +1,9 @@
+//
+// waybar/modules/clock.jsonc
+//
+
+{
+  "clock": {
+    "format-alt": "{:%a, %d. %b  %H:%M}"
+  }
+}

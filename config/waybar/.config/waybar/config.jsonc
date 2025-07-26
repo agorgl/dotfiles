@@ -7,8 +7,5 @@
   "include": ["modules/*.jsonc"],
   "modules-left": ["sway/workspaces", "sway/mode"],
   "modules-center": ["sway/window"],
-  "modules-right": ["battery", "clock"],
-  "clock": {
-    "format-alt": "{:%a, %d. %b  %H:%M}"
-  }
+  "modules-right": ["battery", "clock"]
 }
