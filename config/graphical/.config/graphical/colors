@@ -1,0 +1,24 @@
+#
+# graphical/colors
+#
+
+color0=$(param colors color0 || echo "#282828") # black
+color1=$(param colors color1 || echo "#CC241D") # red
+color2=$(param colors color2 || echo "#98971A") # green
+color3=$(param colors color3 || echo "#D79921") # yellow
+color4=$(param colors color4 || echo "#458588") # blue
+color5=$(param colors color5 || echo "#B16286") # magenta
+color6=$(param colors color6 || echo "#689D6A") # cyan
+color7=$(param colors color7 || echo "#A89984") # white
+
+color8=$(param colors color8 || echo "#928374") # bright black
+color9=$(param colors color9 || echo "#FB4934") # bright red
+color10=$(param colors color10 || echo "#B8BB26") # bright green
+color11=$(param colors color11 || echo "#FABD2F") # bright yellow
+color12=$(param colors color12 || echo "#83A598") # bright blue
+color13=$(param colors color13 || echo "#D3869B") # bright magenta
+color14=$(param colors color14 || echo "#8EC07C") # bright cyan
+color15=$(param colors color15 || echo "#EBDBB2") # bright white
+
+background=$(param colors background || echo "#282828") # background
+foreground=$(param colors foreground || echo "#EBDBB2") # foreground
