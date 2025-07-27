@@ -1,0 +1,5 @@
+#
+# wayland/wprofile/colors
+#
+
+. ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/colors
