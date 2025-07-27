@@ -2,16 +2,16 @@
 ! xorg/xresources/colors
 !
 
-*color00: #282828
-*color01: #CC241D
-*color02: #98971A
-*color03: #D79921
-*color04: #458588
-*color05: #B16286
-*color06: #689D6A
-*color07: #A89984
-*color08: #928374
-*color09: #FB4934
+*color0: #282828
+*color1: #CC241D
+*color2: #98971A
+*color3: #D79921
+*color4: #458588
+*color5: #B16286
+*color6: #689D6A
+*color7: #A89984
+*color8: #928374
+*color9: #FB4934
 *color10: #B8BB26
 *color11: #FABD2F
 *color12: #83A598
