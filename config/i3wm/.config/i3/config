@@ -27,6 +27,9 @@ font pango:monospace 11.5
 # titlebar padding
 for_window [all] title_format "<span size=\\"70%\\"> %title</span>"
 
+# space between two adjacent windows
+gaps inner 20
+
 ## Key bindings
 
 # use mouse+$mod to drag floating windows to their wanted position
