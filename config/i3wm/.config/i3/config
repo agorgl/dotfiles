@@ -22,7 +22,10 @@ set $browser chromium
 ## Appearance
 
 # default font
-font pango:monospace 8
+font pango:monospace 11.5
+
+# titlebar padding
+for_window [all] title_format "<span size=\\"70%\\"> %title</span>"
 
 ## Key bindings
 
