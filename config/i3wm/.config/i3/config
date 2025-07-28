@@ -180,6 +180,4 @@ bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOU
 
 ## Bar
 
-bar {
-    status_command i3status
-}
+exec --no-startup-id ~/.config/polybar/scripts/i3-polybar
