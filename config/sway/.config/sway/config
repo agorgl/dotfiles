@@ -71,6 +71,12 @@ bindsym $mod+w kill
 # start menu (program launcher)
 bindsym $mod+space exec $menu
 
+# start file manager
+bindsym $mod+e exec $explorer
+
+# start web browser
+bindsym $mod+i exec $browser
+
 # change focus
 bindsym $mod+$left focus left
 bindsym $mod+$down focus down
