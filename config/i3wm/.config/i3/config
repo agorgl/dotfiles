@@ -30,6 +30,12 @@ for_window [all] title_format "<span size=\\"70%\\"> %title</span>"
 # space between two adjacent windows
 gaps inner 20
 
+# eliminate title bars
+default_border pixel 2
+default_floating_border pixel 2
+font pango:monospace 0
+for_window [all] title_format " "
+
 ## Key bindings
 
 # use mouse+$mod to drag floating windows to their wanted position
