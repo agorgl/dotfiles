@@ -25,6 +25,9 @@ font pango:monospace 8
 # default wallpaper
 output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 
+# space between two adjacent windows
+gaps inner 20
+
 ## Input
 
 # touchpad options
