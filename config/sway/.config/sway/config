@@ -28,6 +28,14 @@ output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
 # space between two adjacent windows
 gaps inner 20
 
+# eliminate title bars
+default_border pixel 2
+default_floating_border pixel 2
+font pango:monospace 0.1
+for_window [all] title_format " "
+titlebar_border_thickness 0
+titlebar_padding 0
+
 ## Input
 
 # touchpad options
