@@ -15,7 +15,9 @@ set $right l
 
 # programs
 set $term foot
-set $menu wmenu-run
+set $menu "rofi -modi drun,run -show drun"
+set $explorer thunar
+set $browser chromium
 
 ## Appearance
 
