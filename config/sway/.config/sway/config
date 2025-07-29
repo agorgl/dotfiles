@@ -216,8 +216,8 @@ bindsym --locked XF86AudioStop exec playerctl stop
 bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
 bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 
-# take a screenshot
-bindsym Print exec grim
+# take screenshot
+bindsym Print exec grim -g "$(slurp -d)" - | wl-copy
 
 ## Bar
 
