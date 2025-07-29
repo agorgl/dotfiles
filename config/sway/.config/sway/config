@@ -213,4 +213,5 @@ bindsym Print exec grim
 exec ~/.config/waybar/scripts/waybar-wrapper
 
 include /etc/sway/config.d/*
+include ~/.config/colors/colors-i3sway
 include systemd
