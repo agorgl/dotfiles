@@ -193,6 +193,9 @@ bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOU
 # take screenshot
 bindsym Print exec --no-startup-id maim -s -u --format png /dev/stdout | xclip -selection clipboard -t image/png -i
 
+# lock session
+bindsym $mod+Mod1+l exec --no-startup-id loginctl lock-session
+
 ## Bar
 
 exec --no-startup-id ~/.config/polybar/scripts/i3-polybar
