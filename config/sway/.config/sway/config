@@ -64,10 +64,10 @@ floating_modifier $mod normal
 bindsym $mod+Return exec $term
 
 # kill focused window
-bindsym $mod+Shift+q kill
+bindsym $mod+w kill
 
 # start menu (program launcher)
-bindsym $mod+d exec $menu
+bindsym $mod+space exec $menu
 
 # change focus
 bindsym $mod+$left focus left
@@ -100,21 +100,24 @@ bindsym $mod+b splith
 bindsym $mod+v splitv
 
 # change container layout (stacked, tabbed, toggle split)
-bindsym $mod+s layout stacking
-bindsym $mod+w layout tabbed
-bindsym $mod+e layout toggle split
+#bindsym $mod+s layout stacking
+bindsym $mod+m layout toggle tabbed split
+bindsym $mod+t layout toggle split
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen
 
 # toggle tiling / floating
-bindsym $mod+Shift+space floating toggle
+bindsym $mod+s floating toggle
 
 # change focus between tiling / floating windows
-bindsym $mod+space focus mode_toggle
+bindsym $mod+Shift+s focus mode_toggle
 
 # focus the parent container
 bindsym $mod+a focus parent
+
+# focus the child container
+bindsym $mod+d focus child
 
 # move the currently focused window to the scratchpad
 bindsym $mod+Shift+minus move scratchpad
