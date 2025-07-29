@@ -187,3 +187,5 @@ bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOU
 ## Bar
 
 exec --no-startup-id ~/.config/polybar/scripts/i3-polybar
+
+include ~/.config/colors/colors-i3sway
