@@ -219,6 +219,9 @@ bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
 # take screenshot
 bindsym Print exec grim -g "$(slurp -d)" - | wl-copy
 
+# lock session
+bindsym $mod+Mod1+l exec loginctl lock-session
+
 ## Bar
 
 exec ~/.config/waybar/scripts/waybar-wrapper
