@@ -1,0 +1,9 @@
+[Unit]
+Description=Sway background setter
+PartOf=graphical-session.target
+ConditionPathExists=%h/.swaybg
+
+[Service]
+Type=simple
+ExecStart=%h/.swaybg
+Slice=session.slice
