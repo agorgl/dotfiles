@@ -42,11 +42,11 @@ titlebar_padding 0
 
 # touchpad options
 input type:touchpad {
-    dwt enabled
     tap enabled
     natural_scroll enabled
     middle_emulation enabled
     drag_lock disabled
+    pointer_accel 0.5
 }
 
 # keyboard optons
