@@ -4,3 +4,11 @@
 
 xsetroot -cursor_name left_ptr
 xset r rate 250 40
+
+touchpad=$(xinput list | grep -i touchpad | grep -Po '(?<=id=)\d+')
+if [ ! -z "$touchpad" ]; then
+    xinput set-prop $touchpad "libinput Tapping Enabled" 1
+    xinput set-prop $touchpad "libinput Natural Scrolling Enabled" 1
+    xinput set-prop $touchpad "libinput Middle Emulation Enabled" 1
+    xinput set-prop $touchpad "libinput Accel Speed" 0.5
+fi
