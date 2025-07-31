@@ -5,6 +5,7 @@
 [general]
 import = [
   "colors.toml",
+  "~/.config/colors/colors-alacritty.toml",
 ]
 
 [window]
