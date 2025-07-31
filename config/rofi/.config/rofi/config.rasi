@@ -7,3 +7,5 @@ configuration {
     font: "monospace 14";
     dpi: 0;
 }
+
+@theme "theme"
