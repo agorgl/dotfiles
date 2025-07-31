@@ -1,0 +1,29 @@
+#
+# alacritty/alacritty.toml
+#
+
+[general]
+import = [
+  "colors.toml",
+]
+
+[window]
+dimensions = { columns = 80, lines = 24 }
+padding = { x = 16, y = 16 }
+
+[font]
+normal = { family = "terminal", style = "Regular" }
+size = 11.0
+
+[selection]
+save_to_clipboard = true
+
+[cursor]
+style = { shape = "Block", blinking = "Always" }
+blink_interval = 500
+
+[keyboard]
+bindings = [
+  { key = "C", mods = "Control|Alt", action = "Copy" },
+  { key = "V", mods = "Control|Alt", action = "Paste" },
+]
