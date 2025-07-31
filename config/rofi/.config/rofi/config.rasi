@@ -1,0 +1,9 @@
+/*
+ * rofi/config.rasi
+ */
+
+configuration {
+    modes: [drun, run];
+    font: "monospace 14";
+    dpi: 0;
+}
