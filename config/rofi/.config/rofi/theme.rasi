@@ -3,6 +3,7 @@
  */
 
 @import "colors"
+?import "~/.config/colors/colors-rofi"
 
 * {
     black: @color0;
