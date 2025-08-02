@@ -129,3 +129,22 @@ cat << EOF > "$colors_dir/colors-rofi.rasi"
     foreground: $foreground;
 }
 EOF
+
+cat << EOF > "$colors_dir/colors-dunst.conf"
+[global]
+    frame_color = "$foreground"
+
+[urgency_low]
+    background = "$background"
+    foreground = "$foreground"
+    frame_color = "$color8"
+
+[urgency_normal]
+    background = "$background"
+    foreground = "$foreground"
+
+[urgency_critical]
+    background = "$color1"
+    foreground = "$foreground"
+    frame_color = "$color9"
+EOF
