@@ -1,0 +1,43 @@
+#
+# dunst/dunstrc
+#
+
+[global]
+    width = 300
+    height = (0, 96)
+    offset = (16, 42)
+    notification_limit = 10
+    padding = 10
+    horizontal_padding = 12
+    frame_width = 2
+    frame_color = "#EBDBB2"
+    gap_size = 12
+    font = sans 9
+    enable_recursive_icon_lookup = true
+    min_icon_size = 32
+    max_icon_size = 32
+    dmenu = /usr/bin/rofi -dmenu -p option
+    corner_radius = 2
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = close_all
+    mouse_right_click = close_current
+
+[urgency_low]
+    background = "#282828"
+    foreground = "#EBDBB2"
+    frame_color = "#928374"
+    timeout = 5
+
+[urgency_normal]
+    background = "#282828"
+    foreground = "#EBDBB2"
+    timeout = 10
+    override_pause_level = 30
+
+[urgency_critical]
+    background = "#CC241D"
+    foreground = "#EBDBB2"
+    frame_color = "#FB4934"
+    timeout = 0
+    override_pause_level = 60
+    default_icon = dialog-warning
