@@ -148,3 +148,6 @@ cat << EOF > "$colors_dir/colors-dunst.conf"
     foreground = "$foreground"
     frame_color = "$color9"
 EOF
+dunstrc_dir="${XDG_CONFIG_HOME:-$HOME/.config}/dunst/dunstrc.d"
+mkdir -p "$dunstrc_dir"
+ln -sf "$colors_dir/colors-dunst.conf" -t "$dunstrc_dir"
