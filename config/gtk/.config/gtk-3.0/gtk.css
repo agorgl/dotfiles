@@ -1,3 +1,5 @@
 /*
  * gtk/gtk3/gtk.css
  */
+
+@import url("../colors/colors-gtk.css");
