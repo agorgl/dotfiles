@@ -23,6 +23,8 @@ color15=$(param colors color15 || echo "#EBDBB2") # bright white
 background=$(param colors background || echo "#282828") # background
 foreground=$(param colors foreground || echo "#EBDBB2") # foreground
 
+accent=$(eval "echo \${$(param colors accent || echo 'color4')}") # accent
+
 colors_dir="${XDG_CONFIG_HOME:-$HOME/.config}/colors"
 mkdir -p "$colors_dir"
 
@@ -48,8 +50,10 @@ set \$color15 $color15
 set \$background $background
 set \$foreground $foreground
 
+set \$accent $accent
+
 # class                 border  backgr  text    indic   child_border
-client.focused          $color4 $color4 $color7 $color6 $color4
+client.focused          $accent $accent $color7 $color6 $accent
 client.focused_inactive $color8 $color8 $color7 $color8 $color8
 client.unfocused        $color0 $color0 $color8 $color0 $color0
 client.urgent           $color1 $color1 $color7 $color1 $color1
@@ -132,7 +136,7 @@ EOF
 
 cat << EOF > "$colors_dir/colors-dunst.conf"
 [global]
-    frame_color = "$foreground"
+    frame_color = "$accent"
 
 [urgency_low]
     background = "$background"
