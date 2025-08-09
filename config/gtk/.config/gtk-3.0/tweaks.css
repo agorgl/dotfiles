@@ -1,0 +1,8 @@
+/*
+ * gtk/gtk3/tweaks.css
+ */
+
+/* fix unfocused selected items in thunar */
+.standard-view treeview.view:selected:not(:focus) {
+  color: @fg_color;
+}
