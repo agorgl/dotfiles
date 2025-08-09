@@ -7,8 +7,8 @@
     height = (0, 96)
     offset = (16, 42)
     notification_limit = 10
-    padding = 10
-    horizontal_padding = 12
+    padding = 14
+    horizontal_padding = 16
     frame_width = 2
     frame_color = "#EBDBB2"
     gap_size = 12
