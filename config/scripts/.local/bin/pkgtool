@@ -1,0 +1,246 @@
+#!/bin/bash
+set -eu
+
+help="\
+Manage package lists
+
+Usage:
+  $(basename $0) <command> [options]
+
+Commands:
+  list           list packages in package lists or system
+  diff           diff packages between package lists and system
+
+Options:
+  -i, --input    use given package list files (comma separated)
+  -n, --native   filter packages only from official repositories
+  -m, --foreign  filter packages only from aur
+  -l, --lists    filter packages only in lists
+  -s, --system   filter packages only in system
+  -h, --help     display current help message
+"
+
+packages_dir="${XDG_DATA_HOME:-$HOME/.local/share}/packages"
+
+cli_parse() {
+    local -n result=$1
+    shift
+
+    for opt in "$@"; do
+        case "$opt" in
+            -h|--help)
+                result["help"]=true
+                return
+                ;;
+        esac
+    done
+
+    while [ $# -gt 0 ]; do
+        local opt="$1"
+        case "$opt" in
+            -i|--input)
+                local input="${2:-}"
+                shift
+                if [ -z "$input" ]; then
+                    result["error"]="missing required argument for option '$opt'"
+                    return
+                fi
+                result["input"]="$input"
+                ;;
+            -*|--*)
+                result["error"]="unexpected option '$opt'"
+                return
+                ;;
+            *)
+                break
+                ;;
+        esac
+        shift
+    done
+
+    local cmd="${1:-}"
+    if [ -z "$cmd" ]; then
+        result["error"]="missing command"
+        return
+    fi
+    shift
+
+    case "$cmd" in
+        list)
+            result["command"]="list"
+            ;;
+        diff)
+            result["command"]="diff"
+            ;;
+        *)
+            result["error"]="unexpected command '$cmd'"
+            ;;
+    esac
+
+    while [ $# -gt 0 ]; do
+        local opt="$1"
+        case "$opt" in
+            -n|--native)
+                result["native"]=true
+                ;;
+            -m|--foreign)
+                result["foreign"]=true
+                ;;
+            -l|--lists)
+                result["lists"]=true
+                ;;
+            -s|--system)
+                result["system"]=true
+                ;;
+            -*|--*)
+                result["error"]="unexpected option: '$opt'"
+                return
+                ;;
+            *)
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        result["error"]="unexpected argument '$1'"
+        return
+    fi
+}
+
+package_lists() {
+    local lists=($(ls -A -1 "$packages_dir" 2>/dev/null))
+    if [ ! -z "${1:-}" ]; then
+        lists=(${1//,/ })
+    fi
+    echo "${lists[@]}"
+}
+
+find_in_path() {
+    local fpath=(${1//:/ })
+    local file="${2/#\~/$HOME}"
+
+    case "$file" in
+        /*)
+            echo "$file"
+            ;;
+        *)
+            for dir in "${fpath[@]}"; do
+                local f="$dir/$file"
+                if [ -f "$f" ]; then
+                    echo "$f"
+                    return
+                fi
+            done
+            echo "$file"
+    esac
+}
+
+package_list_files() {
+    local lists=("$@")
+    local fpath=".:$packages_dir"
+
+    local files=()
+    for list in "${lists[@]}"; do
+        local file=$(find_in_path "$fpath" "$list")
+        files+=("$file")
+    done
+    echo "${files[@]}"
+}
+
+packages_in_files() {
+    local files=("$@")
+    local packages=($([ ${#files[@]} -ne 0 ] && { cat "${files[@]}" | sed -e 's/#.*//g;/^\s*$/d'; }))
+    echo "${packages[@]}"
+}
+
+packages_in_system() {
+    local packages=($(pacman -Qqe))
+    echo "${packages[@]}"
+}
+
+filter_native() {
+    pacman -Qqn - 2>/dev/null
+    return 0
+}
+
+filter_foreign() {
+    pacman -Qqm - 2>/dev/null
+    return 0
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    if [ ! -z "${args["help"]:-}" ]; then
+        echo "$help"
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        echo "error: $error" >&2
+        echo "see '$(basename $0) --help' for more information" >&2
+        exit 1
+    fi
+
+    local lists=($(package_lists "${args["input"]:-}"))
+    local list_files=($(package_list_files "${lists[@]}"))
+    for file in "${list_files[@]}"; do
+        if [ ! -f "$file" ]; then
+            echo "error: package list file '$file' does not exist" >&2
+            exit 1
+        fi
+    done
+
+    local list_packages=($(packages_in_files "${list_files[@]}"))
+    list_packages=($(printf "%s\n" "${list_packages[@]}" | sort))
+
+    local system_packages=($(packages_in_system))
+    system_packages=($(printf "%s\n" "${system_packages[@]}" | sort))
+
+    if [ ! -z "${args["native"]:-}" ] && [ -z "${args["foreign"]:-}" ]; then
+        list_packages=($(printf "%s\n" "${list_packages[@]}" | filter_native))
+        system_packages=($(printf "%s\n" "${system_packages[@]}" | filter_native))
+    fi
+
+    if [ ! -z "${args["foreign"]:-}" ] && [ -z "${args["native"]:-}" ]; then
+        list_packages=($(printf "%s\n" "${list_packages[@]}" | filter_foreign))
+        system_packages=($(printf "%s\n" "${system_packages[@]}" | filter_foreign))
+    fi
+
+    if [ ! -z "${args["lists"]:-}" ] && [ ! -z "${args["system"]:-}" ]; then
+        echo "error: only one of 'lists' or 'system' filter can be specified" >&2
+        exit 1
+    fi
+
+    case "${args["command"]}" in
+        list)
+            if [ -z "${args["lists"]:-}" ] && [ -z "${args["system"]:-}" ]; then
+                args["lists"]=true
+            fi
+
+            if [ ! -z "${args["lists"]:-}" ] && [ ${#list_packages[@]} -ne 0 ]; then
+                echo "${list_packages[@]}"
+            elif [ ! -z "${args["system"]:-}" ] && [ ${#system_packages[@]} -ne 0 ]; then
+                echo "${system_packages[@]}"
+            fi
+            ;;
+        diff)
+            local list_pkgs=$([ ${#list_packages[@]} -ne 0 ] && { printf "%s\n" "${list_packages[@]}" | uniq; })
+            local system_pkgs=$([ ${#system_packages[@]} -ne 0 ] && { printf "%s\n" "${system_packages[@]}" | uniq; })
+
+            if [ -z "${args["lists"]:-}" ] && [ -z "${args["system"]:-}" ]; then
+                diff -u <([ ! -z "$list_pkgs" ] && echo "$list_pkgs") <([ ! -z "$system_pkgs" ] && echo "$system_pkgs") | tail -n +4
+            elif [ ! -z "${args["lists"]:-}" ]; then
+                comm -23 <([ ! -z "$list_pkgs" ] && echo "$list_pkgs") <([ ! -z "$system_pkgs" ] && echo "$system_pkgs")
+            elif [ ! -z "${args["system"]:-}" ]; then
+                comm -13 <([ ! -z "$list_pkgs" ] && echo "$list_pkgs") <([ ! -z "$system_pkgs" ] && echo "$system_pkgs")
+            fi
+            ;;
+    esac
+}
+
+main "$@"
