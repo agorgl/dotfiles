@@ -1,0 +1,11 @@
+#
+# packages/core
+#
+
+# core
+base
+base-devel
+efibootmgr
+linux
+linux-firmware
+vi
