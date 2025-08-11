@@ -21,3 +21,7 @@ zsh
 iwd
 wireless-regdb
 impala
+
+# login
+greetd
+greetd-tuigreet
