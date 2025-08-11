@@ -9,3 +9,10 @@ efibootmgr
 linux
 linux-firmware
 vi
+
+# base
+git
+neovim
+openssh
+vim
+zsh
