@@ -16,3 +16,8 @@ neovim
 openssh
 vim
 zsh
+
+# wifi
+iwd
+wireless-regdb
+impala
