@@ -123,3 +123,7 @@ mpv
 # documents
 zathura
 zathura-pdf-mupdf
+
+# web
+chromium
+firefox
