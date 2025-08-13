@@ -25,3 +25,13 @@ impala
 # login
 greetd
 greetd-tuigreet
+
+# xorg
+xorg-server
+xorg-xinit
+xorg-xinput
+xorg-xrandr
+xorg-xset
+xorg-xsetroot
+xsettingsd
+autorandr
