@@ -81,3 +81,7 @@ helvum
 # privileges
 polkit
 mate-polkit
+
+# toolkits
+qt5-wayland
+qt6-wayland
