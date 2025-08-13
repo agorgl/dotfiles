@@ -40,3 +40,13 @@ autorandr
 wayland
 wlr-randr
 kanshi
+
+# window manager
+i3-wm
+feh
+i3lock
+xss-lock
+polybar
+picom
+maim
+xclip
