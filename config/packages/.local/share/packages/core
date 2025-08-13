@@ -35,3 +35,8 @@ xorg-xset
 xorg-xsetroot
 xsettingsd
 autorandr
+
+# wayland
+wayland
+wlr-randr
+kanshi
