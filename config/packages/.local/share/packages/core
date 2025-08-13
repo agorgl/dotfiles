@@ -50,3 +50,14 @@ polybar
 picom
 maim
 xclip
+
+# compositor
+sway
+swaybg
+swayidle
+swaylock
+waybar
+grim
+slurp
+wl-clipboard
+xorg-xwayland
