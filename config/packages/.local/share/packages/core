@@ -92,6 +92,15 @@ foot
 rxvt-unicode
 xterm
 
+# filesystems
+btrfs-progs
+dosfstools
+exfatprogs
+mtpfs
+nfs-utils
+samba
+sshfs
+
 # files
 thunar
 thunar-archive-plugin
