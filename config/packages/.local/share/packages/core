@@ -119,3 +119,7 @@ tumbler
 # media
 imv
 mpv
+
+# documents
+zathura
+zathura-pdf-mupdf
