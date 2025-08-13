@@ -115,3 +115,7 @@ gvfs-nfs
 gvfs-smb
 engrampa
 tumbler
+
+# media
+imv
+mpv
