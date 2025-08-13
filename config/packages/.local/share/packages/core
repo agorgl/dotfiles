@@ -85,3 +85,9 @@ mate-polkit
 # toolkits
 qt5-wayland
 qt6-wayland
+
+# terminal
+alacritty
+foot
+rxvt-unicode
+xterm
