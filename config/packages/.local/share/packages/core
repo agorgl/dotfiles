@@ -91,3 +91,14 @@ alacritty
 foot
 rxvt-unicode
 xterm
+
+# files
+thunar
+thunar-archive-plugin
+thunar-volman
+gvfs
+gvfs-mtp
+gvfs-nfs
+gvfs-smb
+engrampa
+tumbler
