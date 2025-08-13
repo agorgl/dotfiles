@@ -101,6 +101,10 @@ nfs-utils
 samba
 sshfs
 
+# archives
+7zip
+unrar
+
 # files
 thunar
 thunar-archive-plugin
