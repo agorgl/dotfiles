@@ -1,3 +1,9 @@
 #
 # packages/extra
 #
+
+# compatibility
+wine
+wine-gecko
+wine-mono
+winetricks
