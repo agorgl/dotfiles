@@ -78,6 +78,12 @@ wireplumber
 pavucontrol
 helvum
 
+# bluetooth
+bluez
+bluez-utils
+bluetui
+blueman
+
 # privileges
 polkit
 mate-polkit
