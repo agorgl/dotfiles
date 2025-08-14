@@ -156,3 +156,7 @@ ttf-terminus-nerd
 ttf-noto-nerd
 ttf-nerd-fonts-symbols
 ttf-nerd-fonts-symbols-mono
+
+# tools
+brightnessctl
+playerctl
