@@ -134,6 +134,15 @@ zathura-pdf-mupdf
 chromium
 firefox
 
+# email
+goimapnotify
+isync
+msmtp
+neomutt
+notmuch
+thunderbird
+w3m
+
 # fonts
 terminus-font
 noto-fonts
