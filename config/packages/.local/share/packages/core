@@ -160,3 +160,10 @@ ttf-nerd-fonts-symbols-mono
 # tools
 brightnessctl
 playerctl
+
+# utils
+fzf
+jq
+man-db
+man-pages
+socat
