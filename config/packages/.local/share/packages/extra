@@ -7,3 +7,9 @@ wine
 wine-gecko
 wine-mono
 winetricks
+
+# graphics
+libva-utils
+mesa-utils
+vdpauinfo
+vulkan-tools
