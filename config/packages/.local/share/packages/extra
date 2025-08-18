@@ -8,6 +8,9 @@ wine-gecko
 wine-mono
 winetricks
 
+# audio
+alsa-utils
+
 # graphics
 libva-utils
 mesa-utils
