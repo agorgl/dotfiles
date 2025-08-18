@@ -51,3 +51,11 @@ pkgfile
 acpi
 powertop
 tlp
+
+# security
+gnome-keyring
+gocryptfs
+libfido2
+pass
+seahorse
+x11-ssh-askpass
