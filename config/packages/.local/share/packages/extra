@@ -16,3 +16,16 @@ libva-utils
 mesa-utils
 vdpauinfo
 vulkan-tools
+
+# networking
+bind
+dnsmasq
+gnu-netcat
+iperf3
+iptables-nft
+mtr
+nmap
+tcpdump
+traceroute
+wavemon
+whois
