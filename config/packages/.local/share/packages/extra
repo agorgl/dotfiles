@@ -77,3 +77,14 @@ rsync
 stow
 strace
 tmux
+
+# utils
+bc
+fd
+go-yq
+less
+qrencode
+ripgrep
+tree
+wget
+zbar
