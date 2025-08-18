@@ -59,3 +59,7 @@ libfido2
 pass
 seahorse
 x11-ssh-askpass
+
+# shell
+bash-completion
+zsh-completions
