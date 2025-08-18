@@ -17,6 +17,12 @@ mesa-utils
 vdpauinfo
 vulkan-tools
 
+# informational
+dmidecode
+lshw
+sysfsutils
+usbutils
+
 # monitoring
 htop
 lsof
