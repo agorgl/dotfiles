@@ -46,3 +46,8 @@ whois
 expac
 flatpak
 pkgfile
+
+# power
+acpi
+powertop
+tlp
