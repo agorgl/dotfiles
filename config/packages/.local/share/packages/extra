@@ -17,6 +17,12 @@ mesa-utils
 vdpauinfo
 vulkan-tools
 
+# monitoring
+htop
+lsof
+progress
+sysstat
+
 # networking
 bind
 dnsmasq
