@@ -41,3 +41,8 @@ tcpdump
 traceroute
 wavemon
 whois
+
+# packages
+expac
+flatpak
+pkgfile
