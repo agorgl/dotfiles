@@ -63,3 +63,17 @@ x11-ssh-askpass
 # shell
 bash-completion
 zsh-completions
+
+# tools
+cups
+fdupes
+fwupd
+imagemagick
+inotify-tools
+picocom
+rclone
+restic
+rsync
+stow
+strace
+tmux
