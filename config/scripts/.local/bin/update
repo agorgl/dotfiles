@@ -1,0 +1,13 @@
+#!/bin/bash
+set -eu
+
+paru -Syu \
+  --skipreview \
+  --noupgrademenu \
+  --removemake \
+  --cleanafter \
+  --devel
+yes | paru -Scc
+
+flatpak update
+flatpak uninstall --unused --delete-data
