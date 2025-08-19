@@ -48,3 +48,8 @@ perl-io-socket-ssl
 # go
 go
 gopls
+
+# java
+jdk-openjdk
+jdtls
+maven
