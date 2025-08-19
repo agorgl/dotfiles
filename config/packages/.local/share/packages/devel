@@ -58,3 +58,8 @@ maven
 nodejs-lts
 npm
 typescript-language-server
+
+# libraries
+linux-headers
+vulkan-headers
+wayland-protocols
