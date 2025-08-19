@@ -102,3 +102,7 @@ virt-viewer
 openconnect
 systemd-resolvconf
 wireguard-tools
+
+# windowing
+xdotool
+xorg-xprop
