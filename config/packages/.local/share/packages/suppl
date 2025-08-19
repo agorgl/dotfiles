@@ -1,3 +1,11 @@
 #
 # packages/suppl
 #
+
+# dsp
+carla
+realtime-privileges
+reaper
+wineasio
+yabridge
+yabridgectl
