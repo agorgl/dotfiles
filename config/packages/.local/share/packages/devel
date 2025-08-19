@@ -77,3 +77,14 @@ mold
 
 # shell
 bash-language-server
+
+# utils
+bat
+d2
+httpie
+just
+mdbook
+mitmproxy
+patatt
+renderdoc
+watchexec
