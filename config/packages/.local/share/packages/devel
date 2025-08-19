@@ -38,3 +38,9 @@ yaml-language-server
 
 # css
 tailwindcss-language-server
+
+# git
+git-lfs
+git-filter-repo
+perl-authen-sasl
+perl-io-socket-ssl
