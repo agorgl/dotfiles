@@ -16,3 +16,19 @@ ttf-lucide-font
 ttf-ms-win11-auto
 ttf-opensans
 ttf-ubuntu-font-family
+
+# programs
+baresip
+blender
+bzmenu
+d-spy
+dconf-editor
+filelight
+flatseal
+font-manager
+galculator
+gimp
+iwmenu
+mesa-demos
+qbittorrent
+wireshark-qt
