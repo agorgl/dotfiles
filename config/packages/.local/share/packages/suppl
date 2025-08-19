@@ -38,3 +38,15 @@ arc-gtk-theme
 gnome-themes-extra
 gtk-engine-murrine
 paper-icon-theme-git
+
+# tools
+cyrus-sasl-xoauth2-git
+downgrade
+mblaze-git
+oama-bin
+paru
+resticprofile-bin
+sox
+vorbis-tools
+vpn-slice
+yt-dlp
