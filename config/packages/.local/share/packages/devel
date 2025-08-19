@@ -74,3 +74,6 @@ pyright
 # rust
 rustup
 mold
+
+# shell
+bash-language-server
