@@ -9,3 +9,10 @@ reaper
 wineasio
 yabridge
 yabridgectl
+
+# fonts
+ttf-dejavu
+ttf-lucide-font
+ttf-ms-win11-auto
+ttf-opensans
+ttf-ubuntu-font-family
