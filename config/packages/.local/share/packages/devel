@@ -53,3 +53,8 @@ gopls
 jdk-openjdk
 jdtls
 maven
+
+# javascript
+nodejs-lts
+npm
+typescript-language-server
