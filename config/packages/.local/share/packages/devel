@@ -63,3 +63,7 @@ typescript-language-server
 linux-headers
 vulkan-headers
 wayland-protocols
+
+# lua
+lua-language-server
+stylua
