@@ -97,3 +97,8 @@ qemu-user-static
 qemu-user-static-binfmt
 virt-manager
 virt-viewer
+
+# vpns
+openconnect
+systemd-resolvconf
+wireguard-tools
