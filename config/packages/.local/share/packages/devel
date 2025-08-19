@@ -67,3 +67,6 @@ wayland-protocols
 # lua
 lua-language-server
 stylua
+
+# python
+pyright
