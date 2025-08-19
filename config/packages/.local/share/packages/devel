@@ -70,3 +70,7 @@ stylua
 
 # python
 pyright
+
+# rust
+rustup
+mold
