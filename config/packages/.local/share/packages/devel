@@ -24,3 +24,14 @@ jet-bin
 leiningen
 rlwrap
 zprint-bin
+
+# containers
+buildah
+helm
+helmfile
+k9s
+kubectl
+kubectx
+podlet
+podman
+yaml-language-server
