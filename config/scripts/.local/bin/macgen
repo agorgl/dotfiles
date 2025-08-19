@@ -1,0 +1,14 @@
+#!/bin/bash
+set -eu
+
+help="usage: $(basename $0) <name>"
+
+if [ $# -ne 1 ]; then
+    echo "$help"
+    exit 1
+fi
+
+name=$1
+echo -n $name \
+  | sha256sum \
+  | sed 's/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/02:\1:\2:\3:\4:\5/'
