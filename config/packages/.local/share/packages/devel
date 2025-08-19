@@ -9,3 +9,9 @@ android-tools
 ansible
 ansible-language-server
 ansible-lint
+
+# c
+clang
+gdb
+meson
+valgrind
