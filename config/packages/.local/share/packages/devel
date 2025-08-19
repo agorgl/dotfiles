@@ -35,3 +35,6 @@ kubectx
 podlet
 podman
 yaml-language-server
+
+# css
+tailwindcss-language-server
