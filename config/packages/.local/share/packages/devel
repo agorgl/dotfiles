@@ -44,3 +44,7 @@ git-lfs
 git-filter-repo
 perl-authen-sasl
 perl-io-socket-ssl
+
+# go
+go
+gopls
