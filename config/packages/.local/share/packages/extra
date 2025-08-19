@@ -88,3 +88,12 @@ ripgrep
 tree
 wget
 zbar
+
+# virtual machines
+edk2-ovmf
+libvirt
+qemu-full
+qemu-user-static
+qemu-user-static-binfmt
+virt-manager
+virt-viewer
