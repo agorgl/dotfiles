@@ -15,3 +15,12 @@ clang
 gdb
 meson
 valgrind
+
+# clojure
+babashka-bin
+clojure
+clojure-lsp-bin
+jet-bin
+leiningen
+rlwrap
+zprint-bin
