@@ -1,0 +1,543 @@
+#!/bin/bash
+set -eu
+
+help="\
+Control terminal with ansi escape sequences
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  color     <command>  query or set terminal colors
+  clipboard <command>  copy/paste from/to terminal
+  title     <title>    set terminal title
+
+Options:
+  -h, --help           display current help message
+"
+
+help_color="\
+Control terminal colors
+
+Usage:
+  $(basename $0) color <command> [options] [arguments]
+
+Commands:
+  list                  list color attribute names
+  query <attr>          query color attribute value
+  set   <attr> <value>  set color attribute to value
+  reset <attr>          reset color attribute to original value
+
+Options:
+  -h, --help            display current help message
+"
+
+help_clipboard="\
+Perform clipboard actions
+
+Usage:
+  $(basename $0) clipboard <command> [options]
+
+Commands:
+  copy        copy from stdin to clipboard
+  paste       paste from clipboard to terminal
+
+Options:
+  -h, --help  display current help message
+"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        local arg="$1"
+        case "$arg" in
+            -*|--*)
+                break
+                ;;
+            *)
+                optargs+=("$arg")
+                shift
+                ;;
+        esac
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    _result["error"]="unexpected option '$item'"
+                    return
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local opts_spec=(help_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(color|clipboard|title)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    case "$cmd" in
+        color)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            cli_parse_command result rest "(list|query|set|reset)"
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            local cmd=(${result["command"]})
+            case "${cmd[-1]}" in
+                list)
+                    ;;
+                query)
+                    local args_spec=("attr")
+                    cli_parse_args result rest args_spec
+                    [ ! -z "${result["error"]:-}" ] && return 0
+                    ;;
+                set)
+                    local args_spec=("attr" "value")
+                    cli_parse_args result rest args_spec
+                    [ ! -z "${result["error"]:-}" ] && return 0
+                    ;;
+                reset)
+                    local args_spec=("attr")
+                    cli_parse_args result rest args_spec
+                    [ ! -z "${result["error"]:-}" ] && return 0
+                    ;;
+            esac
+            ;;
+        clipboard)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            cli_parse_command result rest "(copy|paste)"
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        title)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            local args_spec=("title")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ]; then
+        result["error"]="unexpected argument '${rest[0]}'"
+        return
+    fi
+}
+
+esc="\x1b"
+bel="\x07"
+
+join_by() { local IFS="$1"; shift; echo "$*"; }
+
+osc_sequence() {
+    local params=$(join_by ";" "$@")
+    local osc_start="${esc}]"
+    local osc_end="${bel}" # use this instead of "${esc}\\" for tmux compatibility
+    local escape_sequence="${osc_start}${params}${osc_end}"
+    printf "${escape_sequence}"
+}
+
+dcs_sequence() {
+    local params=$(join_by ";" "$@")
+    local dcs_start="${esc}P"
+    local dcs_end="${esc}\\"
+    local escape_sequence="${dcs_start}${params}${dcs_end}"
+    printf "${escape_sequence}"
+}
+
+tmux_sequence_wrap() {
+    local escape_sequence="$1"
+    dcs_sequence "tmux" "${esc}${escape_sequence}"
+}
+
+send_escape_sequence() {
+    local escape_sequence="$1"
+    # wrap escape sequence when within a tmux session
+    [ ! -z "${TMUX:-}" ] && escape_sequence="$(tmux_sequence_wrap "$escape_sequence")"
+    printf "$escape_sequence" >/dev/tty
+}
+
+color_osc() {
+    local attr="$1"
+    local value="$2"
+
+    local command=""
+    local parameters=()
+    case "$attr" in
+        color*)
+            local index="${attr#color}"
+            command=4
+            parameters=("$index" "$value")
+            ;;
+        foreground)
+            command=10
+            parameters=("$value")
+            ;;
+        background)
+            command=11
+            parameters=("$value")
+            ;;
+        cursor)
+            command=12
+            parameters=("$value")
+            ;;
+        border)
+            command=708
+            parameters=("$value")
+            ;;
+    esac
+
+    osc_sequence "$command" "${parameters[@]}"
+}
+
+reset_osc() {
+    local attr="$1"
+
+    local command=""
+    local parameters=()
+    case "$attr" in
+        color*)
+            local index="${attr#color}"
+            command=104
+            parameters=("$index")
+            ;;
+        foreground)
+            command=110
+            ;;
+        background)
+            command=111
+            ;;
+        cursor)
+            command=112
+            ;;
+    esac
+
+    osc_sequence "$command" "${parameters[@]}"
+}
+
+clipboard_osc() {
+    local action="$1"
+
+    local command=52
+    local parameters=()
+    case "$action" in
+        copy)
+            local value="${2:-}"
+            local b64value="$(echo "$value" | base64 | tr -d '\n')"
+            parameters=("c" "$b64value")
+            ;;
+        paste)
+            parameters=("c" "?")
+            ;;
+    esac
+
+    osc_sequence "$command" ${parameters[@]}
+}
+
+title_osc() {
+    local title="$1"
+    local command=0
+    local parameters=("$title")
+    osc_sequence "$command" "${parameters[@]}"
+}
+
+uint16_to_uint8() {
+    local n="0x$1"
+    printf "%02X" $((n * 0xFF / 0xFFFF))
+}
+
+osc_color_query_result_to_xparse() {
+    local result="$1"
+    echo "$result" | sed -r 's/^.*rgba?:(([0-9a-f]{4}\/){2,3}[0-9a-f]{4}).*$/\1/'
+}
+
+osc_clipboard_paste_result_to_text() {
+    local result="$1"
+    echo "$result" | sed -r 's/^.*52;c;(.*)\x07$/\1/' | base64 -d
+}
+
+xparse_to_hex() {
+    # rgba:2aff/2aff/2aff/e666 -> #2A2A2AE5
+    local xparse="$1"
+    local num="$(echo "$xparse" | sed -r 's/rgba?://')"
+    local c=(${num//\// })
+    local oc=""
+    for cc in "${c[@]}"; do
+        oc+="$(uint16_to_uint8 "$cc")"
+    done
+    echo "#$oc"
+}
+
+color_list() {
+    local supported_attrs=("color*" "foreground" "background" "cursor" "border")
+    printf "%s\n" "${supported_attrs[@]}"
+}
+
+color_query() {
+    local attr="$1"
+
+    # store old tty opts
+    local old_stty="$(stty -g)"
+    # set tty in no echo and raw mode, with minimum zero input chars
+    stty raw -echo min 0 time 0
+    # send osc color query command
+    local escape_sequence="$(color_osc "$attr" "?")"
+    send_escape_sequence "$escape_sequence"
+    # xterm needs the sleep (or "time 1" in stty opts, but that is 1/10th second)
+    sleep 0.1
+    # read the result
+    read -r answer || true
+    # restore tty opts
+    stty "$old_stty"
+
+    local result="${answer#*}"
+    if [ ! -z "${result}" ]; then
+        local xparse="$(osc_color_query_result_to_xparse "$result")"
+        local color="$(xparse_to_hex "$xparse")"
+        echo "$color"
+    fi
+}
+
+color_set() {
+    local attr="$1"
+    local value="$2"
+    local escape_sequence="$(color_osc "$attr" "$value")"
+    send_escape_sequence "$escape_sequence"
+}
+
+color_reset() {
+    local attr="$1"
+    local escape_sequence="$(reset_osc "$attr")"
+    send_escape_sequence "$escape_sequence"
+}
+
+clipboard_copy() {
+    local escape_sequence="$(clipboard_osc "copy" "$(cat)")"
+    send_escape_sequence "$escape_sequence"
+}
+
+clipboard_paste() {
+    # store old tty opts
+    local old_stty="$(stty -g)"
+    # set tty in no echo and raw mode, with minimum zero input chars
+    stty raw -echo min 0 time 0
+    # send osc clipboard paste command
+    local escape_sequence="$(clipboard_osc "paste")"
+    send_escape_sequence "$escape_sequence"
+    # xterm needs the sleep (or "time 1" in stty opts, but that is 1/10th second)
+    sleep 0.1
+    # read the result
+    read -r answer || true
+    # restore tty opts
+    stty "$old_stty"
+
+    local result="${answer#*}"
+    if [ ! -z "${result}" ]; then
+        local text="$(osc_clipboard_paste_result_to_text "$result")"
+        echo "$text"
+    fi
+}
+
+title_set() {
+    local title="$1"
+    local escape_sequence=$(title_osc "$title")
+    send_escape_sequence "$escape_sequence"
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            color*)
+                echo "$help_color"
+                ;;
+            clipboard*)
+                echo "$help_clipboard"
+                ;;
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        color)
+            case "${cmd[1]}" in
+                list)
+                    color_list
+                    ;;
+                query)
+                    local attr="${args["attr"]}"
+                    color_query "$attr"
+                    ;;
+                set)
+                    local attr="${args["attr"]}"
+                    local value="${args["value"]}"
+                    color_set "$attr" "$value"
+                    ;;
+                reset)
+                    local attr="${args["attr"]}"
+                    color_reset "$attr"
+                    ;;
+            esac
+            ;;
+        clipboard)
+            case "${cmd[1]}" in
+                copy)
+                    clipboard_copy
+                    ;;
+                paste)
+                    clipboard_paste
+                    ;;
+            esac
+            ;;
+        title)
+            local title="${args["title"]}"
+            title_set "$title"
+            ;;
+    esac
+}
+
+main "$@"
