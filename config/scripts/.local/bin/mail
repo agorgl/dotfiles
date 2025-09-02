@@ -1,0 +1,944 @@
+#!/bin/bash
+set -eu
+
+help="\
+Manage mail
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  add     <mail>  add new mail configuration
+  list            list configured mails
+  remove  <mail>  remove mail configuration
+  pass    <mail>  fetch password for mail
+  sync    <mail>  sync maildir folder
+  watch   <mail>  watch for new mails
+  index   <mail>  create or update indexes for mail
+  daemon  <mail>  run mail daemon
+  control <mail>  send control command to a running daemon
+  client  <mail>  launch mail client
+
+Options:
+  -h, --help      display current help message
+"
+
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/mail"
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/mail"
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/mail"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mail"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        local arg="$1"
+        case "$arg" in
+            -*|--*)
+                break
+                ;;
+            *)
+                optargs+=("$arg")
+                shift
+                ;;
+        esac
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    _result["error"]="unexpected option '$item'"
+                    return
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ "$arg" = "..." ]; then
+            _args=("$@")
+            return
+        fi
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local opts_spec=(help_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|daemon|control|client)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    local varargs=false
+    case "$cmd" in
+        add)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        list)
+            ;;
+        remove)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        pass)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        sync)
+            local args_spec=("mail" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        watch)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        index)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        daemon)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        control)
+            local args_spec=("mail" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        client)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
+        result["error"]="unexpected argument '${rest[0]}'"
+        return
+    fi
+    result["rest"]="${rest[@]@Q}"
+}
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@"
+}
+
+error() { echo "error: $@" >&2; }
+
+prefix() {
+    local prefix="$1"
+    while read -r line; do
+        echo "$prefix: $line"
+    done
+}
+
+reltohome() {
+    local path="${1:-$(cat)}"
+    echo "$path" | sed "s|$HOME|~|g"
+}
+
+mail_config_dir() {
+    local mail="$1"
+    echo "$config_dir/$mail"
+}
+
+mail_cache_dir() {
+    local mail="$1"
+    echo "$cache_dir/$mail"
+}
+
+mail_data_dir() {
+    local mail="$1"
+    echo "$data_dir/$mail"
+}
+
+mail_state_dir() {
+    local mail="$1"
+    echo "$state_dir/$mail"
+}
+
+mailvars() {
+    local -n variables="$1"
+    local mail="$2"
+
+    local mail_config_dir="$(mail_config_dir "$mail" | reltohome)"
+    local mail_cache_dir="$(mail_cache_dir "$mail" | reltohome)"
+    local mail_data_dir="$(mail_data_dir "$mail" | reltohome)"
+
+    local domain="${mail#*@}"
+    local imap_host="imap.$domain"
+    local smtp_host="smtp.$domain"
+    local oauth=false
+
+    case "$domain" in
+        "gmail.com"|"outlook.com"|"hotmail.com")
+            oauth=true
+            ;;
+    esac
+
+    variables["mail"]="$mail"
+    variables["mail_config_dir"]="$mail_config_dir"
+    variables["mail_cache_dir"]="$mail_cache_dir"
+    variables["mail_data_dir"]="$mail_data_dir"
+    variables["domain"]="$domain"
+    variables["imap_host"]="$imap_host"
+    variables["smtp_host"]="$smtp_host"
+    variables["oauth"]="$oauth"
+}
+
+define() {
+    local -n _var="$1"
+    local heredoc=""
+    IFS=$'\n' read -r -d '' heredoc || true
+    _var="$(echo "$heredoc" | awk 'NR==1{match($0,/^[ \t]*/)} {print substr($0,RLENGTH+1)}')"
+}
+
+render() {
+    local template="$1"
+    local -n _vars="$2"
+
+    local params=()
+    for k in "${!_vars[@]}"; do
+        params+=("$k" "${_vars["$k"]}")
+    done
+
+    local script
+    define script <<'    EOF'
+        import os
+        import sys
+        import json
+        from jinja2 import Environment, BaseLoader
+
+        def try_or(func, default=None, exceptions=(Exception,)):
+            try:
+                return func()
+            except exceptions:
+                return default
+
+        inp = sys.stdin.read()
+        ait = iter(sys.argv[1:])
+        cnv = lambda x: try_or(lambda: json.loads(x), default=x)
+        var = {k: cnv(v) for k, v in zip(ait, ait)}
+
+        abs = lambda x: os.path.abspath(os.path.expanduser(x))
+        env = Environment(loader=BaseLoader(), trim_blocks=True, lstrip_blocks=True)
+        env.filters['abspath'] = abs
+
+        tpl = env.from_string(inp)
+        str = tpl.render(**var)
+        print(str)
+    EOF
+    echo -n "$template" | python -c "$script" "${params[@]}"
+}
+
+mbsyncrc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local mbsyncrc
+    define mbsyncrc <<'    EOF'
+        Create Both
+        Expunge Both
+        SyncState *
+        CopyArrivalDate yes
+
+        IMAPAccount mail-account
+        Host {{ imap_host }}
+        Port 993
+        User {{ mail }}
+        PassCmd "mail pass {{ mail }}"
+        {% if oauth %}
+        AuthMechs XOAUTH2
+        {% else %}
+        AuthMechs PLAIN
+        {% endif %}
+        TLSType IMAPS
+        TLSVersions +1.3
+        CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+        IMAPStore mail-remote
+        Account mail-account
+
+        MaildirStore mail-local
+        Path {{ mail_data_dir }}/
+        Inbox {{ mail_data_dir }}/Inbox
+        SubFolders Verbatim
+
+        Channel inbox
+        Far :mail-remote:
+        Near :mail-local:
+
+        {% if domain == 'gmail.com' %}
+        {{ mbsyncrc_channels_gmail }}
+        {%- else %}
+        Channel mail
+        Far :mail-remote:
+        Near :mail-local:
+        Patterns *
+        {%- endif %}
+    EOF
+
+    local mbsyncrc_channels_gmail
+    define mbsyncrc_channels_gmail <<'    EOF'
+        Channel mail-default
+        Far :mail-remote:
+        Near :mail-local:
+        Patterns * "![Gmail]/*" "!All" "!Drafts" "!Sent" "!Spam" "!Trash"
+
+        Channel mail-all
+        Far :mail-remote:"[Gmail]/All Mail"
+        Near :mail-local:All
+        Create Near
+
+        Channel mail-drafts
+        Far :mail-remote:"[Gmail]/Drafts"
+        Near :mail-local:Drafts
+        Create Near
+
+        Channel mail-sent
+        Far :mail-remote:"[Gmail]/Sent Mail"
+        Near :mail-local:Sent
+        Create Near
+
+        Channel mail-spam
+        Far :mail-remote:"[Gmail]/Spam"
+        Near :mail-local:Spam
+        Create Near
+
+        Channel mail-trash
+        Far :mail-remote:"[Gmail]/Trash"
+        Near :mail-local:Trash
+        Create Near
+
+        Group mail
+        Channel mail-default
+        Channel mail-all
+        Channel mail-drafts
+        Channel mail-sent
+        Channel mail-spam
+        Channel mail-trash
+    EOF
+
+    vars["mbsyncrc_channels_gmail"]="$mbsyncrc_channels_gmail"
+    render "$mbsyncrc" vars
+}
+
+imapnotifyrc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local imapnotifyrc
+    define imapnotifyrc <<'    EOF'
+        configurations:
+          - host: "{{ imap_host }}"
+            port: 993
+            tls: true
+            tlsOptions:
+              rejectUnauthorized: true
+              starttls: false
+            username: "{{ mail }}"
+            passwordCMD: "mail pass {{ mail }}"
+            xoAuth2: {{ oauth | lower }}
+            boxes:
+              - mailbox: "Inbox"
+                onNewMail: "mail control {{ mail }} sync inbox"
+                onNewMailPost: SKIP
+    EOF
+    render "$imapnotifyrc" vars
+}
+
+msmtprc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local msmtprc
+    define msmtprc <<'    EOF'
+        defaults
+        tls            on
+        tls_starttls   off
+        tls_trust_file /etc/ssl/certs/ca-certificates.crt
+        auth           {{ 'oauthbearer' if oauth else 'on' }}
+
+        account        mail
+        host           {{ smtp_host }}
+        port           465
+        from           {{ mail }}
+        user           {{ mail }}
+        passwordeval   "mail pass {{ mail }}"
+    EOF
+    render "$msmtprc" vars
+}
+
+notmuchrc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local notmuchrc
+    define notmuchrc <<'    EOF'
+        [database]
+        mail_root={{ mail_data_dir | abspath }}/
+        path={{ mail_cache_dir | abspath }}/notmuch/
+
+        [user]
+        name={{ mail }}
+        primary_email={{ mail }}
+
+        [new]
+        ignore=.uidvalidity;.mbsyncstate;.mbsyncstate.lock
+
+        [search]
+        exclude_tags=deleted;spam
+
+        [maildir]
+        synchronize_flags=true
+    EOF
+    render "$notmuchrc" vars
+}
+
+muttrc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local muttrc
+    define muttrc <<'    EOF'
+        set my_mail = "{{ mail }}"
+        set my_conf = "{{ mail_config_dir }}"
+        set my_data = "{{ mail_data_dir }}"
+        set header_cache = "{{ mail_cache_dir }}/mutt/"
+        set message_cache_dir = "{{ mail_cache_dir }}/mutt/"
+
+        set mbox_type = Maildir
+        set folder = "{{ mail_data_dir }}"
+
+        set spool_file = +Inbox
+        set postponed = +Drafts
+        {% if domain == 'gmail.com' %}
+        unset record
+        {% else %}
+        set record = +Sent
+        {% endif %}
+        set trash = +Trash
+
+        set from = {{ mail }}
+        set realname = '{{ mail }}'
+        set sendmail = "msmtp -C {{ mail_config_dir | abspath }}/msmtprc -a mail"
+
+        set nm_config_file = "{{ mail_config_dir }}/notmuchrc"
+        set nm_record = yes
+        set nm_record_tags = "sent"
+
+        mailboxes \
+            +Inbox \
+            +Drafts \
+            +Sent \
+        {% if domain == 'gmail.com' %}
+            +All \
+        {% endif %}
+            `find {{ mail_data_dir }} \
+                -type d \
+                -name cur \
+                -not \( \
+                    -path "*/Inbox/*" -o \
+                    -path "*/Drafts/*" -o \
+                    -path "*/Sent/*" -o \
+        {% if domain == 'gmail.com' %}
+                    -path "*/All/*" -o \
+        {% endif %}
+                    -path "*/Spam/*" -o \
+                    -path "*/Trash/*" \
+                \) \
+                -printf "'%h' " \
+              | sort -t/` \
+            +Spam \
+            +Trash
+    EOF
+    render "$muttrc" vars
+}
+
+passfetch() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local passfetch
+    define passfetch <<'    EOF'
+        #!/bin/bash
+        password() { {{ 'oauth2 access' if oauth else 'pass' }} "{{ mail }}"; }
+        password
+    EOF
+    render "$passfetch" vars
+}
+
+add() {
+    local mail="$1"
+    log "adding mail configuration for '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' already exists"
+        exit 1
+    fi
+
+    mkdir -p "$mail_config_dir"
+    mbsyncrc     "$mail" > "$mail_config_dir/mbsyncrc"
+    imapnotifyrc "$mail" > "$mail_config_dir/imapnotifyrc.yaml"
+    msmtprc      "$mail" > "$mail_config_dir/msmtprc"
+    notmuchrc    "$mail" > "$mail_config_dir/notmuchrc"
+    muttrc       "$mail" > "$mail_config_dir/muttrc"
+    passfetch    "$mail" > "$mail_config_dir/passfetch"
+
+    find "$mail_config_dir" -type d -exec chmod 700 {} \;
+    find "$mail_config_dir" -type f -exec chmod 600 {} \;
+    chmod u+x "$mail_config_dir/passfetch"
+}
+
+list() {
+    [ ! -d "$config_dir" ] && return 0
+    find $config_dir -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort
+}
+
+remove() {
+    local mail="$1"
+    log "removing mail configuration for '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    rm -rf "$mail_config_dir"
+}
+
+pass() {
+    local mail="$1"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    password() { "$mail_config_dir/passfetch"; }
+
+    if [ ! -z ${MAIL_USE_KEYRING:-} ]; then
+        local key_name="mailpass"
+        if ! keyctl search @s user $key_name &>/dev/null; then
+            password | keyctl padd user $key_name @s >/dev/null
+        fi
+        keyctl pipe %user:$key_name
+    else
+        password
+    fi
+}
+
+sync() {
+    local mail="$1"
+    local channel="${2:-"mail"}"
+    log "syncing mail for '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    local mail_data_dir="$(mail_data_dir "$mail")"
+    if [ ! -d "$mail_data_dir" ]; then
+        log "creating data directory for '"$mail"'"
+        mkdir -p "$mail_data_dir"
+        chmod 700 "$mail_data_dir"
+    fi
+
+    mbsync -V -c "$mail_config_dir/mbsyncrc" "$channel" |& prefix "mbsync"
+}
+
+watch() {
+    local mail="$1"
+    log "watching mail for '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    goimapnotify -conf "$mail_config_dir/imapnotifyrc.yaml" |& stdbuf -oL cut -d ' ' -f2- | prefix "goimapnotify"
+}
+
+index() {
+    local mail="$1"
+    log "indexing mail '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    notmuch --config "$mail_config_dir/notmuchrc" new |& prefix "notmuch"
+}
+
+daemon() {
+    local mail="$1"
+    log "launcing daemon for mail '"$mail"'"
+
+    local mail_state_dir="$(mail_state_dir "$mail")"
+    mkdir -p "$mail_state_dir"
+
+    local pid_file="$mail_state_dir/daemon.pid"
+    exec {pid_fd}>"$pid_file"
+    if ! flock -n $pid_fd; then
+        error "'"$pid_file"' exists, daemon already running?"
+        exit 1
+    fi
+    echo $$ >&$pid_fd
+
+    cleanup() {
+        log "cleaning up"
+        flock -u $pid_fd
+        exec {pid_fd}>&-
+        unset pid_fd
+        #rm "$pid_file"
+        pkill -P $BASHPID
+    }
+    trap cleanup EXIT
+
+    export MAIL_USE_KEYRING=1
+    keyctl new_session |& prefix "keyctl"
+
+    local control="$mail_state_dir/control"
+    (
+        if [ -p "$control" ]; then
+            error "control fifo already exists in '"$control"'"
+            exit 1
+        fi
+        mkfifo "$control"
+
+        cleanup() {
+            log "cleaning up listener"
+            rm "$control"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        log "listening for control commands"
+        while true; do
+            read -r line <"$control"
+
+            local -a command="($line)"
+            log "got command: [$(join_by ", " "${command[@]@Q}")]"
+
+            case "${command[0]}" in
+                sync)
+                    (
+                        local sync_lock="$mail_state_dir/sync.lock"
+                        exec {sync_fd}>"$sync_lock"
+                        if ! flock -n $sync_fd; then
+                            log "sync running for $mail, skipping"
+                            return
+                        fi
+
+                        log "syncing $mail"
+                        sync "$mail" "${command[@]:1}"
+                        log "indexing $mail"
+                        index "$mail"
+                        log "done"
+
+                        flock -u $sync_fd
+                    ) &
+                    ;;
+                exit)
+                    log "stopping listener"
+                    log "bye"
+                    break
+                    ;;
+                *)
+                    log "unrecognized command [$(join_by ", " "${command[@]@Q}")]"
+                    ;;
+            esac
+        done
+    ) &
+    local listener_pid=$!
+
+    (
+        cleanup() {
+            log "cleaning up watcher"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        log "watching $mail"
+        watch "$mail"
+    ) &
+
+    (
+        cleanup() {
+            log "cleaning up periodic events"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        log "sending periodic sync events"
+        local period=300
+        while true; do
+            log "requesting periodic sync"
+            echo "sync" > "$control"
+            sleep $period
+        done
+    ) &
+
+    wait $listener_pid || true
+    log "exiting"
+}
+
+control() {
+    local mail="$1"
+    local command=("${@:2}")
+    log "sending control command [$(join_by ", " "${command[@]@Q}")] to daemon for mail '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    local mail_state_dir="$(mail_state_dir "$mail")"
+    local pipe="$mail_state_dir/control"
+    if [ ! -p "$pipe" ]; then
+        error "control fifo for mail '"$mail"' does not exist, is the daemon running?"
+        exit 1
+    fi
+    echo "${command[@]@Q}" > "$pipe"
+}
+
+client() {
+    local mail="$1"
+    log "opening mail client for '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    export TERM=xterm-direct
+    export MAIL="$mail"
+    neomutt
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        add)
+            local mail="${args["mail"]}"
+            add "$mail"
+            ;;
+        list)
+            list
+            ;;
+        remove)
+            local mail="${args["mail"]}"
+            remove "$mail"
+            ;;
+        pass)
+            local mail="${args["mail"]}"
+            pass "$mail"
+            ;;
+        sync)
+            local mail="${args["mail"]}"
+            local -a rest="(${args["rest"]})"
+            sync "$mail" "${rest[@]}"
+            ;;
+        watch)
+            local mail="${args["mail"]}"
+            watch "$mail"
+            ;;
+        index)
+            local mail="${args["mail"]}"
+            index "$mail"
+            ;;
+        daemon)
+            local mail="${args["mail"]}"
+            daemon "$mail"
+            ;;
+        control)
+            local mail="${args["mail"]}"
+            local -a rest="(${args["rest"]})"
+            control "$mail" "${rest[@]}"
+            ;;
+        client)
+            local mail="${args["mail"]}"
+            client "$mail"
+            ;;
+    esac
+}
+
+main "$@"
