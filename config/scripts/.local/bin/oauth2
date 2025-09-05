@@ -1,0 +1,729 @@
+#!/bin/bash
+set -eu
+
+help="\
+Perform oauth2 operations
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  authorize <provider> <scope>  authorize access for resource in provider
+  refresh   <authorization>     refresh tokens in authorization
+  access    <authorization>     get an access token from authorization
+
+Options:
+  --configuration-url           use given openid configuration url
+  --client-id                   use given client id
+  --client-secret               use given client secret
+  -h, --help                    display current help message
+"
+
+listen_port=10081
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/oauth2"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        local arg="$1"
+        case "$arg" in
+            -*|--*)
+                break
+                ;;
+            *)
+                optargs+=("$arg")
+                shift
+                ;;
+        esac
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -[^-]*|--[^-]*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    _result["error"]="unexpected option '$item'"
+                    return
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ "$arg" = "..." ]; then
+            _args=("$@")
+            return
+        fi
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local configuration_url_opt=("configuration_url" "(--configuration-url)" 1)
+    local client_id_opt=("client_id" "(--client-id)" 1)
+    local client_secret_opt=("client_secret" "(--client-secret)" 1)
+    local opts_spec=(help_opt configuration_url_opt client_id_opt client_secret_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(authorize|refresh|access|handler)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    local varargs=false
+    case "$cmd" in
+        authorize)
+            local args_spec=("provider" "scope")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        refresh)
+            local args_spec=("authorization")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        access)
+            local args_spec=("authorization")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        handler)
+            local args_spec=("state")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
+        result["error"]="unexpected argument '${rest[0]}'"
+        return
+    fi
+    result["rest"]="${rest[@]@Q}"
+}
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@" >&2
+}
+
+error() { echo "error: $@" >&2; }
+
+define() {
+    local -n _var="$1"
+    local heredoc=""
+    IFS=$'\n' read -r -d '' heredoc || true
+    _var="$(echo "$heredoc" | awk 'NR==1{match($0,/^[ \t]*/)} {print substr($0,RLENGTH+1)}')"
+}
+
+render() {
+    local template="$1"
+    local -n _vars="$2"
+
+    local params=()
+    for k in "${!_vars[@]}"; do
+        params+=("$k" "${_vars["$k"]}")
+    done
+
+    local script
+    define script <<'    EOF'
+        import os
+        import sys
+        import json
+        from jinja2 import Environment, BaseLoader
+
+        def try_or(func, default=None, exceptions=(Exception,)):
+            try:
+                return func()
+            except exceptions:
+                return default
+
+        inp = sys.stdin.read()
+        ait = iter(sys.argv[1:])
+        cnv = lambda x: try_or(lambda: json.loads(x), default=x)
+        var = {k: cnv(v) for k, v in zip(ait, ait)}
+
+        abs = lambda x: os.path.abspath(os.path.expanduser(x))
+        env = Environment(loader=BaseLoader(), trim_blocks=True, lstrip_blocks=True)
+        env.filters['abspath'] = abs
+
+        tpl = env.from_string(inp)
+        str = tpl.render(**var)
+        print(str)
+    EOF
+    echo -n "$template" | python -c "$script" "${params[@]}"
+}
+
+# from: https://hg-edge.mozilla.org/comm-central/file/tip/mailnews/base/src/OAuth2Providers.sys.mjs
+provider_configuration() {
+    local -n result="$1"
+    local provider="$2"
+    local -n __opts="$3"
+
+    result["provider"]="$provider"
+    case "$provider" in
+        google)
+            result["configuration_url"]="https://accounts.google.com/.well-known/openid-configuration"
+            result["client_id"]="406964657835-aq8lmia8j95dhl1a2bvharmfk3t1hgqj.apps.googleusercontent.com"
+            result["client_secret"]="kSmqreRr0qwBWJgbf5Y-PjSU"
+            ;;
+        microsoft)
+            result["configuration_url"]="https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+            result["client_id"]="9e5f94bc-e8a4-4e73-b8be-63364c29d753"
+            ;;
+        *)
+            result["configuration_url"]="${__opts["configuration_url"]:-}"
+            result["client_id"]="${__opts["client_id"]:-}"
+            result["client_secret"]="${__opts["client_secret"]:-}"
+    esac
+
+    local required_configuration_options=("configuration_url" "client_id")
+    for required_option in "${required_configuration_options[@]}"; do
+        local value="${result["$required_option"]:-}"
+        if [ -z "$value" ]; then
+            error "missing configuration value '$required_option' for provider '$provider'"
+            exit 1
+        fi
+    done
+}
+
+scopes() {
+    local provider="$1"
+    local scope="$2"
+
+    local scopes=($scope)
+    case "$provider" in
+        google)
+            case "$scope" in
+                mail)
+                    scopes=("https://mail.google.com/")
+                    ;;
+            esac
+            ;;
+        microsoft)
+            case "$scope" in
+                mail)
+                    scopes=("https://outlook.office.com/IMAP.AccessAsUser.All"
+                            "https://outlook.office.com/POP.AccessAsUser.All"
+                            "https://outlook.office.com/SMTP.Send"
+                            "offline_access")
+                    ;;
+            esac
+            ;;
+    esac
+
+    echo "${scopes[@]}"
+}
+
+pkce_generate() {
+    local -n result="$1"
+    local verifier=$(LC_CTYPE=C && LANG=C && cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)
+    local challenge=$(echo -n $verifier | sha256sum | cut -d " " -f 1 | xxd -r -p | base64 | tr / _ | tr + - | tr -d =)
+    result["verifier"]="$verifier"
+    result["challenge"]="$challenge"
+}
+
+urlencode() {
+    local string="$1"
+    echo -n "$string" | jq -s -R -r @uri
+}
+
+urldecode() {
+    local string="$1"
+    echo -n "$string" | jq -s -R -r @urid
+}
+
+url() {
+    local endpoint="$1"
+    local -n parameters="$2"
+
+    local query_params=()
+    for k in "${!parameters[@]}"; do
+        local v="$(urlencode "${parameters["$k"]}")"
+        query_params+=("$k=$v")
+    done
+    local query_string=$(join_by "\&" "${query_params[@]}")
+
+    printf "%s?%s" "$endpoint" "$query_string"
+}
+
+urld() {
+    local -n endpoint="$1"
+    local -n parameters="$2"
+    local url="$3"
+
+    local path="${url%%\?*}"
+    endpoint="$path"
+
+    local query_string="${url#*\?}"
+    local query_params=(${query_string//&/ })
+    for query_param in "${query_params[@]}"; do
+        local name="${query_param%%=*}"
+        local value="$(urldecode "${query_param#*=}")"
+        parameters["$name"]="$value"
+    done
+}
+
+authorization_provider_specific_params() {
+    local -n _params="$1"
+    local provider="$2"
+
+    case "$provider" in
+        google)
+            params["access_type"]="offline"
+            ;;
+        microsoft)
+            ;;
+    esac
+}
+
+authorization_link() {
+    local -n config="$1"
+    local scope="$2"
+    local redirect_uri="$3"
+    local state="$4"
+    local -n _pkce="$5"
+
+    local openid_configuration
+    openid_configuration="$(curl -sS "${config["configuration_url"]}")" || return
+    local authorization_endpoint=$(echo -n "$openid_configuration" | jq -r '.authorization_endpoint')
+    local scopes="$(scopes "$provider" "$scope")"
+
+    declare -A params
+    params["client_id"]="${config["client_id"]}"
+    params["redirect_uri"]="$redirect_uri"
+    params["response_type"]="code"
+    params["scope"]="$scopes"
+    params["state"]="$state"
+    params["code_challenge"]="${_pkce["challenge"]}"
+    params["code_challenge_method"]="S256"
+    authorization_provider_specific_params params "${config["provider"]}"
+
+    url "$authorization_endpoint" params
+}
+
+auth_code_exchange() {
+    local -n config="$1"
+    local code="$2"
+    local redirect_uri="$3"
+    local -n _pkce="$4"
+
+    local openid_configuration
+    openid_configuration="$(curl -sS "${config["configuration_url"]}")" || return
+    local token_endpoint=$(echo -n "$openid_configuration" | jq -r '.token_endpoint')
+
+    declare -A params
+    params["client_id"]="${config["client_id"]}"
+    if [ ! -z "${config["client_secret"]:-}" ]; then
+        params["client_secret"]="${config["client_secret"]}"
+    fi
+    params["code"]="$code"
+    params["grant_type"]="authorization_code"
+    params["redirect_uri"]="$redirect_uri"
+    params["code_verifier"]="${_pkce["verifier"]}"
+
+    log "exchanging authorization code for token"
+    local curl_args=()
+    for k in "${!params[@]}"; do
+        curl_args+=("--data-urlencode" ""$k"="${params["$k"]}"")
+    done
+    curl -sS -X POST "$token_endpoint" "${curl_args[@]}"
+}
+
+to_json() {
+    local -n dict="$1"
+    printf "%s\n" "${dict[@]@k}" \
+        | jq -n -R 'reduce inputs as $i ({}; . + { ($i): (input|(fromjson? // .)) })'
+}
+
+authorize() {
+    local provider="$1"
+    local scope="$2"
+    local -n _opts="$3"
+
+    declare -A configuration
+    provider_configuration configuration "$provider" _opts
+
+    declare -A pkce
+    pkce_generate pkce
+
+    local redirect_uri="http://localhost:$listen_port/auth"
+    local state="$(LC_CTYPE=C && LANG=C && cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 50 | head -n 1)"
+    local authorization_link
+    authorization_link=$(authorization_link configuration "$scope" "$redirect_uri" "$state" pkce) || return
+
+    cleanup() {
+        rm "$state_dir/code"
+        pkill -P $BASHPID
+    }
+    trap cleanup EXIT
+
+    log "listening for authorization redirect"
+    socat tcp-listen:$listen_port,fork,reuseaddr,crlf \
+          exec:"$0 handler "$state"" 2>/dev/null &
+    local listener_pid=$!
+
+    mkdir -p "$state_dir"
+    local code_fifo="$state_dir/code"
+    if [ -p "$code_fifo" ]; then
+        error "code fifo already exists in '"$code_fifo"'"
+        exit 1
+    fi
+    mkfifo "$code_fifo"
+
+    log "requesting authorization for '$scope' in provider '$provider'"
+    log "open this link and authorize the request: $authorization_link"
+    log "awaiting for authorization to complete"
+
+    local auth_code
+    read -r auth_code <"$code_fifo"
+    log "got auth code: $auth_code"
+    local tokens
+    tokens=$(auth_code_exchange configuration "$auth_code" "$redirect_uri" pkce) || return
+
+    declare -A extra_fields
+    extra_fields["provider"]="$provider"
+    extra_fields["configuration_url"]="${configuration["configuration_url"]}"
+    extra_fields["client_id"]="${configuration["client_id"]}"
+    if [ ! -z "${configuration["client_secret"]:-}" ]; then
+        extra_fields["client_secret"]="${configuration["client_secret"]}"
+    fi
+    extra_fields["issued_at"]=$(date +%s)
+    echo "$tokens" | jq --argjson extra "$(to_json extra_fields)" '. + $extra'
+}
+
+refresh() {
+    local authorization="$1"
+    if [ "$authorization" = "-" ]; then
+        authorization="$(cat)"
+    else
+        if [ ! -f "$authorization" ]; then
+            error "authorization file '$authorization' does not exist"
+            exit 1
+        fi
+    fi
+
+    local configuration_url=$(echo -n "$authorization" | jq -r '.configuration_url')
+    local client_id=$(echo -n "$authorization" | jq -r '.client_id')
+    local client_secret=$(echo -n "$authorization" | jq -r '.client_secret')
+    local refresh_token=$(echo -n "$authorization" | jq -r '.refresh_token')
+
+    local openid_configuration
+    openid_configuration="$(curl -sS "$configuration_url")" || return
+    local token_endpoint=$(echo -n "$openid_configuration" | jq -r '.token_endpoint')
+
+    declare -A params
+    params["client_id"]="$client_id"
+    if [ ! -z "${client_secret:-}" ]; then
+        params["client_secret"]="$client_secret"
+    fi
+    params["grant_type"]="refresh_token"
+    params["refresh_token"]="$refresh_token"
+
+    log "refreshing access token"
+    local curl_args=()
+    for k in "${!params[@]}"; do
+        curl_args+=("--data-urlencode" ""$k"="${params["$k"]}"")
+    done
+    local refresh_response
+    refresh_response="$(curl -sS -X POST "$token_endpoint" "${curl_args[@]}")" || return
+
+    local access_token=$(echo -n "$refresh_response" | jq -r '.access_token')
+    local expires_in=$(echo -n "$refresh_response" | jq -r '.expires_in')
+
+    declare -A updated_fields
+    updated_fields["access_token"]="$access_token"
+    updated_fields["expires_in"]="$expires_in"
+    updated_fields["issued_at"]=$(date +%s)
+    echo "$authorization" | jq --argjson updated "$(to_json updated_fields)" '. + $updated'
+}
+
+access() {
+    local authorization="$1"
+    if [ "$authorization" = "-" ]; then
+        authorization="$(cat)"
+    else
+        if [ ! -f "$authorization" ]; then
+            error "authorization file '$authorization' does not exist"
+            exit 1
+        fi
+    fi
+
+    log "fetching access token"
+    local issued_at=$(echo -n "$authorization" | jq -r '.issued_at')
+    local expires_in=$(echo -n "$authorization" | jq -r '.expires_in')
+    local now=$(date +%s)
+    local remaining=$(( (issued_at + expires_in) - now ))
+    if [ $remaining -le 0 ]; then
+        error "access token expired"
+        exit 1
+    fi
+    log "token will remain valid for the next $remaining seconds"
+
+    local access_token=$(echo -n "$authorization" | jq -r '.access_token')
+    echo "$access_token"
+}
+
+handle_authorization_code() {
+    local code="$1"
+    local code_fifo="$state_dir/code"
+    echo "$code" >"$code_fifo"
+}
+
+handler() {
+    local state="$1"
+
+    local request_verb request_uri http_version
+    read request_verb request_uri http_version
+
+    local status_ok="200 OK"
+    local status_not_found="404 Not Found"
+    local status_internal_server_error="500 Internal Server Error"
+
+    local body_ok
+    define body_ok <<'    EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Authorization granted</title>
+          </head>
+          <body>
+            <tt>Authorization has been completed, you can now close this window</tt>
+          </body>
+        </html>
+    EOF
+
+    local body_error
+    define body_error <<'    EOF'
+        Internal Server Error
+    EOF
+
+    local body_not_found
+    define body_not_found <<'    EOF'
+        Not Found
+    EOF
+
+    local request_path
+    declare -A request_params
+    urld request_path request_params "$request_uri"
+
+    local status body code
+    local code="${request_params["code"]:-}"
+    local rstate="${request_params["state"]:-}"
+    case "$request_path" in
+        "/auth")
+            if [ ! -z "$code" ] && [ "$state" = "$rstate" ]; then
+                status="$status_ok"
+                body="$body_ok"
+            else
+                status="$status_internal_server_error"
+                body="$body_error"
+            fi
+            ;;
+        *)
+            status="$status_not_found"
+            body="$body_not_found"
+            ;;
+    esac
+
+    if [ ! -z "$code" ] && [ "$state" = "$rstate" ]; then
+        handle_authorization_code "$code"
+    fi
+
+    local response
+    define response <<'    EOF'
+        HTTP/1.1 {{ status }}
+        Date: {{ date }}
+        Content-Type: text/html; charset=UTF-8
+        Content-Length: {{ (body | length) + (body.splitlines() | length) + 1 }}
+
+        {{ body }}
+    EOF
+
+    declare -A vars
+    vars["status"]="$status"
+    vars["date"]="$(TZ=GMT date '+%a, %d %b %Y %T %Z')"
+    vars["body"]="$body"
+    render "$response" vars
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        authorize)
+            local provider="${args["provider"]}"
+            local scope="${args["scope"]}"
+            declare -A opts
+            local opt_names=("configuration_url" "client_id" "client_secret")
+            for opt_name in "${opt_names[@]}"; do
+                local opt_value="${args["$opt_name"]:-}"
+                if [ ! -z "$opt_value" ]; then
+                    opts["$opt_name"]="$opt_value"
+                fi
+            done
+            authorize "$provider" "$scope" opts
+            ;;
+        refresh)
+            local authorization="${args["authorization"]}"
+            refresh "$authorization"
+            ;;
+        access)
+            local authorization="${args["authorization"]}"
+            access "$authorization"
+            ;;
+        handler)
+            local state="${args["state"]}"
+            handler "$state"
+            ;;
+    esac
+}
+
+main "$@"
