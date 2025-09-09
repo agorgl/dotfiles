@@ -1,0 +1,487 @@
+#!/bin/bash
+set -eu
+
+help="\
+Manage encrypted directories
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  init                        initialize new crypt in current directory
+  create <name>               create new named crypt
+  list                        list named crypts
+  remove <name>               delete named crypt
+  mount  <mntspec>            mount crypt(s) according to mount spec
+  umount <path>               unmount crypt mounted at path
+  expose <mntspec> <exec...>  expose crypt(s) to specific process
+
+Options:
+  -h, --help                  display current help message
+"
+
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/crypt"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/crypt"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        local arg="$1"
+        case "$arg" in
+            -*|--*)
+                break
+                ;;
+            *)
+                optargs+=("$arg")
+                shift
+                ;;
+        esac
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    return
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ "$arg" = "..." ]; then
+            _args=("$@")
+            return
+        fi
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local opts_spec=(help_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(init|create|list|remove|mount|umount|expose)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    local varargs=false
+    case "$cmd" in
+        init)
+            ;;
+        create)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        list)
+            ;;
+        remove)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        mount)
+            local args_spec=("mntspec")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        umount)
+            local args_spec=("path")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        expose)
+            local args_spec=("mntspec" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
+        local item="${rest[0]}"
+        local type
+        case "$item" in
+            -*|--*)
+                type="option"
+                ;;
+            *)
+                type="argument"
+                ;;
+        esac
+        result["error"]="unexpected $type '$item'"
+        return
+    fi
+    result["rest"]="${rest[@]@Q}"
+}
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@"
+}
+
+error() { echo "error: $@" >&2; }
+
+randomkey() {
+    LC_ALL=C tr -dc 'A-Za-z0-9!#%&()*+,-./:;<=>?@[\]^_{|}~' </dev/urandom | head -c 64
+}
+
+keyfile() {
+    local path="$1"
+    echo "$path/key"
+}
+
+datadir() {
+    local path="$1"
+    echo "$path/data"
+}
+
+encrypt() {
+    gpg --quiet --encrypt --armor --default-recipient-self
+}
+
+decrypt() {
+    gpg --quiet --decrypt
+}
+
+init() {
+    local path="${1:=$(pwd)}"
+
+    local key="$(randomkey)"
+    local keyfile="$(keyfile "$path")"
+    echo "$key" | encrypt > "$keyfile"
+
+    local datadir="$(datadir "$path")"
+    mkdir -p "$datadir"
+
+    log "initializing crypt in '"$path"'"
+    echo "$key" | gocryptfs -q -init "$datadir"
+}
+
+named_crypt_dir() {
+    local name="$1"
+    echo "$data_dir/$name"
+}
+
+create() {
+    local name="$1"
+    log "creating crypt '"$name"'"
+
+    local named_crypt_dir="$(named_crypt_dir "$name")"
+    if [ -d "$named_crypt_dir" ]; then
+        error "crypt directory for crypt '"$name"' already exists"
+        exit 1
+    fi
+
+    mkdir -p "$named_crypt_dir"
+    init "$named_crypt_dir"
+}
+
+list() {
+    [ ! -d "$data_dir" ] && return 0
+    find "$data_dir" -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | sort
+}
+
+remove() {
+    local name="$1"
+    log "removing crypt '"$name"'"
+
+    local named_crypt_dir="$(named_crypt_dir "$name")"
+    if [ ! -d "$named_crypt_dir" ]; then
+        error "crypt directory for crypt '"$name"' does not exist"
+        exit 1
+    fi
+
+    rm -rf "$named_crypt_dir"
+}
+
+crypt_dir() {
+    local crypt="$1"
+    local named_crypt_dir="$(named_crypt_dir "$crypt")"
+    if [ -d "$named_crypt_dir" ]; then
+        echo "$named_crypt_dir"
+    else
+        echo "$crypt"
+    fi
+}
+
+mount() {
+    local mntspec="$1"
+
+    local specs=()
+    IFS=',' read -r -a specs <<< "$mntspec"
+
+    for spec in "${specs[@]}"; do
+        local crypt="${spec%%:*}"
+        local path="${spec#*:}"
+
+        local crypt_dir="$(crypt_dir "$crypt")"
+        if [ ! -d "$crypt_dir" ]; then
+            error "crypt directory for crypt '"$crypt"' does not exist"
+            exit 1
+        fi
+
+        local datadir="$(datadir "$crypt_dir")"
+        local keyfile="$(keyfile "$crypt_dir")"
+        local key="$(cat "$keyfile" | decrypt)"
+
+        log "mounting crypt '"$crypt"' to path '"$path"'"
+        echo "$key" | gocryptfs -q "$datadir" "$path"
+    done
+}
+
+umount() {
+    local path="$1"
+    log "unmounting crypt from path '"$path"'"
+    fusermount -u "$path"
+}
+
+ns_run() {
+    local command=("$@")
+    unshare -Ucpfm --keep-caps --kill-child --mount-proc "${command[@]}"
+}
+
+ns_enter() {
+    local target="$1"
+    local command=("${@:2}")
+    nsenter -t "$target" -U -m --preserve-credentials --keep-caps -w "${command[@]}"
+}
+
+expose() {
+    local mntspec="$1"
+    local command=("${@:2}")
+    if [ ${#command[@]} -eq 0 ]; then
+        command=("$SHELL")
+    fi
+
+    local specs=()
+    IFS=',' read -r -a specs <<< "$mntspec"
+
+    local crypts=() paths=()
+    for spec in "${specs[@]}"; do
+        local crypt="${spec%%:*}"
+        local path="${spec#*:}"
+        crypts+=("$crypt")
+        paths+=("$path")
+    done
+
+    local msg
+    if [ ${#crypts[@]} -eq 1 ]; then
+        msg="crypt '$crypts'"
+    else
+        msg="crypts [$(join_by ", " "${crypts[@]@Q}")]"
+    fi
+
+    log "exposing $msg to [$(join_by ", " "${command[@]@Q}")]"
+    exec 3<> <(:) 4<> <(:)
+    local ns_cmd="\"$0\" mount \"$mntspec\"; ret=\$?; echo \$ret >&3; [ \$ret -eq 0 ] && read <&4"
+    ns_run /bin/bash <(echo "$ns_cmd") &
+    local ns_pid=$!
+
+    log "waiting for mount"
+    local ns_ret
+    read -r ns_ret <&3
+    if [ $ns_ret -ne 0 ]; then
+        error "mount process exited with non-zero code ($ns_ret)"
+        exit $ns_ret
+    fi
+
+    log "entering mount namespace"
+    local ret
+    ns_enter $ns_pid "${command[@]}" || ret=$?
+
+    for path in "${paths[@]}"; do
+        ns_enter $ns_pid "$0" "umount" "$path"
+    done
+    log "sending exit signal to mount process"
+    echo >&4
+
+    log "waiting for all processes to exit"
+    wait
+    exit ${ret:=0}
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        init)
+            init
+            ;;
+        create)
+            local name="${args["name"]}"
+            create "$name"
+            ;;
+        list)
+            list
+            ;;
+        remove)
+            local name="${args["name"]}"
+            remove "$name"
+            ;;
+        mount)
+            local mntspec="${args["mntspec"]}"
+            mount "$mntspec"
+            ;;
+        umount)
+            local path="${args["path"]}"
+            umount "$path"
+            ;;
+        expose)
+            local mntspec="${args["mntspec"]}"
+            local -a rest="(${args["rest"]})"
+            expose "$mntspec" "${rest[@]}"
+            ;;
+    esac
+}
+
+main "$@"
