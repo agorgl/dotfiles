@@ -132,7 +132,6 @@ cli_parse_opts() {
                 done
 
                 if [ "$found" = false ]; then
-                    _result["error"]="unexpected option '$item'"
                     return
                 fi
                 ;;
@@ -234,14 +233,25 @@ cli_parse() {
             varargs=true
             ;;
         client)
-            local args_spec=("mail")
+            local args_spec=("mail" "...")
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
             ;;
     esac
 
     if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
-        result["error"]="unexpected argument '${rest[0]}'"
+        local item="${rest[0]}"
+        local type
+        case "$item" in
+            -*|--*)
+                type="option"
+                ;;
+            *)
+                type="argument"
+                ;;
+        esac
+        result["error"]="unexpected $type '$item'"
         return
     fi
     result["rest"]="${rest[@]@Q}"
@@ -860,6 +870,7 @@ control() {
 
 client() {
     local mail="$1"
+    local args=("${@:2}")
     log "opening mail client for '"$mail"'"
 
     local mail_config_dir="$(mail_config_dir "$mail")"
@@ -870,7 +881,7 @@ client() {
 
     export TERM=xterm-direct
     export MAIL="$mail"
-    neomutt
+    neomutt "${args[@]}"
 }
 
 main() {
@@ -936,7 +947,8 @@ main() {
             ;;
         client)
             local mail="${args["mail"]}"
-            client "$mail"
+            local -a rest="(${args["rest"]})"
+            client "$mail" "${rest[@]}"
             ;;
     esac
 }
