@@ -1,0 +1,15 @@
+#!/bin/bash
+
+mail="$1"
+
+background=$(mail client "$mail" -D -S | awk '/my_bg/{gsub(/"/,"",$4); print $4}')
+trap 'ansictl color reset background' EXIT
+ansictl color set background "$background"
+
+mail client "$mail" \
+    -e 'set send_charset="utf-8"' \
+    -e 'set fast_reply=yes' \
+    -e 'set edit_headers=yes' \
+    -e 'set editor="touch"' \
+    -e "macro compose e '<enter-command>set editor="$EDITOR"<enter><edit-message>'" \
+    -H <(cat) </dev/tty
