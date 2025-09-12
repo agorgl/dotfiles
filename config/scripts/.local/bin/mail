@@ -15,6 +15,9 @@ Commands:
   sync    <mail>  sync maildir folder
   watch   <mail>  watch for new mails
   index   <mail>  create or update indexes for mail
+  send    <mail>  send message to server
+  queue   <mail>  queue message for sending to server
+  deliver <mail>  deliver messages queued for sending
   daemon  <mail>  run mail daemon
   control <mail>  send control command to a running daemon
   client  <mail>  launch mail client
@@ -182,7 +185,7 @@ cli_parse() {
     cli_parse_opts result rest opts_spec
     [ ! -z "${result["error"]:-}" ] && return 0
 
-    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|daemon|control|client)"
+    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|send|queue|deliver|daemon|control|client)"
     [ ! -z "${result["error"]:-}" ] && return 0
 
     local cmd="${result["command"]}"
@@ -217,6 +220,23 @@ cli_parse() {
             [ ! -z "${result["error"]:-}" ] && return 0
             ;;
         index)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        send)
+            local args_spec=("mail" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        queue)
+            local args_spec=("mail" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        deliver)
             local args_spec=("mail")
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
@@ -426,7 +446,7 @@ mbsyncrc() {
         Channel mail
         Far :mail-remote:
         Near :mail-local:
-        Patterns *
+        Patterns * "!Outbox"
         {%- endif %}
     EOF
 
@@ -435,7 +455,7 @@ mbsyncrc() {
         Channel mail-default
         Far :mail-remote:
         Near :mail-local:
-        Patterns * "![Gmail]/*" "!All" "!Drafts" "!Sent" "!Spam" "!Trash"
+        Patterns * "!Outbox" "![Gmail]/*" "!All" "!Drafts" "!Sent" "!Spam" "!Trash"
 
         Channel mail-all
         Far :mail-remote:"[Gmail]/All Mail"
@@ -577,7 +597,7 @@ muttrc() {
 
         set from = {{ mail }}
         set realname = '{{ mail }}'
-        set sendmail = "msmtp -C {{ mail_config_dir | abspath }}/msmtprc -a mail"
+        set sendmail = "mail queue {{ mail }}"
 
         set nm_config_file = "{{ mail_config_dir }}/notmuchrc"
         set nm_record = yes
@@ -586,6 +606,7 @@ muttrc() {
         mailboxes \
             +Inbox \
             +Drafts \
+            +Outbox \
             +Sent \
         {% if domain == 'gmail.com' %}
             +All \
@@ -688,6 +709,34 @@ pass() {
     fi
 }
 
+mailbox() {
+    local -n result="$1"
+    local mail="$2"
+    local mailbox="$3"
+
+    local mail_data_dir="$(mail_data_dir "$mail")"
+    if [ ! -d "$mail_data_dir" ]; then
+        log "creating data directory for '"$mail"'"
+        mkdir -p "$mail_data_dir"
+        chmod 700 "$mail_data_dir"
+    fi
+
+    local mailbox_dir="$mail_data_dir/$mailbox"
+    if [ ! -d "$mailbox_dir" ]; then
+        log "creating mailbox directory '"$mailbox"' for '"$mail"'"
+        mkdir -p "$mailbox_dir"
+        chmod 700 "$mailbox_dir"
+
+        for d in cur new tmp; do
+            local dir="$mailbox_dir/$d"
+            mkdir -p "$dir"
+            chmod 700 "$dir"
+        done
+    fi
+
+    result="$mailbox_dir"
+}
+
 sync() {
     local mail="$1"
     local channel="${2:-"mail"}"
@@ -733,6 +782,85 @@ index() {
     fi
 
     notmuch --config "$mail_config_dir/notmuchrc" new |& prefix "notmuch"
+}
+
+send() {
+    local mail="$1"
+    local args=("${@:2}")
+    log "sending mail from '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    msmtp -C "$mail_config_dir/msmtprc" -a mail "${args[@]}" |& prefix "msmtp"; ( exit ${PIPESTATUS[0]} )
+}
+
+outbox() {
+    local -n _result="$1"
+    local mail="$2"
+    mailbox _result "$mail" "Outbox"
+}
+
+message_filename() {
+    local date=$(date +%s)
+    local random=$(od -vAn -N8 -tu8 < /dev/urandom | awk '{$1=$1};1')
+    local host=$(cat /etc/hostname)
+    echo "${date}.R${random}.${host}:2,S"
+}
+
+queue() {
+    local mail="$1"
+    local args=("${@:2}")
+    log "queueing mail from '"$mail"'"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    local outbox_dir
+    outbox outbox_dir "$mail"
+
+    local fname=$(message_filename)
+    local message="$(cat)"
+    if [ ! -z "$message" ]; then
+        local message_file="$outbox_dir/cur/$fname"
+        echo "X-Msmtp-Args: ${args[@]@Q}" >"$message_file"
+        echo "$message" >>"$message_file"
+    fi
+}
+
+deliver() {
+    local mail="$1"
+    log "delivering messages for '"$mail"'"
+
+    local outbox_dir
+    outbox outbox_dir "$mail"
+
+    local message_files
+    readarray -d '' message_files < <(find "$outbox_dir/cur" -not -name '[@.]*' -type f -print0)
+    if [ ${#message_files[@]} -eq 0 ]; then
+        log "no messages to deliver, skipping"
+        return
+    fi
+
+    for message_file in "${message_files[@]}"; do
+        local -a args="($(awk 'NR == 1 { $1=""; print $0 }' "$message_file"))"
+        local msg="$(tail -n +2 "$message_file")"
+
+        local ret=0
+        send "$mail" "${args[@]}" <<<"$msg" || ret=$?
+        if [ $ret -ne 0 ]; then
+            log "could not deliver message"
+            return
+        fi
+
+        rm "$message_file"
+    done
 }
 
 daemon() {
@@ -804,6 +932,22 @@ daemon() {
                         flock -u $sync_fd
                     ) &
                     ;;
+                deliver)
+                    (
+                        local deliver_lock="$mail_state_dir/deliver.lock"
+                        exec {deliver_fd}>"$deliver_lock"
+                        if ! flock -n $deliver_fd; then
+                            log "delivery running for $mail, skipping"
+                            return
+                        fi
+
+                        log "delivering for $mail"
+                        deliver "$mail"
+                        log "done"
+
+                        flock -u $deliver_fd
+                    ) &
+                    ;;
                 exit)
                     log "stopping listener"
                     log "bye"
@@ -819,18 +963,34 @@ daemon() {
 
     (
         cleanup() {
-            log "cleaning up watcher"
+            log "cleaning up inbox watcher"
             pkill -P $BASHPID
         }
         trap cleanup EXIT
 
-        log "watching $mail"
+        log "watching $mail inbox"
         watch "$mail"
     ) &
 
     (
         cleanup() {
-            log "cleaning up periodic events"
+            log "cleaning up outbox watcher"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        local outbox_dir
+        outbox outbox_dir "$mail"
+
+        log "watching $mail outbox"
+        while read newfile; do
+            echo "deliver" > "$control"
+        done < <(inotifywait -q -m -e create "$outbox_dir/cur")
+    ) &
+
+    (
+        cleanup() {
+            log "cleaning up periodic sync events"
             pkill -P $BASHPID
         }
         trap cleanup EXIT
@@ -840,6 +1000,22 @@ daemon() {
         while true; do
             log "requesting periodic sync"
             echo "sync" > "$control"
+            sleep $period
+        done
+    ) &
+
+    (
+        cleanup() {
+            log "cleaning up periodic delivery events"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        log "sending periodic delivery events"
+        local period=300
+        while true; do
+            log "requesting periodic delivery"
+            echo "deliver" > "$control"
             sleep $period
         done
     ) &
@@ -935,6 +1111,20 @@ main() {
         index)
             local mail="${args["mail"]}"
             index "$mail"
+            ;;
+        send)
+            local mail="${args["mail"]}"
+            local -a rest="(${args["rest"]})"
+            send "$mail" "${rest[@]}"
+            ;;
+        queue)
+            local mail="${args["mail"]}"
+            local -a rest="(${args["rest"]})"
+            queue "$mail" "${rest[@]}"
+            ;;
+        deliver)
+            local mail="${args["mail"]}"
+            deliver "$mail"
             ;;
         daemon)
             local mail="${args["mail"]}"
