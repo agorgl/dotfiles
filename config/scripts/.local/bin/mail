@@ -768,7 +768,7 @@ watch() {
         exit 1
     fi
 
-    goimapnotify -conf "$mail_config_dir/imapnotifyrc.yaml" |& stdbuf -oL cut -d ' ' -f2- | prefix "goimapnotify"
+    goimapnotify -conf "$mail_config_dir/imapnotifyrc.yaml" |& stdbuf -oL cut -d ' ' -f2- | prefix "goimapnotify"; ( exit ${PIPESTATUS[0]} )
 }
 
 index() {
@@ -969,7 +969,11 @@ daemon() {
         trap cleanup EXIT
 
         log "watching $mail inbox"
-        watch "$mail"
+        local period=10
+        while true; do
+            watch "$mail" || true
+            sleep $period
+        done
     ) &
 
     (
