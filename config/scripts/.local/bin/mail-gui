@@ -1,0 +1,224 @@
+#!/bin/bash
+set -eu
+
+script_name="$(basename "$0")"
+runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$UID}/$script_name"
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@"
+}
+
+error() { echo "error: $@" >&2; }
+
+picker() {
+    mail list | rofi -dmenu -p mail
+}
+
+daemon() {
+    local mail="$1"
+    local mail_runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$UID}/mail/$mail"
+    mkdir -p "$mail_runtime_dir"
+
+    local daemon_pid_file="$mail_runtime_dir/daemon.pid"
+    exec {daemon_pid_fd}<>"$daemon_pid_file"
+    if flock -n $daemon_pid_fd; then
+        flock -u $daemon_pid_fd
+        log "launching mail daemon for '"$mail"'"
+        mail daemon "$mail" &>/dev/null
+    else
+        log "mail daemon for '"$mail"' is already running"
+    fi
+}
+
+handler() {
+    local event=("$@")
+
+    local command=()
+    case "${event[0]}" in
+        click)
+            command=("open")
+            ;;
+        menu)
+            case "${event[1]}" in
+                open)
+                    command=("open")
+                    ;;
+                quit)
+                    command=("quit")
+                    ;;
+            esac
+            ;;
+    esac
+
+    echo "${command[@]@Q}" >"$CONTROL"
+}
+export -f handler
+
+menu() {
+    local f=${1-} p="  "
+    if shift 1; then
+        echo -n "$p"
+        printf "%s" "$f" "${@/#/|$p}"
+    fi
+}
+
+notification() {
+    local notification_control="$1"
+    exec {notification_control_fd}<>"$notification_control"
+
+    log "creating notification"
+    local menu_items=("Open!handler menu open" "Quit!handler menu quit")
+    yad --notification \
+        --listen \
+        --use-interp \
+        --no-middle \
+        --image="mail-generic" \
+        --text="$mail" \
+        --command="handler click" \
+        --menu="$(menu "${menu_items[@]}")" \
+        <&$notification_control_fd
+}
+
+client() {
+    local mail="$1"
+    local mail_runtime_dir="$runtime_dir/$mail"
+    mkdir -p "$mail_runtime_dir"
+
+    local client_pid_file="$mail_runtime_dir/client.pid"
+    exec {client_pid_fd}<>"$client_pid_file"
+    if ! flock -n $client_pid_fd; then
+        log "mail client already open for '"$mail"', skipping"
+        return
+    fi
+
+    log "opening mail client for '"$mail"'"
+    $TERMINAL -e mail client "$mail" &
+    local client_pid=$!
+    echo $client_pid >&$client_pid_fd
+    wait $client_pid
+
+    flock -u $client_pid_fd
+}
+
+event_loop() {
+    local mail="$1"
+    local control="$2"
+
+    while true; do
+        read -r line <"$control"
+        local -a command="($line)"
+
+        case "${command[0]}" in
+            open)
+                log "opening client"
+                client "$mail" &
+                ;;
+            quit)
+                log "quitting"
+                break
+                ;;
+        esac
+    done
+}
+
+main() {
+    local mail="${1:-$(picker)}"
+    [ -z "$mail" ] && exit 1
+    log "using mail '"$mail"'"
+
+    local mail_runtime_dir="$runtime_dir/$mail"
+    mkdir -p "$mail_runtime_dir"
+
+    local pid_file="$mail_runtime_dir/$script_name.pid"
+    exec {pid_fd}<>"$pid_file"
+    if ! flock -n $pid_fd; then
+        error "'"$pid_file"' exists, $script_name already running for '"$mail"'?"
+        exit 1
+    fi
+    echo $$ >&$pid_fd
+
+    cleanup() {
+        log "cleaning up"
+        rm "$NOTIFICATION_CONTROL"
+        rm "$CONTROL"
+        flock -u $pid_fd
+        exec {pid_fd}>&-
+        unset pid_fd
+        pkill -P $BASHPID
+    }
+    trap cleanup EXIT
+
+    local control="$mail_runtime_dir/control"
+    if [ -p "$control" ]; then
+        error "control fifo already exists in '"$control"'"
+        exit 1
+    fi
+    mkfifo "$control"
+    export CONTROL="$control"
+
+    local notification_control="$mail_runtime_dir/notification-control"
+    if [ -p "$notification_control" ]; then
+        error "notification control fifo already exists in '"$notification_control"'"
+        exit 1
+    fi
+    mkfifo "$notification_control"
+    export NOTIFICATION_CONTROL="$notification_control"
+
+    (
+        cleanup() {
+            log "cleaning up daemon"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        daemon "$mail"
+    ) &
+    local daemon_pid=$!
+
+    (
+        cleanup() {
+            log "cleaning up notification"
+            pkill -P $BASHPID
+        }
+        trap cleanup EXIT
+
+        notification "$notification_control"
+    ) &
+    local notification_pid=$!
+
+    event_loop "$mail" "$control"
+
+    local client_pid_file="$mail_runtime_dir/client.pid"
+    if pgrep -F "$client_pid_file" &>/dev/null; then
+        log "killing open client"
+        pkill -F "$client_pid_file"
+    fi
+
+    log "destroying notification"
+    echo "quit" >"$notification_control"
+
+    if kill -0 $daemon_pid &>/dev/null; then
+        log "stopping daemon"
+        mail control "$mail" exit &>/dev/null
+    fi
+
+    log "waiting for children to stop"
+    wait
+
+    log "all children stopped, exiting"
+}
+
+main "$@"
