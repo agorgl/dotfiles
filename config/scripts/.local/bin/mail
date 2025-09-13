@@ -30,6 +30,7 @@ config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/mail"
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/mail"
 data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/mail"
 state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/mail"
+runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$UID}/mail"
 
 cli_parse_command() {
     local -n _result="$1"
@@ -323,9 +324,9 @@ mail_data_dir() {
     echo "$data_dir/$mail"
 }
 
-mail_state_dir() {
+mail_runtime_dir() {
     local mail="$1"
-    echo "$state_dir/$mail"
+    echo "$runtime_dir/$mail"
 }
 
 mailvars() {
@@ -867,10 +868,10 @@ daemon() {
     local mail="$1"
     log "launcing daemon for mail '"$mail"'"
 
-    local mail_state_dir="$(mail_state_dir "$mail")"
-    mkdir -p "$mail_state_dir"
+    local mail_runtime_dir="$(mail_runtime_dir "$mail")"
+    mkdir -p "$mail_runtime_dir"
 
-    local pid_file="$mail_state_dir/daemon.pid"
+    local pid_file="$mail_runtime_dir/daemon.pid"
     exec {pid_fd}>"$pid_file"
     if ! flock -n $pid_fd; then
         error "'"$pid_file"' exists, daemon already running?"
@@ -891,7 +892,7 @@ daemon() {
     export MAIL_USE_KEYRING=1
     keyctl new_session |& prefix "keyctl"
 
-    local control="$mail_state_dir/control"
+    local control="$mail_runtime_dir/control"
     (
         if [ -p "$control" ]; then
             error "control fifo already exists in '"$control"'"
@@ -916,7 +917,7 @@ daemon() {
             case "${command[0]}" in
                 sync)
                     (
-                        local sync_lock="$mail_state_dir/sync.lock"
+                        local sync_lock="$mail_runtime_dir/sync.lock"
                         exec {sync_fd}>"$sync_lock"
                         if ! flock -n $sync_fd; then
                             log "sync running for $mail, skipping"
@@ -934,7 +935,7 @@ daemon() {
                     ;;
                 deliver)
                     (
-                        local deliver_lock="$mail_state_dir/deliver.lock"
+                        local deliver_lock="$mail_runtime_dir/deliver.lock"
                         exec {deliver_fd}>"$deliver_lock"
                         if ! flock -n $deliver_fd; then
                             log "delivery running for $mail, skipping"
@@ -1039,8 +1040,8 @@ control() {
         exit 1
     fi
 
-    local mail_state_dir="$(mail_state_dir "$mail")"
-    local pipe="$mail_state_dir/control"
+    local mail_runtime_dir="$(mail_runtime_dir "$mail")"
+    local pipe="$mail_runtime_dir/control"
     if [ ! -p "$pipe" ]; then
         error "control fifo for mail '"$mail"' does not exist, is the daemon running?"
         exit 1
