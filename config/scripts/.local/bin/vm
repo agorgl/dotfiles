@@ -1,0 +1,920 @@
+#!/bin/bash
+set -eu
+
+help="\
+Manage virtual machines
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  launch   <name>  launch a new virtual machine
+  image            manage virtual machine images
+  list             list virtual machines
+  start    <name>  start a virtual machine
+  stop     <name>  stop a virtual machine
+  delete   <name>  delete a virtual machine
+  console  <name>  attach to virtual machine console
+  shell    <name>  open a shell inside a virtual machine
+  sshconf  <name>  print ssh config for a virtual machine
+  snapshot <name>  create a snapshot of a virtual machine
+  rollback <name>  rollback to the last snapshot of a virtual machine
+
+Options:
+  -h, --help       display current help message
+"
+
+help_launch="\
+Launch a virtual machine
+
+Usage:
+  $(basename $0) launch [options] <name>
+
+Options:
+  --distro       the distribution to use as a base image
+  --vcpus        number of vcpus for the virtual machine
+  --memory       memory size (in megabytes) for the virtual machine
+  --disk         disk size for the virtual machine
+  --console      attach to console on start
+  -h, --help     display current help message
+"
+
+help_image="\
+Manage virtual machine images
+
+Usage:
+  $(basename $0) image <command> [options] [arguments]
+
+Commands:
+  fetch  <distro>  fetch latest virtual machine image for distro
+  list             list virtual machine images
+  remove <name>    delete virtual machine image
+
+Options:
+  -h, --help       display current help message
+"
+
+data_dir="${XDG_DATA_HOME:-$HOME/.local/share}/vm"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        local arg="$1"
+        case "$arg" in
+            -*|--*)
+                break
+                ;;
+            *)
+                optargs+=("$arg")
+                shift
+                ;;
+        esac
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    return
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ "$arg" = "..." ]; then
+            _args=("$@")
+            return
+        fi
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local opts_spec=(help_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(launch|image|list|start|stop|delete|console|shell|sshconf|snapshot|rollback)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    local varargs=false
+    case "$cmd" in
+        launch)
+            local distro_opt=("distro" "(--distro)" 1)
+            local vcpus_opt=("vcpus" "(--vcpus)" 1)
+            local memory_opt=("memory" "(--memory)" 1)
+            local disk_opt=("disk" "(--disk)" 1)
+            local console_opt=("console" "(--console)")
+            local opts_spec=(distro_opt vcpus_opt memory_opt disk_opt console_opt)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        image)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            cli_parse_command result rest "(fetch|list|remove)"
+            [ ! -z "${result["error"]:-}" ] && return 0
+
+            local cmd=(${result["command"]})
+            case "${cmd[-1]}" in
+                fetch)
+                    local args_spec=("distro")
+                    cli_parse_args result rest args_spec
+                    [ ! -z "${result["error"]:-}" ] && return 0
+                    ;;
+                list)
+                    ;;
+                remove)
+                    local args_spec=("name")
+                    cli_parse_args result rest args_spec
+                    [ ! -z "${result["error"]:-}" ] && return 0
+                    ;;
+            esac
+            ;;
+        list)
+            ;;
+        start)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        stop)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        delete)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        console)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        shell)
+            local args_spec=("name" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        sshconf)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        snapshot)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        rollback)
+            local args_spec=("name")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
+        local item="${rest[0]}"
+        local type
+        case "$item" in
+            -*|--*)
+                type="option"
+                ;;
+            *)
+                type="argument"
+                ;;
+        esac
+        result["error"]="unexpected $type '$item'"
+        return
+    fi
+    result["rest"]="${rest[@]@Q}"
+}
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@"
+}
+
+error() { echo "error: $@" >&2; }
+
+prefix() {
+    local prefix="$1"
+    while read -r line; do
+        echo "$prefix: $line"
+    done
+}
+
+define() {
+    local -n _var="$1"
+    local heredoc=""
+    IFS=$'\n' read -r -d '' heredoc || true
+    _var="$(echo "$heredoc" | awk 'NR==1{match($0,/^[ \t]*/)} {print substr($0,RLENGTH+1)}')"
+}
+
+render() {
+    local template="$1"
+    local -n _vars="$2"
+
+    local params=()
+    for k in "${!_vars[@]}"; do
+        params+=("$k" "${_vars["$k"]}")
+    done
+
+    local script
+    define script <<'    EOF'
+        import os
+        import sys
+        import json
+        from jinja2 import Environment, BaseLoader
+
+        def try_or(func, default=None, exceptions=(Exception,)):
+            try:
+                return func()
+            except exceptions:
+                return default
+
+        inp = sys.stdin.read()
+        ait = iter(sys.argv[1:])
+        cnv = lambda x: try_or(lambda: json.loads(x), default=x)
+        var = {k: cnv(v) for k, v in zip(ait, ait)}
+
+        abs = lambda x: os.path.abspath(os.path.expanduser(x))
+        env = Environment(loader=BaseLoader(), trim_blocks=True, lstrip_blocks=True)
+        env.filters['abspath'] = abs
+
+        tpl = env.from_string(inp)
+        str = tpl.render(**var)
+        print(str)
+    EOF
+    echo -n "$template" | python -c "$script" "${params[@]}"
+}
+
+image_info_debian() {
+    local -n result="$1"
+
+    local source
+    source=$(curl -sS "https://sources.debian.org/api/src/base-files/")
+
+    local codename version
+    IFS=$'\n' read -r -d '' codename version < <(
+        jq -r '
+          [.versions[] | select(any(.suites[]; index("sid")) | not)]
+            | first
+            | .suites[0], (.version | match("\\d+") | .string)
+        ' <<<"$source"
+    ) || true
+
+    local url="https://cloud.debian.org/images/cloud/$codename/latest/debian-$version-generic-amd64.qcow2"
+
+    result["distro"]="debian"
+    result["codename"]="$codename"
+    result["version"]="$version"
+    result["url"]="$url"
+}
+
+image_info_ubuntu() {
+    local -n result="$1"
+
+    local source
+    source=$(curl -sS "https://cloud-images.ubuntu.com/releases/streams/v1/com.ubuntu.cloud:released:download.json")
+
+    local codename version
+    IFS=$'\n' read -r -d '' codename version < <(
+        jq -r '
+          [.products | values[] | select(.arch == "amd64" and (.release_title | contains("LTS")))]
+            | sort_by(.version | split(".") | map(tonumber))
+            | reverse
+            | first
+            | .release, .version
+        ' <<<"$source"
+    ) || true
+
+    local url="https://cloud-images.ubuntu.com/releases/$codename/release/ubuntu-$version-server-cloudimg-amd64.img"
+
+    result["distro"]="ubuntu"
+    result["codename"]="$codename"
+    result["version"]="$version"
+    result["url"]="$url"
+}
+
+image_info_fedora() {
+    local -n result="$1"
+
+    local source
+    source=$(curl -sS "https://fedoraproject.org/releases.json")
+
+    local version url
+    IFS=$'\n' read -r -d '' version url < <(
+        jq -r '
+          [.[]
+            | select(.arch == "x86_64"
+                 and .variant == "Cloud"
+                 and .subvariant == "Cloud_Base"
+                 and (.link | endswith(".qcow2"))
+                 and (.version | contains("Beta") | not))
+          ] | sort_by(.version)
+            | reverse
+            | first
+            | .version, .link
+        ' <<<"$source"
+    ) || true
+
+    result["distro"]="fedora"
+    result["version"]="$version"
+    result["url"]="$url"
+}
+
+image_info_almalinux() {
+    local -n result="$1"
+
+    local source
+    source=$(curl -sS "https://raw.githubusercontent.com/AlmaLinux/mirrors/refs/heads/master/config.yml")
+
+    local version
+    IFS=$'\n' read -r -d '' version < <(
+        yq -r '.versions | reverse | .[0] | match("\\d+") | .string' <<<"$source"
+    ) || true
+
+    local url="https://repo.almalinux.org/almalinux/$version/cloud/x86_64/images/AlmaLinux-$version-GenericCloud-latest.x86_64.qcow2"
+
+    result["distro"]="almalinux"
+    result["version"]="$version"
+    result["url"]="$url"
+}
+
+image_info_archlinux() {
+    local -n result="$1"
+
+    local url="https://geo.mirror.pkgbuild.com/images/latest/Arch-Linux-x86_64-cloudimg.qcow2"
+    result["distro"]="archlinux"
+    result["url"]="$url"
+}
+
+image_name() {
+    local -n __info="$1"
+    local identifiers=(${__info["distro"]} ${__info["version"]:-})
+    local name=$(join_by "-" "${identifiers[@]}")
+    echo "${name}"
+}
+
+image_data_dir() {
+    echo "$data_dir/images"
+}
+
+image_extension="img"
+
+image_path() {
+    local name="$1"
+    local image_data_dir="$(image_data_dir)"
+    echo "$image_data_dir/$name.$image_extension"
+}
+
+image_info() {
+    local -n _info="$1"
+    local distro="$2"
+
+    case "$distro" in
+        debian)
+            image_info_debian _info
+            ;;
+        ubuntu)
+            image_info_ubuntu _info
+            ;;
+        fedora)
+            image_info_fedora _info
+            ;;
+        almalinux)
+            image_info_almalinux _info
+            ;;
+        archlinux)
+            image_info_archlinux _info
+            ;;
+        *)
+            error "unsupported distro '"$distro"'"
+            exit 1
+    esac
+}
+
+image_fetch() {
+    local distro="$1"
+    log "fetching virtual machine image for '"$distro"'"
+
+    declare -A info
+    image_info info "$distro"
+
+    local url="${info["url"]}"
+    local img_name="$(image_name info)"
+    local img_file="$(basename "$url")"
+    local src_path="$(mktemp -d /tmp/dl.XXXXXXXXXX)/$img_file"
+    local dst_path="$(image_path "$img_name")"
+
+    log "downloading '"$img_file"'"
+    curl -sS -L -o "$src_path" "$url" 
+    mkdir -p "$(dirname "$dst_path")"
+    mv "$src_path" "$dst_path"
+}
+
+image_list() {
+    local image_data_dir="$(image_data_dir)"
+    [ ! -d "$image_data_dir" ] && return 0
+    find "$image_data_dir" -mindepth 1 -maxdepth 1 -type f -name "*.$image_extension" -exec basename {} ".$image_extension" \; | sort
+}
+
+image_remove() {
+    local name="$1"
+    log "deleting virtual machine image '"$name"'"
+
+    local image_data_dir="$(image_data_dir)"
+    local image_path="$(image_path "$name")"
+    if [ ! -f "$image_path" ]; then
+        error "image file '"$image_path"' does not exist"
+        exit 1
+    fi
+
+    rm "$image_path"
+}
+
+image_latest() {
+    local distro="$1"
+
+    local images=($(image_list))
+    local matched=()
+    for image in "${images[@]}"; do
+        if [ "$distro" = "${image%%-*}" ]; then
+            matched+=("$image")
+        fi
+    done
+    matched=($(printf "%s\n" "${matched[@]}" | sort -V -r -t '-' -k2))
+
+    if [ ${#matched[@]} -ne 0 ]; then
+        echo "${matched[0]}"
+    fi
+}
+
+instance_data_dir() {
+    local name="$1"
+    echo "$data_dir/instances/$name"
+}
+
+keyfile() {
+    local name="$1"
+    local instance_data_dir="$(instance_data_dir "$name")"
+    local keyfile="$instance_data_dir/key"
+    echo "$keyfile"
+}
+
+keypair() {
+    local name="$1"
+    local keyfile="$(keyfile "$name")"
+    mkdir -p "$(dirname "$keyfile")"
+    rm -f "$keyfile"
+    ssh-keygen -q -N "" -C "" -f "$keyfile"
+    cat "$keyfile.pub"
+}
+
+cloud_init() {
+    local -n __vars="$1"
+    local cloud_init
+    define cloud_init <<'    EOF'
+        #cloud-config
+        hostname: {{ name }}
+        prefer_fqdn_over_hostname: false
+        users:
+          - default
+          - name: {{ user }}
+            sudo: "ALL=(ALL) NOPASSWD:ALL"
+            shell: /bin/bash
+            ssh_authorized_keys:
+              - {{ pubkey }}
+        power_state:
+          delay: now
+          mode: poweroff
+          message: Powering off
+          timeout: 2
+          condition: true
+    EOF
+    render "$cloud_init" __vars
+}
+
+osinfo() {
+    local image="$1"
+    echo "${image//-}"
+}
+
+launch() {
+    local name="$1"
+    local -n opts="$2"
+
+    local distro="${opts["distro"]:-"debian"}"
+    local vcpus="${opts["vcpus"]:-1}"
+    local memory="${opts["memory"]:-2048}"
+    local disk="${opts["disk"]:-"8G"}"
+    local console="${opts["console"]:-}"
+
+    log "launching virtual machine '"$name"' with $distro"
+    log "using ${vcpus} vcpus, ${memory}M memory and ${disk} disk"
+
+    local image=$(image_latest "$distro")
+    if [ -z "$image" ]; then
+        image_fetch "$distro"
+        image=$(image_latest "$distro")
+    fi
+    local image_path="$(image_path "$image")"
+    log "picked image '"$image"', located at '"$image_path"'"
+
+    local network="default"
+    if virsh -c qemu:///system -r net-list --name --inactive | grep "$network" &>/dev/null; then
+        log "starting network '"$network"'"
+        virsh -c qemu:///system net-start "$network" >/dev/null
+    fi
+    local network_bridge=$(virsh -c qemu:///system -r net-dumpxml "$network" | xmllint --xpath 'string(/network/bridge/@name)' -)
+
+    local instance_data_dir="$(instance_data_dir "$name")"
+    mkdir -p "$instance_data_dir"
+
+    local osinfo=$(osinfo "$image")
+    local pubkey=$(keypair "$name")
+
+    declare -A vars
+    vars["name"]="$name"
+    vars["user"]="user"
+    vars["pubkey"]="$pubkey"
+    local cloud_init="$(cloud_init vars)"
+
+    local volume="$name.qcow2"
+    local volume_pool="default"
+    for pool in $(virsh pool-list --all --name); do
+        local pool_path=$(virsh pool-dumpxml "$pool" --xpath '//target/path/text()' | head -n 1)
+        if [[ "$pool_path" =~ ^${XDG_DATA_HOME:-$HOME/.local/share} ]]; then
+            volume_pool="$pool"
+            break
+        fi
+    done
+    if virsh vol-info --pool "$volume_pool" "$volume" &>/dev/null; then
+        error "volume '"$volume"' already exists"
+        exit 1
+    fi
+    log "creating volume '"$volume"' from image '"$image_path"' in pool '$volume_pool'"
+    virsh vol-create-as --pool "$volume_pool" "$volume" "$disk" --format qcow2 --prealloc-metadata >/dev/null
+    virsh vol-upload --pool "$volume_pool" "$volume" "$image_path" >/dev/null
+
+    local virt_install_args=()
+    if [ ! -z "$console" ]; then
+        virt_install_args+=("--autoconsole" "text")
+    else
+        virt_install_args+=("--noautoconsole" "--wait")
+    fi
+
+    local ret=0
+    virt-install \
+        --name "$name" \
+        --vcpus "$vcpus" \
+        --memory "$memory" \
+        --disk "vol=$volume_pool/$volume" \
+        --network "bridge=$network_bridge" \
+        --osinfo "$osinfo" \
+        --cloud-init user-data=<(echo "$cloud_init"),meta-data=<(echo ""),disable=on \
+        "${virt_install_args[@]}" || ret=$?
+
+    if [ $ret -ne 0 ]; then
+        log "launch unsuccessful, cleaning up"
+        virsh vol-delete --pool "$volume_pool" "$volume" >/dev/null
+        rm -rf "$instance_data_dir"
+    fi
+}
+
+list() {
+    virsh list --all --name | sed '/^$/d'
+}
+
+start() {
+    local name="$1"
+
+    log "starting virtual machine '"$name"'"
+    virsh start "$name"
+}
+
+stop() {
+    local name="$1"
+
+    log "stopping virtual machine '$name'"
+    virsh destroy "$name" >/dev/null
+}
+
+delete() {
+    local name="$1"
+
+    local instance_data_dir="$(instance_data_dir "$name")"
+    rm -rf "$instance_data_dir"
+
+    if virsh list --name --state-running | grep -w "$name" >/dev/null; then
+        stop "$name"
+    fi
+    log "deleting virtual machine '"$name"'"
+    virsh undefine "$name" \
+        --managed-save \
+        --remove-all-storage \
+        --snapshots-metadata \
+        --checkpoints-metadata \
+        --nvram \
+        --tpm
+}
+
+console() {
+    local name="$1"
+    virsh console "$name"
+}
+
+shell() {
+    local name="$1"
+    local args=("${@:2}")
+
+    local keyfile="$(keyfile "$name")"
+    ssh \
+        -i "$keyfile" \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        -o LogLevel=error \
+        user@$name "${args[@]}"
+}
+
+sshconf() {
+    local name="$1"
+    local keyfile="$(keyfile "$name")"
+
+    declare -A vars
+    vars["name"]="$name"
+    vars["user"]="user"
+    vars["key"]=$(echo "$keyfile" | sed "s|$HOME|~|")
+
+    local sshconf
+    define sshconf <<'    EOF'
+        Host {{ name }}
+        User {{ user }}
+        IdentityFile {{ key }}
+        StrictHostKeyChecking no
+        UserKnownHostsFile /dev/null
+        LogLevel "error"
+    EOF
+    render "$sshconf" vars
+}
+
+snapshot_current_index() {
+    local name="$1"
+    local snapshot="$(virsh snapshot-current --name "$name" 2>/dev/null)"
+    echo "${snapshot#*-}"
+}
+
+snapshot() {
+    local name="$1"
+
+    if virsh list --name --state-running | grep -w "$name" >/dev/null; then
+        error "cannot take snapshot while virtual machine is running"
+        exit 1
+    fi
+
+    log "taking snapshot of virtual machine '"$name"'"
+    local prev_index="$(snapshot_current_index "$name")"
+    local next_index="$(( ${prev_index:=0} + 1 ))"
+    virsh snapshot-create-as "$name" "$name-$next_index"
+}
+
+rollback() {
+    local name="$1"
+
+    if virsh list --name --state-running | grep -w "$name" >/dev/null; then
+        error "cannot rollback while virtual machine is running"
+        exit 1
+    fi
+
+    log "rolling back virtual machine '"$name"'"
+    virsh snapshot-revert "$name" --current
+    virsh snapshot-delete "$name" --current
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            launch*)
+                echo "$help_launch"
+                ;;
+            image*)
+                echo "$help_image"
+                ;;
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        launch)
+            local name="${args["name"]}"
+            launch "$name" args
+            ;;
+        image)
+            case "${cmd[1]}" in
+                fetch)
+                    local distro="${args["distro"]}"
+                    image_fetch "$distro"
+                    ;;
+                list)
+                    image_list
+                    ;;
+                remove)
+                    local name="${args["name"]}"
+                    image_remove "$name"
+                    ;;
+            esac
+            ;;
+        list)
+            list
+            ;;
+        start)
+            local name="${args["name"]}"
+            start "$name"
+            ;;
+        stop)
+            local name="${args["name"]}"
+            stop "$name"
+            ;;
+        delete)
+            local name="${args["name"]}"
+            delete "$name"
+            ;;
+        console)
+            local name="${args["name"]}"
+            console "$name"
+            ;;
+        shell)
+            local name="${args["name"]}"
+            local -a rest="(${args["rest"]})"
+            shell "$name" "${rest[@]}"
+            ;;
+        sshconf)
+            local name="${args["name"]}"
+            sshconf "$name"
+            ;;
+        snapshot)
+            local name="${args["name"]}"
+            snapshot "$name"
+            ;;
+        rollback)
+            local name="${args["name"]}"
+            rollback "$name"
+            ;;
+    esac
+}
+
+main "$@"
