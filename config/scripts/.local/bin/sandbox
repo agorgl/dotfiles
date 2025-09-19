@@ -1,0 +1,457 @@
+#!/bin/bash
+set -eu
+
+help="\
+Sandbox applications
+
+Usage:
+  $(basename $0) <command> [options] [arguments]
+
+Commands:
+  init             create a new sandbox
+  run   <cmdline>  run program inside sandbox
+  enter            spawn a shell inside the sandbox
+
+Options:
+  --prefix         use sandbox in given directory
+  --extra-opts     extra bubblewrap options to use
+  --pty            open pseudoterminal before running command
+  -q, --quiet      suppress log messages
+  -h, --help       display current help message
+"
+
+sandbox_dir=".sandbox"
+
+cli_parse_command() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local cmd=""
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                skipped+=("$item")
+                ;;
+            *)
+                cmd="$item"
+                break
+                ;;
+        esac
+        shift
+    done
+
+    if [ -z "${cmd:-}" ]; then
+        _result["error"]="missing command"
+        return
+    fi
+    shift
+
+    if [[ ! "$cmd" =~ ^$spec$ ]]; then
+        _result["error"]="unexpected command '$cmd'"
+        return
+    fi
+
+    cmd=(${_result["command"]:-} "$cmd")
+    _result["command"]="${cmd[@]}"
+    _args=("${skipped[@]}" "$@")
+}
+
+cli_parse_opt_args() {
+    local -n __result="$1"
+    local -n __value="$2"
+    local name="$3"
+    local nargs="$4"
+    shift 4
+
+    local optargs=()
+    while [ $# -gt 0 ] && [ ${#optargs[@]} -lt $nargs ]; do
+        optargs+=("$1")
+        shift
+    done
+
+    if [ ${#optargs[@]} -ne $nargs ]; then
+        __result["error"]="missing required argument for option '$name'"
+        return
+    fi
+
+    __value="${optargs[@]}"
+}
+
+cli_parse_opts() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    local skipped=()
+    while [ $# -gt 0 ]; do
+        local item="$1"
+        case "$item" in
+            -*|--*)
+                local found=false
+                for ref in "${_spec[@]}"; do
+                    local -n optspec="$ref"
+                    local name="${optspec[0]}"
+                    local patt="${optspec[1]}"
+
+                    if [[ "$item" =~ ^$patt$ ]]; then
+                        local nargs="${optspec[2]:=0}"
+                        shift
+
+                        local value=true
+                        if [ $nargs -ne 0 ]; then
+                            cli_parse_opt_args _result value "$name" $nargs "$@"
+                            [ ! -z "${_result["error"]:-}" ] && return 0
+                            shift $nargs
+                        fi
+                        _result["$name"]="$value"
+
+                        found=true
+                        break
+                    fi
+                done
+
+                if [ "$found" = false ]; then
+                    skipped+=("$@")
+                    break
+                fi
+                ;;
+            *)
+                skipped+=("$item")
+                shift
+                ;;
+        esac
+    done
+
+    _args=("${skipped[@]}")
+}
+
+cli_parse_args() {
+    local -n _result="$1"
+    local -n _args="$2"
+    local -n _spec="$3"
+    shift 3
+
+    set -- "${_args[@]}"
+    for arg in "${_spec[@]}"; do
+        if [ "$arg" = "..." ]; then
+            _args=("$@")
+            return
+        fi
+        if [ $# -eq 0 ]; then
+            _result["error"]="missing argument '$arg'"
+            return
+        fi
+        _result["$arg"]="$1"
+        shift
+    done
+
+    if [ $# -ne 0 ]; then
+        _result["error"]="unexpected argument '$1'"
+        return
+    fi
+    _args=("$@")
+}
+
+cli_parse() {
+    local -n result="$1"
+    shift
+    declare -a rest=("$@")
+
+    local help_opt=("help" "(-h|--help)")
+    local quiet_opt=("quiet" "(-q|--quiet)")
+    local prefix_opt=("prefix" "(--prefix)" 1)
+    local extra_opts_opt=("extra_opts" "(--extra-opts)" 1)
+    local pty_opt=("pty" "(--pty)")
+    local opts_spec=(help_opt quiet_opt prefix_opt extra_opts_opt pty_opt)
+    cli_parse_opts result rest opts_spec
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    cli_parse_command result rest "(init|run|enter)"
+    [ ! -z "${result["error"]:-}" ] && return 0
+
+    local cmd="${result["command"]}"
+    local varargs=false
+    case "$cmd" in
+        init)
+            ;;
+        run)
+            local args_spec=("...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        enter)
+            ;;
+    esac
+
+    if [ ${#rest[@]} -ne 0 ] && [ "$varargs" = false ]; then
+        local item="${rest[0]}"
+        local type
+        case "$item" in
+            -*|--*)
+                type="option"
+                ;;
+            *)
+                type="argument"
+                ;;
+        esac
+        result["error"]="unexpected $type '$item'"
+        return
+    fi
+    result["rest"]="${rest[@]@Q}"
+}
+
+join_by() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+
+log() {
+    local callstack=("${FUNCNAME[@]}")
+    callstack=($(printf "%s\n" "${callstack[@]}" | tac | tr "\n" " "; echo))
+    callstack=("$(basename $0)" "${callstack[@]:2}")
+    unset callstack[-1]
+
+    local prefix=$(join_by ": " "${callstack[@]}")
+    echo "$prefix: $@"
+}
+
+error() { echo "error: $@" >&2; }
+
+sandbox() {
+    local path="$(pwd)"
+    while [ ! -z "$path" ] && [ ! -e "$path/$sandbox_dir" ]; do
+        path="${path%/*}"
+    done
+    echo "$path"
+}
+
+init() {
+    local -n opts="$1"
+
+    local prefix="${opts["prefix"]:-}"
+    local sandbox="${prefix:-"$(pwd)"}"
+    local -a extra_opts="(${opts["extra_opts"]:-})"
+
+    if [ -d "$sandbox/$sandbox_dir" ]; then
+        error "sandbox directory already exists in '"$sandbox/$sandbox_dir"'"
+        exit 1
+    fi
+
+    log "initializing sandbox in '"$sandbox"'"
+    mkdir -p "$sandbox/$sandbox_dir"
+    if [ ${#extra_opts[@]} -ne 0 ]; then
+        echo "${extra_opts[@]@Q}" > "$sandbox/$sandbox_dir/extra-opts"
+    fi
+}
+
+run() {
+    local -n opts="$1"
+    local cmdline=("${@:2}")
+
+    local prefix="${opts["prefix"]:-}"
+    local sandbox="${prefix:-"$(sandbox)"}"
+    if [ ! -d "$sandbox" ]; then
+        error "sandbox directory not found"
+        exit 1
+    fi
+    log "using sandbox in '"$sandbox"'"
+
+    local extra_opts_file="$sandbox/$sandbox_dir/extra-opts"
+    local extra_opts_saved=()
+    if [ -f "$extra_opts_file" ]; then
+        local -a extra_opts_saved="($(cat "$extra_opts_file"))"
+    fi
+
+    local extra_opts_cmdline=()
+    if [ ! -z "${opts["extra_opts"]:-}" ]; then
+        local -a extra_opts_cmdline="(${opts["extra_opts"]})"
+    fi
+
+    local extra_opts=("${extra_opts_saved[@]}" "${extra_opts_cmdline[@]}")
+    local pty="${opts["pty"]:-}"
+
+    local host="sandbox"
+    local uid=$(id -u $USER)
+    local gid=$(id -g $USER)
+    local user="user"
+    local home="/home/$user"
+    local shell="/bin/bash"
+    local cwd="$(pwd | sed -e "s|^$sandbox|$home|" -e "s|^$HOME|$home|")"
+
+    local xdg_config_home="$home/.config"
+    local xdg_cache_home="$home/.cache"
+    local xdg_data_home="$home/.local/share"
+    local xdg_state_home="$home/.local/state"
+    local xdg_runtime_dir="/run/user/$uid"
+
+    exec 10< <(echo "$user:x:$uid:$gid::$home:$shell")
+    exec 11< <(echo "$user:x:$gid:")
+    exec 12< <(echo "$host")
+    exec 13< <(echo "127.0.0.1	localhost $host")
+
+    local base_opts=(
+        --unshare-all
+        --unshare-user
+        --share-net
+        --disable-userns
+        --new-session
+        --die-with-parent
+        --hostname "$host"
+        --clearenv
+        --setenv USER "$user"
+        --setenv HOME "$home"
+        --setenv SHELL "$shell"
+        --setenv LANG "$LANG"
+        --setenv PATH "/usr/bin"
+        --setenv TERM "xterm-256color"
+        --setenv PS1 "\u@\h:\w\$ "
+        --setenv XDG_CONFIG_HOME "$xdg_config_home"
+        --setenv XDG_CACHE_HOME "$xdg_cache_home"
+        --setenv XDG_DATA_HOME "$xdg_data_home"
+        --setenv XDG_STATE_HOME "$xdg_state_home"
+        --setenv XDG_RUNTIME_DIR "$xdg_runtime_dir"
+        --proc /proc
+        --dev /dev
+        --tmpfs /tmp
+        --ro-bind /usr/bin /usr/bin
+        --symlink /usr/bin /usr/sbin
+        --ro-bind /usr/lib /usr/lib
+        --symlink /usr/lib /usr/lib64
+        --ro-bind /usr/share /usr/share
+        --symlink /usr/bin /bin
+        --symlink /usr/bin /sbin
+        --symlink /usr/lib /lib
+        --symlink /usr/lib /lib64
+        --ro-bind-data 10 /etc/passwd
+        --ro-bind-data 11 /etc/group
+        --ro-bind-data 12 /etc/hostname
+        --ro-bind-data 13 /etc/hosts
+        --ro-bind /etc/localtime /etc/localtime
+        --ro-bind /etc/resolv.conf /etc/resolv.conf
+        --ro-bind /etc/ssl/certs /etc/ssl/certs
+        --ro-bind /etc/ca-certificates /etc/ca-certificates
+        --bind "$sandbox" "$home"
+        --bind "$sandbox" "/sandbox"
+        --chdir "$cwd"
+    )
+
+    local profile_opts=()
+
+    if [ ! -z "${DISPLAY:-}" ]; then
+        local xauth_cookie="$(xauth list $DISPLAY | awk '{print $NF}')"
+        cp "$HOME/.Xauthority" "$sandbox/.Xauthority"
+        xauth -f "$sandbox/.Xauthority" remove "$(uname -n)/unix:0"
+        xauth -f "$sandbox/.Xauthority" add "$host/unix:0" . "$xauth_cookie"
+
+        profile_opts+=(
+            --setenv DISPLAY "$DISPLAY"
+            --setenv XAUTHORITY "$home/.Xauthority"
+            --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0
+            #--ro-bind "$HOME/.Xauthority" "$home/.Xauthority"
+        )
+    fi
+
+    if [ ! -z "${WAYLAND_DISPLAY:-}" ]; then
+        profile_opts+=(
+            --setenv WAYLAND_DISPLAY "$WAYLAND_DISPLAY"
+            --ro-bind "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$xdg_runtime_dir/$WAYLAND_DISPLAY"
+        )
+    fi
+
+    profile_opts+=(
+        --setenv XDG_SESSION_TYPE "$XDG_SESSION_TYPE"
+        --ro-bind /etc/fonts /etc/fonts
+    )
+
+    profile_opts+=(
+        --ro-bind /sys/devices/system/cpu /sys/devices/system/cpu
+        --ro-bind /sys/dev/char /sys/dev/char
+        --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00
+        --dev-bind /dev/dri /dev/dri
+    )
+
+    profile_opts+=(
+        --ro-bind /sys/class/input /sys/class/input
+        --ro-bind /sys/class/hidraw /sys/class/hidraw
+        --dev-bind /dev/input /dev/input
+    )
+
+    profile_opts+=(
+        --ro-bind "$XDG_RUNTIME_DIR/pipewire-0" "$xdg_runtime_dir/pipewire-0"
+        --ro-bind "$XDG_RUNTIME_DIR/pulse/native" "$xdg_runtime_dir/pulse/native"
+        --ro-bind "$HOME/.config/pulse/cookie" "$home/.config/pulse/cookie"
+    )
+
+    local pty_args=()
+    if [ "$pty" = true ]; then
+        pty_args=(python3 -c "import sys; import pty; pty.spawn(sys.argv[1:])")
+    fi
+
+    log "running [$(join_by ", " "${cmdline[@]@Q}")] in sandbox"
+    bwrap \
+        "${base_opts[@]}" \
+        "${profile_opts[@]}" \
+        "${extra_opts[@]}" \
+        "${pty_args[@]}" \
+        "${cmdline[@]}"
+}
+
+enter() {
+    local -n _opts="$1"
+    _opts["pty"]=true
+    run _opts /bin/bash
+}
+
+main() {
+    declare -A args
+    cli_parse args "$@"
+
+    [ $# -eq 0 ] && args["help"]=true
+    if [ ! -z "${args["help"]:-}" ]; then
+        case "${args["command"]:-}" in
+            *)
+                echo "$help"
+                ;;
+        esac
+        exit 0
+    fi
+
+    local error="${args["error"]:-}"
+    if [ ! -z "$error" ]; then
+        local cmd=("$(basename "$0")" ${args["command"]:-})
+        echo "error: $error" >&2
+        echo "see '"${cmd[@]}" --help' for more information" >&2
+        exit 1
+    fi
+
+    local quiet=${args["quiet"]:-}
+    if [ "$quiet" = true ]; then
+        log() { :; }
+    fi
+
+    local cmd=(${args["command"]})
+    case "${cmd[0]}" in
+        init)
+            init args
+            ;;
+        run)
+            local -a rest="(${args["rest"]})"
+            run args "${rest[@]}"
+            ;;
+        enter)
+            enter args
+            ;;
+    esac
+}
+
+main "$@"
