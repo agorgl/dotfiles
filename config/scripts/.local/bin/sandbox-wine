@@ -1,0 +1,61 @@
+#!/bin/bash
+set -eu
+
+# prevent this file from being called recursively
+unset WINELOADER
+
+args=("$@")
+dpi="$(xrdb -query | awk '/Xft.dpi:/{print $2}')"
+
+sandbox="${WINEPREFIX:-$(pwd)}"
+while [ ! -z "$sandbox" ] && [ ! -e "$sandbox/.sandbox" ]; do
+    sandbox="${sandbox%/*}"
+done
+
+read -r -d '' WINE_INIT << EOF || :
+wineboot --init
+wine --version
+wine reg add 'HKEY_LOCAL_MACHINE\System\CurrentControlSet\Hardware Profiles\Current\Software\Fonts' /v LogPixels /t REG_DWORD /d $dpi /f
+EOF
+
+case "${1:-}" in
+    --version)
+        sandbox run --prefix "$sandbox" -q wine --version
+        exit $?
+        ;;
+    --init)
+        sandbox init "${@:2}"
+        sandbox="$(pwd)"
+        cmdline="$WINE_INIT"
+        ;;
+    *)
+        if [ -d "$sandbox" ]; then
+            for i in "${!args[@]}"; do
+                arg="${args["$i"]}"
+                if [[ "$arg" =~ ^$sandbox ]]; then
+                    args["$i"]="${arg/"$sandbox"/"/home/user"}"
+                fi
+            done
+            unset i arg
+        fi
+
+        cmdline="wine ${args[*]@Q}"
+        ;;
+esac
+
+read -r -d '' WINE_WRAPPER << EOF || :
+set -x
+
+export WINEDLLOVERRIDES="mscoree,mshtml="
+
+mkdir -p \$HOME/.wine
+wineserver -p
+
+$cmdline
+ret=\$?
+
+wineserver -k
+exit \$ret
+EOF
+
+exec sandbox run --prefix "$sandbox" /bin/bash <(echo "$WINE_WRAPPER")
