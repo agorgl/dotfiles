@@ -64,7 +64,7 @@ xorg-xwayland
 
 # desktop
 dunst
-rofi-wayland
+rofi
 xdg-desktop-portal
 xdg-desktop-portal-gtk
 xdg-desktop-portal-wlr
