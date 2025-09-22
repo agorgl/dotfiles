@@ -526,6 +526,7 @@ refresh() {
             error "authorization file '$authorization' does not exist"
             exit 1
         fi
+        authorization="$(cat "$1")"
     fi
 
     local configuration_url=$(echo -n "$authorization" | jq -r '.configuration_url')
@@ -572,6 +573,7 @@ access() {
             error "authorization file '$authorization' does not exist"
             exit 1
         fi
+        authorization="$(cat "$1")"
     fi
 
     log "fetching access token"
