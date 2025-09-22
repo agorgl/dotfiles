@@ -638,6 +638,14 @@ osinfo() {
     echo "${image//-}"
 }
 
+network_start() {
+    local network="$1"
+    if virsh -c qemu:///system -r net-list --name --inactive | grep "$network" &>/dev/null; then
+        log "starting network '"$network"'"
+        virsh -c qemu:///system net-start "$network" >/dev/null
+    fi
+}
+
 launch() {
     local name="$1"
     local -n opts="$2"
@@ -660,10 +668,7 @@ launch() {
     log "picked image '"$image"', located at '"$image_path"'"
 
     local network="default"
-    if virsh -c qemu:///system -r net-list --name --inactive | grep "$network" &>/dev/null; then
-        log "starting network '"$network"'"
-        virsh -c qemu:///system net-start "$network" >/dev/null
-    fi
+    network_start "$network"
     local network_bridge=$(virsh -c qemu:///system -r net-dumpxml "$network" | xmllint --xpath 'string(/network/bridge/@name)' -)
 
     local instance_data_dir="$(instance_data_dir "$name")"
@@ -726,6 +731,9 @@ list() {
 
 start() {
     local name="$1"
+
+    local network="default"
+    network_start "$network"
 
     log "starting virtual machine '"$name"'"
     virsh start "$name"
