@@ -61,6 +61,8 @@ alternative_order text/plain text/enriched text/html
 
 ## Compose
 
+# set which editor is used
+set editor = ~/.config/mutt/scripts/editor
 # enable the message preview feature
 set compose_show_preview = yes
 # generate "format=flowed" bodies with a content type of "text/plain; format=flowed"
