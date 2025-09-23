@@ -1,0 +1,6 @@
+#!/bin/sh
+
+background=$(ansictl color query background)
+trap "ansictl color set background '$background'" EXIT
+
+"${EDITOR:-nvim}" "$@"
