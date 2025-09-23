@@ -1,0 +1,67 @@
+#
+# mutt/options
+#
+
+## General
+
+# menus will be scrolled up or down one line when you attempt to move across a screen boundary
+set menu_scroll = yes
+
+## Index
+
+# how to sort messages in the “index” menu
+set sort = "reverse-date"
+# enable threaded view where roots appear above children
+set use_threads = yes
+# calculate message statistics of a mailbox
+set mail_check_stats = yes
+# format of the date printed by the “%d” sequence in $index_format
+set date_format = "%d/%m/%Y %H:%M"
+# customize chars that indicate where mail is being addressed (not-in-list, unique, to, cc, originator, subscribed-list, reply-to)
+set to_chars = "󰀒󰋜󰑚"
+# customize chars used in cryptography flags (good-sign, encrypted, signed, contains-key, no-crypto)
+set crypt_chars = " "
+# customize chars used in mail flags (tagged, important, deleted, deleted-attach, replied, old, new, old-thread, new-thread, sempty, zempty)
+set flag_chars = "      "
+# customize chars used mailbox status (unchanged, changed-needs-sync, read-only, attach-message-mode)
+set status_chars = " 󰁦"
+# customize the message index display
+set index_format = " %zs %zc %zt  %[%d %b %y %H:%M]  %-20.20L  • %s %<M?(%M)>"
+# customize the the status line displayed in the index menu
+set status_format = " %D%<r? %r> %> %<M?%M results for \"%V\" (%L)&%<p?%p postponed>%<p?%<t? / &%<d? / >>>%<t?%t tagged>%<d?%<t? / >>%<d?%d deleted>  • %<u?%u unread / >%m total%<l? (%l)>> "
+
+## Pager
+
+# do not move to the next message when you are at the end of a message
+set pager_stop = yes
+# do not display '+' markers in the beggining of wrapped lines
+set markers = no
+# set the number of lines of the mini-index which is shown when in the pager
+set pager_index_lines = 10
+
+## Sidebar
+
+# set whether or not to show sidebar
+set sidebar_visible = yes
+# customize the sidebar display
+set sidebar_format = "%B %<N?(%N)> %> [%S]"
+# shorten the mailbox names relative to the previous name
+set sidebar_short_path = yes
+# indent the mailbox path if it is abbreviated
+set sidebar_folder_indent = yes
+
+## Preview
+
+# set list of colon-separated files to consult when attempting to display MIME bodies
+set mailcap_path = ~/.config/mutt/mailcap
+# set content-types that you wish to view automatically
+auto_view text/html
+# set list to determine if one of the available types is preferred
+alternative_order text/plain text/enriched text/html
+
+## Compose
+
+# enable the message preview feature
+set compose_show_preview = yes
+# generate "format=flowed" bodies with a content type of "text/plain; format=flowed"
+set text_flowed = yes

@@ -1,0 +1,8 @@
+#
+# mutt/muttrc
+#
+
+source `echo $XDG_CONFIG_HOME/mail/$MAIL/muttrc`
+source options
+source mappings
+source theme

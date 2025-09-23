@@ -1,0 +1,47 @@
+#
+# mutt/colors/nord
+#
+
+# Nord palette
+set my_nord0  = "#2E3440"
+set my_nord1  = "#3B4252"
+set my_nord2  = "#434C5E"
+set my_nord3  = "#4C566A"
+set my_nord4  = "#D8DEE9"
+set my_nord5  = "#E5E9F0"
+set my_nord6  = "#ECEFF4"
+set my_nord7  = "#8FBCBB"
+set my_nord8  = "#88C0D0"
+set my_nord9  = "#81A1C1"
+set my_nord10 = "#5E81AC"
+set my_nord11 = "#BF616A"
+set my_nord12 = "#D08770"
+set my_nord13 = "#EBCB8B"
+set my_nord14 = "#A3BE8C"
+set my_nord15 = "#B48EAD"
+
+set my_dark0  = $my_nord0
+set my_dark1  = $my_nord1
+set my_dark2  = $my_nord2
+set my_dark3  = $my_nord3
+
+set my_light0 = $my_nord4
+set my_light1 = $my_nord5
+set my_light2 = $my_nord6
+
+set my_blue0  = $my_nord7
+set my_blue1  = $my_nord8
+set my_blue2  = $my_nord9
+set my_blue3  = $my_nord10
+
+set my_red    = $my_nord11
+set my_orange = $my_nord12
+set my_yellow = $my_nord13
+set my_green  = $my_nord14
+set my_purple = $my_nord15
+
+set my_blue   = $my_blue3
+set my_aqua   = $my_blue1
+
+set my_bg     = $my_dark0
+set my_fg     = $my_light0

@@ -1,0 +1,60 @@
+#
+# mutt/colors/gruvbox
+#
+
+# Gruvbox palette
+set my_dark0_hard     = "#1D2021"
+set my_dark0          = "#282828"
+set my_dark0_soft     = "#32302F"
+set my_dark1          = "#3C3836"
+set my_dark2          = "#504945"
+set my_dark3          = "#665C54"
+set my_dark4          = "#7C6F64"
+set my_dark4_256      = "#7C6F64"
+
+set my_gray_245       = "#928374"
+set my_gray_244       = "#928374"
+
+set my_light0_hard    = "#F9F5D7"
+set my_light0         = "#FBF1C7"
+set my_light0_soft    = "#F2E5BC"
+set my_light1         = "#EBDBB2"
+set my_light2         = "#D5C4A1"
+set my_light3         = "#BDAE93"
+set my_light4         = "#A89984"
+set my_light4_256     = "#A89984"
+
+set my_bright_red     = "#FB4934"
+set my_bright_green   = "#B8BB26"
+set my_bright_yellow  = "#FABD2F"
+set my_bright_blue    = "#83A598"
+set my_bright_purple  = "#D3869B"
+set my_bright_aqua    = "#8EC07C"
+set my_bright_orange  = "#FE8019"
+
+set my_neutral_red    = "#CC241D"
+set my_neutral_green  = "#98971A"
+set my_neutral_yellow = "#D79921"
+set my_neutral_blue   = "#458588"
+set my_neutral_purple = "#B16286"
+set my_neutral_aqua   = "#689D6A"
+set my_neutral_orange = "#D65D0E"
+
+set my_faded_red      = "#9D0006"
+set my_faded_green    = "#79740E"
+set my_faded_yellow   = "#B57614"
+set my_faded_blue     = "#076678"
+set my_faded_purple   = "#8F3F71"
+set my_faded_aqua     = "#427B58"
+set my_faded_orange   = "#AF3A03"
+
+set my_red            = $my_neutral_red
+set my_green          = $my_neutral_green
+set my_yellow         = $my_neutral_yellow
+set my_blue           = $my_neutral_blue
+set my_purple         = $my_neutral_purple
+set my_aqua           = $my_neutral_aqua
+set my_orange         = $my_neutral_orange
+
+set my_bg             = $my_dark0
+set my_fg             = $my_light1

@@ -1,0 +1,15 @@
+#
+# mutt/colors/reset
+#
+
+uncolor index              *
+uncolor index_flags        *
+uncolor index_date         *
+uncolor index_author       *
+uncolor index_subject      *
+uncolor sidebar_indicator
+uncolor sidebar_ordinary
+uncolor sidebar_unread
+uncolor hdrdefault
+uncolor header             *
+uncolor body               *

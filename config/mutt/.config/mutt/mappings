@@ -1,0 +1,53 @@
+#
+# mutt/mappings
+#
+
+# Replacements
+bind index D delete-thread
+bind index U undelete-thread
+bind index,pager,attach g noop
+bind index,pager,attach a group-reply
+
+# Vim like navigation
+bind generic,index j next-entry
+bind generic,index k previous-entry
+bind pager j next-line
+bind pager k previous-line
+
+bind index,attach gg first-entry
+bind index,attach G last-entry
+bind pager gg top
+bind pager G bottom
+
+bind generic,index,pager \cd half-down
+bind generic,index,pager \cu half-up
+bind generic,index,pager \cf next-page
+bind generic,index,pager \cb previous-page
+
+bind index za collapse-thread
+bind index zA collapse-all
+bind index,pager N search-opposite
+
+# Sidebar navigation
+bind index,pager B sidebar-toggle-visible
+macro index,pager \en "<sidebar-next><sidebar-open>"
+macro index,pager \ep "<sidebar-prev><sidebar-open>"
+
+# Mailbox navigation
+macro index,pager gi "<change-folder>+Inbox<enter>"
+macro index,pager ga "<change-folder>+Archive<enter>"
+macro index,pager gd "<change-folder>+Drafts<enter>"
+macro index,pager go "<change-folder>+Outbox<enter>"
+macro index,pager gs "<change-folder>+Sent<enter>"
+macro index,pager gj "<change-folder>+Spam<enter>"
+macro index,pager gt "<change-folder>+Trash<enter>"
+
+# Manually sync and index mail
+macro index S "<enter-command>echo 'Syncing mail'<enter><enter-command>set my_prev_wait_key=$wait_key<enter><enter-command>unset wait_key<enter><shell-escape>mail control $my_mail sync<enter><enter-command>set wait_key=$my_prev_wait_key<enter>"
+
+# Reload configuration
+macro index ,r "<enter-command>echo 'Reloading configuration'<enter><enter-command>source ~/.config/mutt/muttrc<enter>"
+
+# Search
+bind index,pager \\ noop
+bind index,pager \\\\ vfolder-from-query

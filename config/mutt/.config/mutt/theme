@@ -1,0 +1,64 @@
+#
+# mutt/theme
+#
+
+# Palette
+source colors/nord
+
+# General
+color normal                      $my_fg              $my_bg
+color error                       $my_red             $my_bg
+color tilde                       $my_fg              $my_bg
+color message                     $my_blue            $my_bg
+color warning                     $my_yellow          $my_bg
+color indicator           bold    $my_light2          $my_bg
+color search                      $my_bg              $my_yellow
+color status                      $my_fg              $my_dark1
+
+# Index
+color index                       $my_aqua            $my_bg              "~U"
+color index                       $my_dark3           $my_bg              "~R"
+color index               bold    $my_yellow          $my_bg              "~T"
+color index               bold    $my_red             $my_bg              "~D"
+color index_flags                 $my_blue0           $my_bg              "~U"
+color index_date                  $my_blue0           $my_bg              "~U"
+color index_author                $my_purple          $my_bg              "~U"
+
+# Sidebar
+color sidebar_indicator   bold    $my_green           $my_dark1
+color sidebar_highlight   bold    $my_green           $my_dark1
+color sidebar_unread              $my_light0          $my_bg
+color sidebar_ordinary            $my_dark3           $my_bg
+
+# Headers
+color hdrdefault          bold    $my_aqua            $my_bg
+color compose header      bold    $my_aqua            $my_bg
+color header                      $my_light1          $my_bg              "^Subject:"
+
+# Body
+color quoted                      $my_green           $my_bg
+color quoted1                     $my_blue            $my_bg
+color quoted2                     $my_purple          $my_bg
+color quoted3                     $my_yellow          $my_bg
+color quoted4                     $my_orange          $my_bg
+color quoted5                     $my_red             $my_bg
+color signature                   $my_blue2           $my_bg
+
+# Highlights
+color body                        $my_yellow          $my_bg              "(https?|ftp)://[\-\.\+,\/%~_:?&=\#a-zA-Z0-9]+"
+color body                        $my_purple          $my_bg              "[\-\.+_a-zA-Z0-9]+@[\-\.a-zA-Z0-9]+"
+
+# Crypto
+color body                        $my_blue0           $my_bg              "^gpg: Good signature from"
+color body                        $my_red             $my_bg              "^gpg: Bad signature from"
+color body                        $my_red             $my_bg              "^gpg: BAD signature from"
+color body                        $my_red             $my_bg              "^gpg: Note: This key has expired!"
+color body                        $my_yellow          $my_bg              "^gpg: WARNING: This key is not certified with a trusted signature!"
+color body                        $my_yellow          $my_bg              "^gpg:          There is no indication that the signature belongs to the owner."
+color body                        $my_yellow          $my_bg              "^gpg: can't handle these multiple signatures"
+color body                        $my_yellow          $my_bg              "^gpg: signature verification suppressed"
+color body                        $my_yellow          $my_bg              "^gpg: invalid node with packet of type"
+
+# Background
+startup-hook  "set my_prev_sleep_time=$sleep_time; set sleep_time=0; echo \`printf '\\x1b]11;$my_bg\\x07' >/dev/tty\`; set sleep_time=$my_prev_sleep_time"
+shutdown-hook "set my_prev_sleep_time=$sleep_time; set sleep_time=0; echo \`printf '\\x1b]111\\x07' >/dev/tty\`; set sleep_time=$my_prev_sleep_time"
