@@ -15,8 +15,10 @@ Commands:
   mount  <mntspec>            mount crypt(s) according to mount spec
   umount <path>               unmount crypt mounted at path
   expose <mntspec> <exec...>  expose crypt(s) to specific process
+  keygen                      generate crypt key
 
 Options:
+  --keyfile                   use given keyfile
   -h, --help                  display current help message
 "
 
@@ -173,11 +175,12 @@ cli_parse() {
     declare -a rest=("$@")
 
     local help_opt=("help" "(-h|--help)")
-    local opts_spec=(help_opt)
+    local keyfile_opt=("keyfile" "(--keyfile)" 1)
+    local opts_spec=(help_opt keyfile_opt)
     cli_parse_opts result rest opts_spec
     [ ! -z "${result["error"]:-}" ] && return 0
 
-    cli_parse_command result rest "(init|create|list|remove|mount|umount|expose)"
+    cli_parse_command result rest "(init|create|list|remove|mount|umount|expose|keygen)"
     [ ! -z "${result["error"]:-}" ] && return 0
 
     local cmd="${result["command"]}"
@@ -212,6 +215,8 @@ cli_parse() {
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
             varargs=true
+            ;;
+        keygen)
             ;;
     esac
 
@@ -274,11 +279,20 @@ decrypt() {
 }
 
 init() {
-    local path="${1:=$(pwd)}"
+    local -n opts="$1"
+    local path="${2:-$(pwd)}"
 
-    local key="$(randomkey)"
-    local keyfile="$(keyfile "$path")"
-    echo "$key" | encrypt > "$keyfile"
+    local key
+    local keyfile="${opts["keyfile"]:-}"
+    if [ ! -z "$keyfile" ]; then
+        local keydata
+        keydata="$(cat "$keyfile")"
+        key="$(echo "$keydata" | decrypt)"
+    else
+        key="$(randomkey)"
+        keyfile="$(keyfile "$path")"
+        echo "$key" | encrypt > "$keyfile"
+    fi
 
     local datadir="$(datadir "$path")"
     mkdir -p "$datadir"
@@ -293,7 +307,8 @@ named_crypt_dir() {
 }
 
 create() {
-    local name="$1"
+    local -n _opts="$1"
+    local name="$2"
     log "creating crypt '"$name"'"
 
     local named_crypt_dir="$(named_crypt_dir "$name")"
@@ -303,7 +318,7 @@ create() {
     fi
 
     mkdir -p "$named_crypt_dir"
-    init "$named_crypt_dir"
+    init _opts "$named_crypt_dir"
 }
 
 list() {
@@ -335,10 +350,19 @@ crypt_dir() {
 }
 
 mount() {
-    local mntspec="$1"
+    local -n opts="$1"
+    local mntspec="$2"
 
     local specs=()
     IFS=',' read -r -a specs <<< "$mntspec"
+
+    local key=""
+    local keyfile="${opts["keyfile"]:-}"
+    if [ ! -z "$keyfile" ]; then
+        local keydata
+        keydata="$(cat "$keyfile")"
+        key="$(echo "$keydata" | decrypt)"
+    fi
 
     for spec in "${specs[@]}"; do
         local crypt="${spec%%:*}"
@@ -351,8 +375,10 @@ mount() {
         fi
 
         local datadir="$(datadir "$crypt_dir")"
-        local keyfile="$(keyfile "$crypt_dir")"
-        local key="$(cat "$keyfile" | decrypt)"
+        if [ -z "${opts["keyfile"]:-}" ]; then
+            keyfile="$(keyfile "$crypt_dir")"
+            key="$(cat "$keyfile" | decrypt)"
+        fi
 
         log "mounting crypt '"$crypt"' to path '"$path"'"
         echo "$key" | gocryptfs -q "$datadir" "$path"
@@ -377,8 +403,9 @@ ns_enter() {
 }
 
 expose() {
-    local mntspec="$1"
-    local command=("${@:2}")
+    local -n opts="$1"
+    local mntspec="$2"
+    local command=("${@:3}")
     if [ ${#command[@]} -eq 0 ]; then
         command=("$SHELL")
     fi
@@ -401,9 +428,15 @@ expose() {
         msg="crypts [$(join_by ", " "${crypts[@]@Q}")]"
     fi
 
+    local mntargs=()
+    local keyfile="${opts["keyfile"]:-}"
+    if [ ! -z "$keyfile" ]; then
+        mntargs+=("--keyfile" "\"$keyfile\"")
+    fi
+
     log "exposing $msg to [$(join_by ", " "${command[@]@Q}")]"
     exec 3<> <(:) 4<> <(:)
-    local ns_cmd="\"$0\" mount \"$mntspec\"; ret=\$?; echo \$ret >&3; [ \$ret -eq 0 ] && read <&4"
+    local ns_cmd="\"$0\" mount \"$mntspec\" ${mntargs[@]}; ret=\$?; echo \$ret >&3; [ \$ret -eq 0 ] && read <&4"
     ns_run /bin/bash <(echo "$ns_cmd") &
     local ns_pid=$!
 
@@ -428,6 +461,10 @@ expose() {
     log "waiting for all processes to exit"
     wait
     exit ${ret:=0}
+}
+
+keygen() {
+    randomkey | encrypt
 }
 
 main() {
@@ -455,11 +492,11 @@ main() {
     local cmd=(${args["command"]})
     case "${cmd[0]}" in
         init)
-            init
+            init args
             ;;
         create)
             local name="${args["name"]}"
-            create "$name"
+            create args "$name"
             ;;
         list)
             list
@@ -470,7 +507,7 @@ main() {
             ;;
         mount)
             local mntspec="${args["mntspec"]}"
-            mount "$mntspec"
+            mount args "$mntspec"
             ;;
         umount)
             local path="${args["path"]}"
@@ -479,7 +516,10 @@ main() {
         expose)
             local mntspec="${args["mntspec"]}"
             local -a rest="(${args["rest"]})"
-            expose "$mntspec" "${rest[@]}"
+            expose args "$mntspec" "${rest[@]}"
+            ;;
+        keygen)
+            keygen
             ;;
     esac
 }
