@@ -889,8 +889,10 @@ daemon() {
     }
     trap cleanup EXIT
 
+    log "fetching password"
     export MAIL_USE_KEYRING=1
-    keyctl new_session |& prefix "keyctl"
+    keyctl new_session &>/dev/null
+    pass "$mail" >/dev/null
 
     local control="$mail_runtime_dir/control"
     (
