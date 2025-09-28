@@ -641,8 +641,11 @@ passfetch() {
     local passfetch
     define passfetch <<'    EOF'
         #!/bin/bash
-        password() { {{ 'oauth2 access' if oauth else 'pass' }} "{{ mail }}"; }
-        password
+        {% if oauth %}
+        cat ~/.local/share/oauth2/{{ mail }}/authorization | gpg --quiet --decrypt
+        {% else %}
+        pass "{{ mail }}"
+        {% endif %}
     EOF
     render "$passfetch" vars
 }
@@ -697,17 +700,47 @@ pass() {
         exit 1
     fi
 
-    password() { "$mail_config_dir/passfetch"; }
+    local auth=$(cat "$mail_config_dir/mbsyncrc" | awk '/AuthMechs/{print tolower($2); exit}')
+    log "using auth '"$auth"'" >&2
 
-    if [ ! -z ${MAIL_USE_KEYRING:-} ]; then
-        local key_name="mailpass"
-        if ! keyctl search @s user $key_name &>/dev/null; then
-            password | keyctl padd user $key_name @s >/dev/null
-        fi
-        keyctl pipe %user:$key_name
-    else
-        password
-    fi
+    case "$auth" in
+        xoauth2)
+            authorization() { "$mail_config_dir/passfetch"; }
+
+            if [ ! -z ${MAIL_USE_KEYRING:-} ]; then
+                local key_name="mailtoken"
+                if ! keyctl search @s user $key_name &>/dev/null; then
+                    authorization | keyctl padd user $key_name @s >/dev/null
+                fi
+
+                local authz=$(keyctl pipe %user:$key_name)
+                if ! echo "$authz" | oauth2 access -; then
+                    local authz=$(echo "$authz" | oauth2 refresh -)
+                    echo "$authz" | keyctl padd user $key_name @s >/dev/null
+                    echo "$authz" | oauth2 access -
+                fi
+            else
+                authorization | oauth2 refresh - | oauth2 access -
+            fi
+            ;;
+        plain)
+            password() { "$mail_config_dir/passfetch"; }
+
+            if [ ! -z ${MAIL_USE_KEYRING:-} ]; then
+                local key_name="mailpass"
+                if ! keyctl search @s user $key_name &>/dev/null; then
+                    password | keyctl padd user $key_name @s >/dev/null
+                fi
+                keyctl pipe %user:$key_name
+            else
+                password
+            fi
+            ;;
+        *)
+            error "unknown auth '"$auth"' for '"$mail"'"
+            exit 1
+            ;;
+    esac
 }
 
 mailbox() {
