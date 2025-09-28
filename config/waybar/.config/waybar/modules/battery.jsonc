@@ -9,8 +9,8 @@
     "format-alt": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {capacity}%/{power}W",
     "format-time": "{H}:{M}",
     "format-icons": {
-      "charging": "",
-      "discharging": ""
+      "charging": "",
+      "discharging": ""
     }
   }
 }

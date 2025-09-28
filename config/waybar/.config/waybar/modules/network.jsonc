@@ -9,8 +9,8 @@
     "format-wifi": "<span size=\"9pt\" rise=\"-2.3pt\">{icon}</span> {essid}",
     "format-disconnected": "",
     "format-icons": {
-      "ethernet": "",
-      "wifi": ["", "", ""]
+      "ethernet": "",
+      "wifi": ["", "", ""]
     },
     "tooltip-format": "{ipaddr}/{cidr}"
   }
