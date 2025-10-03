@@ -55,7 +55,7 @@ jdtls
 maven
 
 # javascript
-nodejs-lts
+nodejs
 npm
 typescript-language-server
 
