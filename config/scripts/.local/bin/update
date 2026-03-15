@@ -10,4 +10,5 @@ paru -Syu \
 yes | paru -Scc
 
 flatpak update
-flatpak uninstall --unused --delete-data
+flatpak uninstall --unused --delete-data -y
+flatpak uninstall --user --unused --delete-data -y
