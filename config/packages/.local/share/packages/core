@@ -101,6 +101,7 @@ xterm
 btrfs-progs
 dosfstools
 exfatprogs
+fuseiso
 mtpfs
 nfs-utils
 samba
