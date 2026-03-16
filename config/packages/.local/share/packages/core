@@ -106,6 +106,7 @@ gptfdisk
 mtpfs
 nfs-utils
 samba
+squashfs-tools
 sshfs
 
 # archives
