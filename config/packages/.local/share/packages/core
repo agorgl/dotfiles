@@ -102,6 +102,7 @@ btrfs-progs
 dosfstools
 exfatprogs
 fuseiso
+gptfdisk
 mtpfs
 nfs-utils
 samba
