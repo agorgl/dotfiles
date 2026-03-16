@@ -5,7 +5,7 @@
 . ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/colors
 
 cat << EOF > "$colors_dir/colors-foot.ini"
-[colors]
+[colors-dark]
 background=${background//\#}
 foreground=${foreground//\#}
 
