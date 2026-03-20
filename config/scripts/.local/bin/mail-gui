@@ -37,7 +37,7 @@ daemon() {
     if flock -n $daemon_pid_fd; then
         flock -u $daemon_pid_fd
         log "launching mail daemon for '"$mail"'"
-        mail daemon "$mail" &>/dev/null
+        mail daemon "$mail"
     else
         log "mail daemon for '"$mail"' is already running"
     fi
