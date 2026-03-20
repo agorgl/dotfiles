@@ -11,7 +11,7 @@ lcdfilter=$(param fonts lcdfilter || echo "lcddefault")
 
 boolean_enum=("false" "true")
 
-fontconfig_local_conf_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fontconfig-local/conf.d"
+fontconfig_local_conf_dir="${XDG_CONFIG_HOME:-$HOME/.config}/fontconfig.local/conf.d"
 mkdir -p "$fontconfig_local_conf_dir"
 cat << EOF > "$fontconfig_local_conf_dir/10-settings.conf"
 <?xml version="1.0"?>
