@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Poweroff
+Exec=poweroff
+Icon=system-shutdown
+Terminal=false
+Categories=System;
