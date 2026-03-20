@@ -723,7 +723,7 @@ pass() {
                 authorization | oauth2 refresh - | oauth2 access -
             fi
             ;;
-        plain)
+        plain|login)
             password() { "$mail_config_dir/passfetch"; }
 
             if [ ! -z ${MAIL_USE_KEYRING:-} ]; then
