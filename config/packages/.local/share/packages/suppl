@@ -34,6 +34,14 @@ mesa-demos
 qbittorrent
 wireshark-qt
 
+# smartcards
+acsccid
+ccid
+fido2-hid-bridge
+libfido2
+libnfc
+pcsc-tools
+
 # theming
 arc-gtk-theme
 gnome-themes-extra
