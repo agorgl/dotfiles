@@ -300,8 +300,10 @@ run() {
     exec 13< <(echo "127.0.0.1	localhost $host")
 
     local base_opts=(
-        --unshare-all
         --unshare-user
+        --unshare-pid
+        --unshare-uts
+        --unshare-cgroup
         --share-net
         --disable-userns
         --new-session
