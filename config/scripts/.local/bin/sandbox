@@ -350,17 +350,22 @@ run() {
     local profile_opts=()
 
     if [ ! -z "${DISPLAY:-}" ]; then
-        local xauth_cookie="$(xauth list $DISPLAY | awk '{print $NF}')"
-        cp "$HOME/.Xauthority" "$sandbox/.Xauthority"
-        xauth -f "$sandbox/.Xauthority" remove "$(uname -n)/unix:0"
-        xauth -f "$sandbox/.Xauthority" add "$host/unix:0" . "$xauth_cookie"
-
         profile_opts+=(
             --setenv DISPLAY "$DISPLAY"
-            --setenv XAUTHORITY "$home/.Xauthority"
             --ro-bind /tmp/.X11-unix/X0 /tmp/.X11-unix/X0
-            #--ro-bind "$HOME/.Xauthority" "$home/.Xauthority"
         )
+
+        local xauth_cookie="$(xauth list $DISPLAY | awk '{print $NF}')"
+        if [ ! -z "$xauth_cookie" ]; then
+            cp "$HOME/.Xauthority" "$sandbox/.Xauthority"
+            xauth -f "$sandbox/.Xauthority" remove "$(uname -n)/unix:0"
+            xauth -f "$sandbox/.Xauthority" add "$host/unix:0" . "$xauth_cookie"
+
+            profile_opts+=(
+                --setenv XAUTHORITY "$home/.Xauthority"
+                #--ro-bind "$HOME/.Xauthority" "$home/.Xauthority"
+            )
+        fi
     fi
 
     if [ ! -z "${WAYLAND_DISPLAY:-}" ]; then
