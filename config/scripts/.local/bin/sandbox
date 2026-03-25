@@ -379,6 +379,7 @@ run() {
         --ro-bind /sys/devices/pci0000:00 /sys/devices/pci0000:00
         --dev-bind /dev/dri /dev/dri
         --dev-bind /dev/ntsync /dev/ntsync
+        --dev-bind /dev/shm /dev/shm
     )
 
     profile_opts+=(
