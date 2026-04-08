@@ -697,8 +697,9 @@ launch() {
         exit 1
     fi
     log "creating volume '"$volume"' from image '"$image_path"' in pool '$volume_pool'"
-    virsh vol-create-as --pool "$volume_pool" "$volume" "$disk" --format qcow2 --prealloc-metadata >/dev/null
+    virsh vol-create-as --pool "$volume_pool" "$volume" "$disk" --format qcow2 >/dev/null
     virsh vol-upload --pool "$volume_pool" "$volume" "$image_path" >/dev/null
+    virsh vol-resize --pool "$volume_pool" "$volume" "$disk" >/dev/null
 
     local virt_install_args=()
     if [ ! -z "$console" ]; then
