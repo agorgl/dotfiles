@@ -34,7 +34,6 @@ bind
 dnsmasq
 gnu-netcat
 iperf3
-iptables-nft
 mtr
 nmap
 tcpdump
