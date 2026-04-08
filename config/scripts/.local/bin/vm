@@ -623,6 +623,14 @@ cloud_init() {
             shell: /bin/bash
             ssh_authorized_keys:
               - {{ pubkey }}
+        write_files:
+          - path: /etc/serialtty
+            owner: 'root:root'
+            permissions: '0644'
+            content: |
+              /dev/ttyS0
+        runcmd:
+          - sed -i '0,/^auth/s//auth\t   sufficient\tpam_listfile.so item=tty sense=allow file=\/etc\/serialtty onerr=fail apply={{ user }}\n&/' /etc/pam.d/login
         power_state:
           delay: now
           mode: poweroff
