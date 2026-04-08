@@ -280,6 +280,13 @@ run() {
     local extra_opts=("${extra_opts_saved[@]}" "${extra_opts_cmdline[@]}")
     local pty="${opts["pty"]:-}"
 
+    local wrapper_args_file="$sandbox/$sandbox_dir/wrapper"
+    local wrapper_args_saved=()
+    if [ -f "$wrapper_args_file" ]; then
+        local -a wrapper_args_saved="($(cat "$wrapper_args_file"))"
+    fi
+    local wrapper_args=("${wrapper_args_saved[@]}")
+
     local host="sandbox"
     local uid=$(id -u $USER)
     local gid=$(id -g $USER)
@@ -412,6 +419,7 @@ run() {
         "${profile_opts[@]}" \
         "${extra_opts[@]}" \
         "${pty_args[@]}" \
+        "${wrapper_args[@]}" \
         "${cmdline[@]}"
 }
 
