@@ -58,4 +58,7 @@ wineserver -k
 exit \$ret
 EOF
 
-exec sandbox run --prefix "$sandbox" /bin/bash <(echo "$WINE_WRAPPER")
+script_path="/tmp/sandbox-init"
+exec 32< <(echo "$WINE_WRAPPER")
+
+exec sandbox run --prefix "$sandbox" --extra-opts "--ro-bind-data 32 '$script_path'" /bin/bash "$script_path"
