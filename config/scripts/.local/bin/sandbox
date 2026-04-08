@@ -408,6 +408,15 @@ run() {
         --ro-bind "$HOME/.config/pulse/cookie" "$home/.config/pulse/cookie"
     )
 
+    local render_node=$(realpath /sys/class/drm/renderD128/device/driver)
+    profile_opts+=(
+        --ro-bind "$render_node" "$render_node"
+        --ro-bind /sys/bus/pci/devices /sys/bus/pci/devices
+        --ro-bind /sys/class/drm /sys/class/drm
+        --ro-bind /sys/class/hwmon /sys/class/hwmon
+        --ro-bind /sys/class/power_supply /sys/class/power_supply
+    )
+
     local pty_args=()
     if [ "$pty" = true ]; then
         pty_args=(python3 -c "import sys; import pty; pty.spawn(sys.argv[1:])")
