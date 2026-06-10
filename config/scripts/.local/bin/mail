@@ -625,8 +625,9 @@ muttrc() {
                     -path "*/Spam/*" -o \
                     -path "*/Trash/*" \
                 \) \
-                -printf "'%h' " \
-              | sort -t/` \
+                -printf "'%h'\n" \
+              | sort -t/ \
+              | tr '\n' ' '` \
             +Spam \
             +Trash
     EOF
