@@ -256,6 +256,11 @@ cli_parse() {
         list)
             ;;
         start)
+            local console_opt=("console" "(--console)")
+            local opts_spec=(console_opt)
+            cli_parse_opts result rest opts_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+
             local args_spec=("name")
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
@@ -735,12 +740,20 @@ list() {
 
 start() {
     local name="$1"
+    local -n opts="$2"
+
+    local console="${opts["console"]:-}"
+
+    local virsh_args=()
+    if [ ! -z "$console" ]; then
+        virsh_args+=("--console")
+    fi
 
     local network="default"
     network_start "$network"
 
     log "starting virtual machine '"$name"'"
-    virsh start "$name"
+    virsh start "$name" "${virsh_args[@]}"
 }
 
 stop() {
@@ -895,7 +908,7 @@ main() {
             ;;
         start)
             local name="${args["name"]}"
-            start "$name"
+            start "$name" args
             ;;
         stop)
             local name="${args["name"]}"
