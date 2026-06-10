@@ -390,16 +390,11 @@ image_info_debian() {
     local -n result="$1"
 
     local source
-    source=$(curl -sS "https://sources.debian.org/api/src/base-files/")
+    source=$(curl -sS "https://deb.debian.org/debian/dists/stable/Release")
 
     local codename version
-    IFS=$'\n' read -r -d '' codename version < <(
-        jq -r '
-          [.versions[] | select(any(.suites[]; index("sid")) | not)]
-            | first
-            | .suites[0], (.version | match("\\d+") | .string)
-        ' <<<"$source"
-    ) || true
+    codename=$(echo "$source" | grep -Po '(?<=Codename: ).*')
+    version=$(echo "$source" | grep -Po '(?<=Version: )\d*')
 
     local url="https://cloud.debian.org/images/cloud/$codename/latest/debian-$version-generic-amd64.qcow2"
 
