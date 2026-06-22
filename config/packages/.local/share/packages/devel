@@ -48,6 +48,10 @@ perl-io-socket-ssl
 go
 gopls
 
+# janet
+janet-lang
+janet-spork
+
 # java
 jdk-openjdk
 jdtls
