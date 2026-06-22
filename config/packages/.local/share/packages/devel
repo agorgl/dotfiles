@@ -7,7 +7,6 @@ android-tools
 
 # ansible
 ansible
-ansible-language-server
 ansible-lint
 
 # c
