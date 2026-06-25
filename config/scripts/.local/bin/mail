@@ -864,8 +864,7 @@ queue() {
     local message="$(cat)"
     if [ ! -z "$message" ]; then
         local message_file="$outbox_dir/cur/$fname"
-        echo "X-Msmtp-Args: ${args[@]@Q}" >"$message_file"
-        echo "$message" >>"$message_file"
+        echo "X-Msmtp-Args: ${args[@]@Q}"$'\n'"$message" >"$message_file"
     fi
 }
 
@@ -1026,7 +1025,7 @@ daemon() {
         log "watching $mail outbox"
         while read newfile; do
             echo "deliver" > "$control"
-        done < <(inotifywait -q -m -e create "$outbox_dir/cur")
+        done < <(inotifywait -q -m -e close_write "$outbox_dir/cur")
     ) &
 
     (
