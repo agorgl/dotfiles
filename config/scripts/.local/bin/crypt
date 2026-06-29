@@ -381,7 +381,7 @@ mount() {
         fi
 
         log "mounting crypt '"$crypt"' to path '"$path"'"
-        echo "$key" | gocryptfs -q "$datadir" "$path"
+        echo "$key" | gocryptfs -q -nosyslog "$datadir" "$path"
     done
 }
 
