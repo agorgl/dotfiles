@@ -69,3 +69,8 @@ set editor = ~/.config/mutt/scripts/editor
 set compose_show_preview = yes
 # generate "format=flowed" bodies with a content type of "text/plain; format=flowed"
 set text_flowed = yes
+
+## Input
+
+# set the command to use to make external address queries
+set query_command = "echo && mail contact $my_mail %s"
