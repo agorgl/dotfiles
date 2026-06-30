@@ -21,6 +21,7 @@ Commands:
   daemon  <mail>  run mail daemon
   control <mail>  send control command to a running daemon
   client  <mail>  launch mail client
+  contact <mail>  search mail contact
 
 Options:
   -h, --help      display current help message
@@ -186,7 +187,7 @@ cli_parse() {
     cli_parse_opts result rest opts_spec
     [ ! -z "${result["error"]:-}" ] && return 0
 
-    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|send|queue|deliver|daemon|control|client)"
+    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|send|queue|deliver|daemon|control|client|contact)"
     [ ! -z "${result["error"]:-}" ] && return 0
 
     local cmd="${result["command"]}"
@@ -254,6 +255,12 @@ cli_parse() {
             varargs=true
             ;;
         client)
+            local args_spec=("mail" "...")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            varargs=true
+            ;;
+        contact)
             local args_spec=("mail" "...")
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
@@ -1100,6 +1107,20 @@ client() {
     neomutt "${args[@]}"
 }
 
+contact() {
+    local mail="$1"
+    local args=("${@:2}")
+    local term="${args[0]}"
+
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
+    notmuch --config "$mail_config_dir/notmuchrc" address from:"$term"
+}
+
 main() {
     declare -A args
     cli_parse args "$@"
@@ -1179,6 +1200,11 @@ main() {
             local mail="${args["mail"]}"
             local -a rest="(${args["rest"]})"
             client "$mail" "${rest[@]}"
+            ;;
+        contact)
+            local mail="${args["mail"]}"
+            local -a rest="(${args["rest"]})"
+            contact "$mail" "${rest[@]}"
             ;;
     esac
 }
