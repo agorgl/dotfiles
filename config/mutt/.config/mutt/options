@@ -13,6 +13,8 @@ set menu_scroll = yes
 set sort = "reverse-date"
 # enable threaded view where roots appear above children
 set use_threads = yes
+# show the subject of messages in the thread tree that have the same subject as their parent
+set hide_thread_subject = no
 # calculate message statistics of a mailbox
 set mail_check_stats = yes
 # format of the date printed by the “%d” sequence in $index_format
