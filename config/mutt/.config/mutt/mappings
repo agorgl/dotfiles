@@ -54,3 +54,4 @@ macro index ,r "<enter-command>echo 'Reloading configuration'<enter><enter-comma
 # Search
 bind index,pager \\ noop
 bind index,pager \\\\ vfolder-from-query
+bind index,pager \\t entire-thread
