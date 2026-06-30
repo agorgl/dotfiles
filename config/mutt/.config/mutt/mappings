@@ -45,6 +45,9 @@ macro index,pager gt "<change-folder>+Trash<enter>"
 # Manually sync and index mail
 macro index ,s "<enter-command>echo 'Syncing mail'<enter><enter-command>set my_prev_wait_key=$wait_key<enter><enter-command>unset wait_key<enter><shell-escape>mail control $my_mail sync<enter><enter-command>set wait_key=$my_prev_wait_key<enter>"
 
+# Manually deliver mail
+macro index ,d "<enter-command>echo 'Delivering mail'<enter><enter-command>set my_prev_wait_key=$wait_key<enter><enter-command>unset wait_key<enter><shell-escape>mail control $my_mail deliver<enter><enter-command>set wait_key=$my_prev_wait_key<enter>"
+
 # Reload configuration
 macro index ,r "<enter-command>echo 'Reloading configuration'<enter><enter-command>source ~/.config/mutt/muttrc<enter>"
 
