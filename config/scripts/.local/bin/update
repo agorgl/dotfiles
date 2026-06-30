@@ -2,7 +2,6 @@
 set -eu
 
 paru -Syu \
-  --skipreview \
   --noupgrademenu \
   --removemake \
   --cleanafter \
