@@ -436,8 +436,9 @@ expose() {
 
     cleanup() {
         log "cleaning up"
-        pkill -9 -o -P $BASHPID unshare || true
-        pkill -P $BASHPID
+        local cmd_pid=$(pgrep -o --ns $ns_init_pid --env CRYPT_COMMAND=1)
+        [ ! -z $cmd_pid ] && pidwait -p $cmd_pid || true
+        { echo >&4; } 2>/dev/null || true
     }
     trap cleanup EXIT
 
@@ -459,7 +460,7 @@ expose() {
 
     log "entering mount namespace"
     local ret=0
-    ns_enter $ns_init_pid "${command[@]}" || ret=$?
+    CRYPT_COMMAND=1 ns_enter $ns_init_pid "${command[@]}" || ret=$?
 
     for path in "${paths[@]}"; do
         ns_enter $ns_init_pid --keep-caps "$0" "umount" "$path"
