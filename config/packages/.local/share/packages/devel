@@ -49,8 +49,9 @@ go
 gopls
 
 # janet
-janet-lang
+janet
 janet-spork
+jpm
 
 # java
 jdk-openjdk
