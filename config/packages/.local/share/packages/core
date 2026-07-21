@@ -137,6 +137,7 @@ chromium
 firefox
 
 # email
+aerc
 goimapnotify
 isync
 msmtp
