@@ -347,13 +347,15 @@ mailvars() {
     local domain="${mail#*@}"
     local imap_host="imap.$domain"
     local smtp_host="smtp.$domain"
-    local oauth=false
 
+    local oauth=false
     case "$domain" in
         "gmail.com"|"outlook.com"|"hotmail.com")
             oauth=true
             ;;
     esac
+
+    local name="$(echo "$mail" | sed -r -e 's/@.*//' -e 's/\./ /g' -e 's/[^ -]*/\u&/g')"
 
     variables["mail"]="$mail"
     variables["mail_config_dir"]="$mail_config_dir"
@@ -363,6 +365,7 @@ mailvars() {
     variables["imap_host"]="$imap_host"
     variables["smtp_host"]="$smtp_host"
     variables["oauth"]="$oauth"
+    variables["name"]="$name"
 }
 
 define() {
@@ -604,7 +607,7 @@ muttrc() {
         set trash = +Trash
 
         set from = {{ mail }}
-        set realname = '{{ mail }}'
+        set realname = '{{ name }}'
         set sendmail = "mail queue {{ mail }}"
 
         set nm_config_file = "{{ mail_config_dir }}/notmuchrc"
