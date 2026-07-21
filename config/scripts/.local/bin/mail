@@ -644,6 +644,27 @@ muttrc() {
     render "$muttrc" vars
 }
 
+aercrc() {
+    local mail="$1"
+    declare -A vars
+    mailvars vars "$mail"
+
+    local aercrc
+    define aercrc <<'    EOF'
+        [Mail]
+        source = maildir://~/.local/share/mail/{{ mail }}
+        outgoing = mail queue {{ mail }}
+        default = Inbox
+        from = "{{ name }}" <{{ mail }}>
+        {% if domain != 'gmail.com' %}
+        copy-to = Sent
+        {% endif %}
+        folders-sort = Inbox,Drafts,Outbox,Sent,Archive,Spam,Trash
+        check-mail-cmd = mail control {{ mail }} sync
+    EOF
+    render "$aercrc" vars
+}
+
 passfetch() {
     local mail="$1"
     declare -A vars
@@ -677,6 +698,7 @@ add() {
     msmtprc      "$mail" > "$mail_config_dir/msmtprc"
     notmuchrc    "$mail" > "$mail_config_dir/notmuchrc"
     muttrc       "$mail" > "$mail_config_dir/muttrc"
+    aercrc       "$mail" > "$mail_config_dir/aercrc"
     passfetch    "$mail" > "$mail_config_dir/passfetch"
 
     find "$mail_config_dir" -type d -exec chmod 700 {} \;
