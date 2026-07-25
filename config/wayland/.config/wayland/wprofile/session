@@ -4,9 +4,11 @@
 
 . ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/session
 
+desktop_names=$(awk -F'=' '/DesktopNames=/{gsub(/;/,":",$2); print $2}' "/usr/share/wayland-sessions/${WAYLAND_COMPOSITOR}.desktop")
+
 export XDG_SESSION_TYPE=wayland
-export XDG_SESSION_DESKTOP=$WAYLAND_COMPOSITOR
-export XDG_CURRENT_DESKTOP=$WAYLAND_COMPOSITOR
+export XDG_SESSION_DESKTOP=${XDG_SESSION_DESKTOP:-$WAYLAND_COMPOSITOR}
+export XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-${desktop_names:-$WAYLAND_COMPOSITOR}}
 
 dbus-update-activation-environment --systemd \
     XDG_SESSION_ID \
