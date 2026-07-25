@@ -4,9 +4,11 @@
 
 . ${XDG_CONFIG_HOME:-$HOME/.config}/graphical/session
 
+desktop_names=$(awk -F'=' '/DesktopNames=/{gsub(/;/,":",$2); print $2}' "/usr/share/xsessions/${WINDOW_MANAGER}.desktop")
+
 export XDG_SESSION_TYPE=x11
-export XDG_SESSION_DESKTOP=$WINDOW_MANAGER
-export XDG_CURRENT_DESKTOP=$WINDOW_MANAGER
+export XDG_SESSION_DESKTOP=${XDG_SESSION_DESKTOP:-$WINDOW_MANAGER}
+export XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-${desktop_names:-$WINDOW_MANAGER}}
 
 dbus-update-activation-environment --systemd \
     XDG_SESSION_ID \
