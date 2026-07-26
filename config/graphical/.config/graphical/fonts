@@ -22,10 +22,10 @@ cat << EOF > "$fontconfig_local_conf_dir/10-settings.conf"
       <bool>${boolean_enum[$antialias]}</bool>
     </edit>
     <edit name="rgba" mode="assign">
-      <const>rgb</const>
+      <const>$rgba</const>
     </edit>
     <edit name="lcdfilter" mode="assign">
-      <const>lcddefault</const>
+      <const>$lcdfilter</const>
     </edit>
     <edit name="hinting" mode="assign">
       <bool>${boolean_enum[$hinting]}</bool>
@@ -47,5 +47,5 @@ font_rendering_enum=("automatic" "manual")
 
 gsettings set org.gnome.desktop.interface font-antialiasing "${antialiasing_enum[$(( $antialias == 0 ? 0 : ($([[ $rgba != 'none' ]]; echo $?) ? 1 : 2) ))]}"
 gsettings set org.gnome.desktop.interface font-hinting "${hintstyle#hint}"
-gsettings set org.gnome.desktop.interface font-rgba-order "$rgba"
+gsettings set org.gnome.desktop.interface font-rgba-order "$([[ $rgba != 'none' ]] && echo $rgba || echo 'rgb')"
 gsettings set org.gnome.desktop.interface font-rendering "${font_rendering_enum[1]}"
