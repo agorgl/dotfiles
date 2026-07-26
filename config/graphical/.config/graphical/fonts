@@ -31,7 +31,7 @@ cat << EOF > "$fontconfig_local_conf_dir/10-settings.conf"
       <bool>${boolean_enum[$hinting]}</bool>
     </edit>
     <edit name="hintstyle" mode="assign">
-      <const>hintslight</const>
+      <const>$hintstyle</const>
     </edit>
     <edit name="autohint" mode="assign">
       <bool>${boolean_enum[$autohint]}</bool>
