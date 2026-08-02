@@ -1129,7 +1129,7 @@ client() {
 
     export TERM=xterm-direct
     export MAIL="$mail"
-    neomutt "${args[@]}"
+    aerc --accounts-conf "$mail_config_dir/aercrc" "${args[@]}"
 }
 
 contact() {
