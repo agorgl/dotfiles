@@ -56,6 +56,12 @@ handler() {
                 open)
                     command=("open")
                     ;;
+                sync)
+                    command=("sync")
+                    ;;
+                deliver)
+                    command=("deliver")
+                    ;;
                 quit)
                     command=("quit")
                     ;;
@@ -80,7 +86,7 @@ notification() {
     exec {notification_control_fd}<>"$notification_control"
 
     log "creating notification"
-    local menu_items=("Open!handler menu open" "Quit!handler menu quit")
+    local menu_items=("Open!handler menu open" "Sync!handler menu sync" "Deliver!handler menu deliver" "Quit!handler menu quit")
     yad --notification \
         --listen \
         --use-interp \
@@ -125,6 +131,14 @@ event_loop() {
             open)
                 log "opening client"
                 client "$mail" &
+                ;;
+            sync)
+                log "syncing mail"
+                mail control "$mail" sync &
+                ;;
+            deliver)
+                log "delivering mail"
+                mail control "$mail" deliver &
                 ;;
             quit)
                 log "quitting"
