@@ -643,7 +643,9 @@ cloud_init() {
 
 osinfo() {
     local image="$1"
-    echo "${image//-}"
+    local osinfo="${image//-}"
+    virt-install --osinfo list | head -n -5 | grep -q "$osinfo" || osinfo="generic"
+    echo "$osinfo"
 }
 
 network_start() {
