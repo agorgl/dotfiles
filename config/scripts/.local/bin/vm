@@ -487,6 +487,24 @@ image_info_archlinux() {
     result["url"]="$url"
 }
 
+image_info_talos() {
+    local -n result="$1"
+
+    local customization
+    define customization <<'    EOF'
+        customization:
+            extraKernelArgs:
+                - console=ttyS0
+    EOF
+    local version="$(curl -sSf https://api.github.com/repos/siderolabs/talos/releases/latest | jq -r '.name')"
+    local schematic_id="$(echo "$customization" | sha256sum | awk '{print $1}')"
+    local url="https://factory.talos.dev/image/$schematic_id/$version/metal-amd64.qcow2"
+
+    result["distro"]="talos"
+    result["version"]="$version"
+    result["url"]="$url"
+}
+
 image_name() {
     local -n __info="$1"
     local identifiers=(${__info["distro"]} ${__info["version"]:-})
@@ -525,6 +543,9 @@ image_info() {
             ;;
         archlinux)
             image_info_archlinux _info
+            ;;
+        talos)
+            image_info_talos _info
             ;;
         *)
             error "unsupported distro '"$distro"'"
