@@ -2,6 +2,7 @@
 set -eu
 
 script_name="$(basename "$0")"
+config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/mail"
 runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$UID}/$script_name"
 
 join_by() {
@@ -151,6 +152,15 @@ event_loop() {
 main() {
     local mail="${1:-$(picker)}"
     [ -z "$mail" ] && exit 1
+
+    local wrapper=("$(cat "$config_dir/$mail/wrapper" 2>/dev/null | sed "s|~|$HOME|g")")
+    if [ ${#wrapper[@]} -ne 0 ]; then
+        if [ -z "${WRAPPED:-}" ]; then
+            export WRAPPED=1
+            exec ${wrapper[@]} "$script_name" "$mail"
+        fi
+    fi
+
     log "using mail '"$mail"'"
 
     local mail_runtime_dir="$runtime_dir/$mail"
