@@ -63,6 +63,9 @@ handler() {
                 deliver)
                     command=("deliver")
                     ;;
+                logs)
+                    command=("logs")
+                    ;;
                 quit)
                     command=("quit")
                     ;;
@@ -87,7 +90,7 @@ notification() {
     exec {notification_control_fd}<>"$notification_control"
 
     log "creating notification"
-    local menu_items=("Open!handler menu open" "Sync!handler menu sync" "Deliver!handler menu deliver" "Quit!handler menu quit")
+    local menu_items=("Open!handler menu open" "Sync!handler menu sync" "Deliver!handler menu deliver" "Logs!handler menu logs" "Quit!handler menu quit")
     yad --notification \
         --listen \
         --use-interp \
@@ -120,6 +123,28 @@ client() {
     flock -u $client_pid_fd
 }
 
+logs() {
+    local mail="$1"
+    local mail_runtime_dir="$runtime_dir/$mail"
+    mkdir -p "$mail_runtime_dir"
+
+    local logs_pid_file="$mail_runtime_dir/logs.pid"
+    exec {logs_pid_fd}<>"$logs_pid_file"
+    if ! flock -n $logs_pid_fd; then
+        log "mail logs already open for '"$mail"', skipping"
+        return
+    fi
+
+    log "opening mail logs for '"$mail"'"
+    local log_file="$mail_runtime_dir/$script_name.log"
+    $TERMINAL -e tail -n +1 -f "$log_file" &
+    local logs_pid=$!
+    echo $logs_pid >&$logs_pid_fd
+    wait $logs_pid
+
+    flock -u $logs_pid_fd
+}
+
 event_loop() {
     local mail="$1"
     local control="$2"
@@ -141,6 +166,10 @@ event_loop() {
                 log "delivering mail"
                 mail control "$mail" deliver &
                 ;;
+            logs)
+                log "opening logs"
+                logs "$mail" &
+                ;;
             quit)
                 log "quitting"
                 break
@@ -161,10 +190,18 @@ main() {
         fi
     fi
 
-    log "using mail '"$mail"'"
-
     local mail_runtime_dir="$runtime_dir/$mail"
     mkdir -p "$mail_runtime_dir"
+
+    local log_file="$mail_runtime_dir/$script_name.log"
+    : >"$log_file"
+    exec {log_fd}<>"$log_file"
+    exec {orig_stdout}>&1
+    exec {orig_stderr}>&2
+    exec 1> >((tee -a /dev/fd/$log_fd >&$orig_stdout))
+    exec 2> >((tee -a /dev/fd/$log_fd >&$orig_stderr))
+
+    log "using mail '"$mail"'"
 
     local pid_file="$mail_runtime_dir/$script_name.pid"
     exec {pid_fd}<>"$pid_file"
@@ -224,6 +261,12 @@ main() {
     local notification_pid=$!
 
     event_loop "$mail" "$control"
+
+    local logs_pid_file="$mail_runtime_dir/logs.pid"
+    if pgrep -F "$logs_pid_file" &>/dev/null; then
+        log "killing open logs"
+        pkill -F "$logs_pid_file"
+    fi
 
     local client_pid_file="$mail_runtime_dir/client.pid"
     if pgrep -F "$client_pid_file" &>/dev/null; then
