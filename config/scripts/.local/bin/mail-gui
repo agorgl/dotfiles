@@ -38,7 +38,8 @@ daemon() {
     if flock -n $daemon_pid_fd; then
         flock -u $daemon_pid_fd
         log "launching mail daemon for '"$mail"'"
-        mail daemon "$mail"
+        mail daemon "$mail" &
+        wait $!
     else
         log "mail daemon for '"$mail"' is already running"
     fi
@@ -99,7 +100,8 @@ notification() {
         --text="$mail" \
         --command="handler click" \
         --menu="$(menu "${menu_items[@]}")" \
-        <&$notification_control_fd
+        <&$notification_control_fd &
+    wait $!
 }
 
 client() {
@@ -219,6 +221,7 @@ main() {
         exec {pid_fd}>&-
         unset pid_fd
         pkill -P $BASHPID
+        wait
     }
     trap cleanup EXIT
 
@@ -242,6 +245,7 @@ main() {
         cleanup() {
             log "cleaning up daemon"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
@@ -253,6 +257,7 @@ main() {
         cleanup() {
             log "cleaning up notification"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
