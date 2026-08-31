@@ -951,6 +951,7 @@ daemon() {
         unset pid_fd
         #rm "$pid_file"
         pkill -P $BASHPID
+        wait
     }
     trap cleanup EXIT
 
@@ -971,6 +972,7 @@ daemon() {
             log "cleaning up listener"
             rm "$control"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
@@ -1033,6 +1035,7 @@ daemon() {
         cleanup() {
             log "cleaning up inbox watcher"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
@@ -1048,6 +1051,7 @@ daemon() {
         cleanup() {
             log "cleaning up outbox watcher"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
@@ -1064,6 +1068,7 @@ daemon() {
         cleanup() {
             log "cleaning up periodic sync events"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
@@ -1080,6 +1085,7 @@ daemon() {
         cleanup() {
             log "cleaning up periodic delivery events"
             pkill -P $BASHPID
+            wait
         }
         trap cleanup EXIT
 
