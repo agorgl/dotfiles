@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Mail
+GenericName=Mail Client
+Exec=mail-gui
+Icon=mail
+Terminal=false
+Categories=Network;Email;
+MimeType=message/rfc822;x-scheme-handler/mailto;x-scheme-handler/mid;
