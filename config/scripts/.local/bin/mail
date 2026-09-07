@@ -187,7 +187,7 @@ cli_parse() {
     cli_parse_opts result rest opts_spec
     [ ! -z "${result["error"]:-}" ] && return 0
 
-    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|send|queue|deliver|daemon|control|client|contact)"
+    cli_parse_command result rest "(add|list|remove|pass|sync|watch|index|send|queue|deliver|handler|daemon|control|client|contact)"
     [ ! -z "${result["error"]:-}" ] && return 0
 
     local cmd="${result["command"]}"
@@ -239,6 +239,11 @@ cli_parse() {
             varargs=true
             ;;
         deliver)
+            local args_spec=("mail")
+            cli_parse_args result rest args_spec
+            [ ! -z "${result["error"]:-}" ] && return 0
+            ;;
+        handler)
             local args_spec=("mail")
             cli_parse_args result rest args_spec
             [ ! -z "${result["error"]:-}" ] && return 0
@@ -931,7 +936,10 @@ deliver() {
 
 handler() {
     local mail="$1"
-    local command=("${@:2}")
+
+    read -r line <&3
+    local -a command="($line)"
+    log "got command: [$(join_by ", " "${command[@]@Q}")]"
 
     local mail_runtime_dir="$(mail_runtime_dir "$mail")"
 
@@ -1008,31 +1016,24 @@ daemon() {
     keyctl new_session &>/dev/null
     pass "$mail" >/dev/null
 
-    local control="$mail_runtime_dir/control"
+    local control="$mail_runtime_dir/control.sock"
     (
-        if [ -p "$control" ]; then
-            error "control fifo already exists in '"$control"'"
+        if [ -S "$control" ]; then
+            error "control socket already exists in '"$control"'"
             exit 1
         fi
-        mkfifo "$control"
 
         cleanup() {
             log "cleaning up listener"
-            rm "$control"
             pkill -P $BASHPID
             wait
         }
         trap cleanup EXIT
 
         log "listening for control commands"
-        while true; do
-            read -r line <"$control"
-
-            local -a command="($line)"
-            log "got command: [$(join_by ", " "${command[@]@Q}")]"
-
-            handler "$mail" "${command[@]}" &
-        done
+        socat unix-listen:$control,fork \
+              exec:"$0 handler "$mail"",fdin=3,fdout=4 2>/dev/null &
+        wait $!
     ) &
     local listener_pid=$!
 
@@ -1065,7 +1066,7 @@ daemon() {
 
         log "watching $mail outbox"
         while read newfile; do
-            echo "deliver" > "$control"
+            control "$mail" "deliver"
         done < <(inotifywait -q -m -e close_write "$outbox_dir/cur")
     ) &
 
@@ -1081,7 +1082,7 @@ daemon() {
         local period=300
         while true; do
             log "requesting periodic sync"
-            echo "sync" > "$control"
+            control "$mail" "sync"
             sleep $period
         done
     ) &
@@ -1098,7 +1099,7 @@ daemon() {
         local period=300
         while true; do
             log "requesting periodic delivery"
-            echo "deliver" > "$control"
+            control "$mail" "deliver"
             sleep $period
         done
     ) &
@@ -1119,12 +1120,17 @@ control() {
     fi
 
     local mail_runtime_dir="$(mail_runtime_dir "$mail")"
-    local pipe="$mail_runtime_dir/control"
-    if [ ! -p "$pipe" ]; then
-        error "control fifo for mail '"$mail"' does not exist, is the daemon running?"
+    local control="$mail_runtime_dir/control.sock"
+    if [ ! -S "$control" ]; then
+        error "control socket for mail '"$mail"' does not exist, is the daemon running?"
         exit 1
     fi
-    echo "${command[@]@Q}" > "$pipe"
+
+    exec {channel}> >(socat - unix-connect:$control)
+    echo "${command[@]@Q}" >&$channel
+    exec {channel}>&-
+
+    wait
 }
 
 client() {
@@ -1222,6 +1228,10 @@ main() {
         deliver)
             local mail="${args["mail"]}"
             deliver "$mail"
+            ;;
+        handler)
+            local mail="${args["mail"]}"
+            handler "$mail"
             ;;
         daemon)
             local mail="${args["mail"]}"
