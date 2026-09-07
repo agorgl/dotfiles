@@ -929,6 +929,54 @@ deliver() {
     done
 }
 
+handler() {
+    local mail="$1"
+    local command=("${@:2}")
+
+    local mail_runtime_dir="$(mail_runtime_dir "$mail")"
+
+    case "${command[0]}" in
+        sync)
+            local sync_lock="$mail_runtime_dir/sync.lock"
+            exec {sync_fd}>"$sync_lock"
+            if ! flock -n $sync_fd; then
+                log "sync running for $mail, skipping"
+                return
+            fi
+
+            log "syncing $mail"
+            sync "$mail" "${command[@]:1}"
+            log "indexing $mail"
+            index "$mail"
+            log "done"
+
+            flock -u $sync_fd
+            ;;
+        deliver)
+            local deliver_lock="$mail_runtime_dir/deliver.lock"
+            exec {deliver_fd}>"$deliver_lock"
+            if ! flock -n $deliver_fd; then
+                log "delivery running for $mail, skipping"
+                return
+            fi
+
+            log "delivering for $mail"
+            deliver "$mail"
+            log "done"
+
+            flock -u $deliver_fd
+            ;;
+        exit)
+            log "stopping daemon"
+            local pid_file="$mail_runtime_dir/daemon.pid"
+            kill $(cat "$pid_file")
+            ;;
+        *)
+            log "unrecognized command [$(join_by ", " "${command[@]@Q}")]"
+            ;;
+    esac
+}
+
 daemon() {
     local mail="$1"
     log "launcing daemon for mail '"$mail"'"
@@ -983,50 +1031,7 @@ daemon() {
             local -a command="($line)"
             log "got command: [$(join_by ", " "${command[@]@Q}")]"
 
-            case "${command[0]}" in
-                sync)
-                    (
-                        local sync_lock="$mail_runtime_dir/sync.lock"
-                        exec {sync_fd}>"$sync_lock"
-                        if ! flock -n $sync_fd; then
-                            log "sync running for $mail, skipping"
-                            return
-                        fi
-
-                        log "syncing $mail"
-                        sync "$mail" "${command[@]:1}"
-                        log "indexing $mail"
-                        index "$mail"
-                        log "done"
-
-                        flock -u $sync_fd
-                    ) &
-                    ;;
-                deliver)
-                    (
-                        local deliver_lock="$mail_runtime_dir/deliver.lock"
-                        exec {deliver_fd}>"$deliver_lock"
-                        if ! flock -n $deliver_fd; then
-                            log "delivery running for $mail, skipping"
-                            return
-                        fi
-
-                        log "delivering for $mail"
-                        deliver "$mail"
-                        log "done"
-
-                        flock -u $deliver_fd
-                    ) &
-                    ;;
-                exit)
-                    log "stopping listener"
-                    log "bye"
-                    break
-                    ;;
-                *)
-                    log "unrecognized command [$(join_by ", " "${command[@]@Q}")]"
-                    ;;
-            esac
+            handler "$mail" "${command[@]}" &
         done
     ) &
     local listener_pid=$!
