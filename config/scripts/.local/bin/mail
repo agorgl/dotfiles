@@ -940,6 +940,7 @@ handler() {
     read -r line <&3
     local -a command="($line)"
     log "got command: [$(join_by ", " "${command[@]@Q}")]"
+    local input="$(base64 <&3)"
 
     local mail_runtime_dir="$(mail_runtime_dir "$mail")"
 
@@ -973,6 +974,10 @@ handler() {
             log "done"
 
             flock -u $deliver_fd
+            ;;
+        queue)
+            log "queueing mail for $mail"
+            echo "$input" | base64 -d | queue "$mail" "${command[@]:1}"
             ;;
         exit)
             log "stopping daemon"
@@ -1128,6 +1133,9 @@ control() {
 
     exec {channel}> >(socat - unix-connect:$control)
     echo "${command[@]@Q}" >&$channel
+    if [ ! -t 0 ]; then
+        cat >&$channel
+    fi
     exec {channel}>&-
 
     wait
