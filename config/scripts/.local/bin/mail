@@ -898,10 +898,10 @@ queue() {
     outbox outbox_dir "$mail"
 
     local fname=$(message_filename)
-    local message="$(cat)"
+    local message="$(base64)"
     if [ ! -z "$message" ]; then
         local message_file="$outbox_dir/cur/$fname"
-        echo "X-Msmtp-Args: ${args[@]@Q}"$'\n'"$message" >"$message_file"
+        echo "X-Msmtp-Args: ${args[@]@Q}"$'\n'"$(echo "$message" | base64 -d)" >"$message_file"
     fi
 }
 
