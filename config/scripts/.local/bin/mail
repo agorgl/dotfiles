@@ -666,6 +666,7 @@ aercrc() {
         {% endif %}
         folders-sort = Inbox,Drafts,Outbox,Sent,Archive,Spam,Trash
         check-mail-cmd = mail control {{ mail }} sync
+        address-book-cmd = `mail contact {{ mail }} "%s" | awk '{email=$NF; gsub(/(^<|>$)/,"",email); $NF=""; gsub(/(^"|"\s?$)/,"",$0); gsub(/(^\s+|\s+$)/,"",$0); print email "\t" $0}'`
     EOF
     render "$aercrc" vars
 }
