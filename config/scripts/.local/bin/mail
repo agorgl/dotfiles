@@ -1169,7 +1169,7 @@ contact() {
         exit 1
     fi
 
-    notmuch --config "$mail_config_dir/notmuchrc" address from:"$term"
+    notmuch --config "$mail_config_dir/notmuchrc" address from:"$term*"
 }
 
 main() {
