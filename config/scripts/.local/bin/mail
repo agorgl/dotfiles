@@ -922,10 +922,10 @@ deliver() {
 
     for message_file in "${message_files[@]}"; do
         local -a args="($(awk 'NR == 1 { $1=""; print $0 }' "$message_file"))"
-        local msg="$(tail -n +2 "$message_file")"
+        local msg="$(tail -n +2 "$message_file" | base64)"
 
         local ret=0
-        send "$mail" "${args[@]}" <<<"$msg" || ret=$?
+        send "$mail" "${args[@]}" < <(echo "$msg" | base64 -d) || ret=$?
         if [ $ret -ne 0 ]; then
             log "could not deliver message"
             return
