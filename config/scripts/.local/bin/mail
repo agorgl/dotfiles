@@ -938,6 +938,8 @@ deliver() {
 handler() {
     local mail="$1"
 
+    trap '' TERM
+
     read -r line <&3
     local -a command="($line)"
     log "got command: [$(join_by ", " "${command[@]@Q}")]"
