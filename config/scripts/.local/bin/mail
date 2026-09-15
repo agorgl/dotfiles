@@ -613,7 +613,7 @@ muttrc() {
 
         set from = {{ mail }}
         set realname = '{{ name }}'
-        set sendmail = "mail queue {{ mail }}"
+        set sendmail = "mail control {{ mail }} queue"
 
         set nm_config_file = "{{ mail_config_dir }}/notmuchrc"
         set nm_record = yes
@@ -658,7 +658,7 @@ aercrc() {
     define aercrc <<'    EOF'
         [Mail]
         source = maildir://~/.local/share/mail/{{ mail }}
-        outgoing = mail queue {{ mail }}
+        outgoing = mail control {{ mail }} queue
         default = Inbox
         from = "{{ name }}" <{{ mail }}>
         {% if domain != 'gmail.com' %}
