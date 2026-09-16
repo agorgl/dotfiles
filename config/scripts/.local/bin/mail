@@ -1064,6 +1064,8 @@ daemon() {
     (
         cleanup() {
             log "cleaning up outbox watcher"
+            exec {ttyin}<&-
+            unset ttyin
             pkill -P $BASHPID
             wait
         }
@@ -1073,8 +1075,9 @@ daemon() {
         outbox outbox_dir "$mail"
 
         log "watching $mail outbox"
+        exec {ttyin}<&0
         while read newfile; do
-            control "$mail" "deliver"
+            control "$mail" "deliver" <&$ttyin
         done < <(inotifywait -q -m -e close_write "$outbox_dir/cur")
     ) &
 
