@@ -879,8 +879,8 @@ outbox() {
 
 message_filename() {
     local date=$(date +%s)
-    local random=$(od -vAn -N8 -tu8 < /dev/urandom | awk '{$1=$1};1')
-    local host=$(cat /etc/hostname)
+    local random=$(openssl rand -hex 10)
+    local host=$(cat /etc/hostname | sed -e 's|/|\\057|g' -e 's|:|\\072|g')
     echo "${date}.R${random}.${host}:2,S"
 }
 
