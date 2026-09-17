@@ -877,6 +877,12 @@ outbox() {
     mailbox _result "$mail" "Outbox"
 }
 
+sent() {
+    local -n _result="$1"
+    local mail="$2"
+    mailbox _result "$mail" "Sent"
+}
+
 message_filename() {
     local date=$(date +%s)
     local random=$(openssl rand -hex 10)
@@ -910,8 +916,17 @@ deliver() {
     local mail="$1"
     log "delivering messages for '"$mail"'"
 
+    local mail_config_dir="$(mail_config_dir "$mail")"
+    if [ ! -d "$mail_config_dir" ]; then
+        error "mail configuration directory for '"$mail"' does not exist"
+        exit 1
+    fi
+
     local outbox_dir
     outbox outbox_dir "$mail"
+
+    local sent_dir
+    sent sent_dir "$mail"
 
     local message_files
     readarray -d '' message_files < <(find "$outbox_dir/cur" -not -name '[@.]*' -type f -print0)
@@ -931,7 +946,12 @@ deliver() {
             return
         fi
 
-        rm "$message_file"
+        if [ -f "$mail_config_dir/norecord" ]; then
+            rm "$message_file"
+        else
+            local fname=$(message_filename)
+            mv "$message_file" "$sent_dir/cur/$fname"
+        fi
     done
 }
 
