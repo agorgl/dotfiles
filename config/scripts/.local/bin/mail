@@ -604,11 +604,7 @@ muttrc() {
 
         set spool_file = +Inbox
         set postponed = +Drafts
-        {% if domain == 'gmail.com' %}
         unset record
-        {% else %}
-        set record = +Sent
-        {% endif %}
         set trash = +Trash
 
         set from = {{ mail }}
@@ -661,9 +657,6 @@ aercrc() {
         outgoing = mail control {{ mail }} queue
         default = Inbox
         from = "{{ name }}" <{{ mail }}>
-        {% if domain != 'gmail.com' %}
-        copy-to = Sent
-        {% endif %}
         folders-sort = Inbox,Drafts,Outbox,Sent,Archive,Spam,Trash
         check-mail-cmd = mail control {{ mail }} sync
         address-book-cmd = `mail contact {{ mail }} "%s" | awk '{email=$NF; gsub(/(^<|>$)/,"",email); $NF=""; gsub(/(^"|"\s?$)/,"",$0); gsub(/(^\s+|\s+$)/,"",$0); print email "\t" $0}'`
