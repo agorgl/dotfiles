@@ -653,7 +653,7 @@ aercrc() {
     local aercrc
     define aercrc <<'    EOF'
         [Mail]
-        source = maildir://~/.local/share/mail/{{ mail }}
+        source = maildir://~/.local/share/mail/{{ mail }}/
         outgoing = mail control {{ mail }} queue
         default = Inbox
         from = "{{ name }}" <{{ mail }}>
