@@ -35,6 +35,7 @@ Options:
   --vcpus        number of vcpus for the virtual machine
   --memory       memory size (in megabytes) for the virtual machine
   --disk         disk size for the virtual machine
+  --network      network bridge name for the virtual machine
   --console      attach to console on start
   -h, --help     display current help message
 "
@@ -221,8 +222,9 @@ cli_parse() {
             local vcpus_opt=("vcpus" "(--vcpus)" 1)
             local memory_opt=("memory" "(--memory)" 1)
             local disk_opt=("disk" "(--disk)" 1)
+            local network_opt=("network" "(--network)" 1)
             local console_opt=("console" "(--console)")
-            local opts_spec=(distro_opt vcpus_opt memory_opt disk_opt console_opt)
+            local opts_spec=(distro_opt vcpus_opt memory_opt disk_opt network_opt console_opt)
             cli_parse_opts result rest opts_spec
             [ ! -z "${result["error"]:-}" ] && return 0
 
@@ -685,6 +687,7 @@ launch() {
     local vcpus="${opts["vcpus"]:-1}"
     local memory="${opts["memory"]:-2048}"
     local disk="${opts["disk"]:-"8G"}"
+    local network="${opts["network"]:-}"
     local console="${opts["console"]:-}"
 
     log "launching virtual machine '"$name"' with $distro"
@@ -698,9 +701,12 @@ launch() {
     local image_path="$(image_path "$image")"
     log "picked image '"$image"', located at '"$image_path"'"
 
-    local network="default"
-    network_start "$network"
-    local network_bridge=$(virsh -c qemu:///system -r net-dumpxml "$network" | xmllint --xpath 'string(/network/bridge/@name)' -)
+    local network_bridge="$network"
+    if [ -z "$network_bridge" ]; then
+        local network_name="default"
+        network_start "$network_name"
+        network_bridge=$(virsh -c qemu:///system -r net-dumpxml "$network_name" | xmllint --xpath 'string(/network/bridge/@name)' -)
+    fi
 
     local instance_data_dir="$(instance_data_dir "$name")"
     mkdir -p "$instance_data_dir"
